@@ -1,0 +1,2 @@
+export { MenuRecommendation } from './MenuRecommendation';
+
