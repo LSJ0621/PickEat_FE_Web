@@ -5,16 +5,10 @@
 
 import { Button } from '@/components/common/Button';
 import { useUserLocation } from '@/hooks/useUserLocation';
+import type { NaverLatLng } from '@/types/naverMaps';
 import type { Restaurant } from '@/types/search';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-declare global {
-  interface Window {
-    naver: any;
-    navermap_authFailure?: () => void;
-  }
-}
 
 interface MapPageState {
   restaurants?: Restaurant[];
@@ -29,35 +23,33 @@ export const MapPage = () => {
   const location = useLocation();
   const naverClientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
   const { restaurants = [], selectedRestaurant = null, menuName = null } = (location.state as MapPageState) || {};
-  const restaurantsKey = useMemo(() => JSON.stringify(restaurants), [restaurants]);
-  const selectedRestaurantKey = useMemo(
-    () => (selectedRestaurant ? JSON.stringify(selectedRestaurant) : 'none'),
-    [selectedRestaurant]
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   const hasRestaurantData = restaurants.length > 0;
   const hasAnyLocation = hasRestaurantData || hasLocation;
+  const blockingError = useMemo(() => {
+    if (!naverClientId) {
+      return '네이버 지도 API 키가 설정되지 않았습니다. .env에 VITE_NAVER_MAP_CLIENT_ID를 추가해주세요.';
+    }
+    if (!hasAnyLocation) {
+      return '표시할 위치 정보가 없습니다. 주소를 등록하거나 가게 목록에서 지도를 열어주세요.';
+    }
+    return null;
+  }, [naverClientId, hasAnyLocation]);
+  const error = blockingError ?? runtimeError;
 
   useEffect(() => {
-    if (!naverClientId) {
-      setError('네이버 지도 API 키가 설정되지 않았습니다. .env에 VITE_NAVER_MAP_CLIENT_ID를 추가해주세요.');
-      setLoading(false);
-      return;
-    }
-
-    if (!hasAnyLocation) {
-      setError('표시할 위치 정보가 없습니다. 주소를 등록하거나 가게 목록에서 지도를 열어주세요.');
-      setLoading(false);
+    if (blockingError) {
       return;
     }
 
     let isMounted = true;
     const scriptId = 'naver-map-sdk';
     const callbackName = `initNaverMap_${Date.now()}`;
+    const clientId = naverClientId as string;
 
-    const getLatLngFromRestaurant = (restaurant: Restaurant) => {
+    const getLatLngFromRestaurant = (restaurant: Restaurant): NaverLatLng | null => {
       if (!window.naver?.maps) {
         return null;
       }
@@ -85,16 +77,25 @@ export const MapPage = () => {
     };
 
     const initMap = () => {
-      if (!isMounted || !mapRef.current || !window.naver?.maps) {
+      if (!isMounted || !mapRef.current) {
+        return;
+      }
+
+      const naverMaps = window.naver?.maps;
+      if (!naverMaps) {
+        setRuntimeError('네이버 지도 객체를 초기화하지 못했습니다.');
+        setLoading(false);
         return;
       }
 
       const userLatLng =
-        hasLocation && latitude !== null && longitude !== null
-          ? new window.naver.maps.LatLng(latitude, longitude)
+        hasLocation && latitude !== null && longitude !== null && naverMaps
+          ? new naverMaps.LatLng(latitude, longitude)
           : null;
 
-      const restaurantMarkers = restaurants
+      type MarkerInfo = { restaurant: Restaurant; latLng: NaverLatLng };
+
+      const restaurantMarkers: MarkerInfo[] = restaurants
         .map((restaurant) => {
           const latLng = getLatLngFromRestaurant(restaurant);
           if (latLng) {
@@ -110,30 +111,30 @@ export const MapPage = () => {
           }
           return { restaurant, latLng };
         })
-        .filter((item): item is { restaurant: Restaurant; latLng: any } => !!item);
+        .filter((item): item is MarkerInfo => item !== null);
 
       const selectedLatLng = selectedRestaurant ? getLatLngFromRestaurant(selectedRestaurant) : null;
       const mapCenter = selectedLatLng || userLatLng || restaurantMarkers[0]?.latLng;
 
       if (!mapCenter) {
-        setError('지도에 표시할 좌표가 없습니다.');
+        setRuntimeError('지도에 표시할 좌표가 없습니다.');
         setLoading(false);
         return;
       }
 
       const comfortableZoom = selectedRestaurant ? 16 : restaurants.length > 3 ? 14 : 15;
 
-      const map = new window.naver.maps.Map(mapRef.current, {
+      const map = new naverMaps.Map(mapRef.current, {
         center: mapCenter,
         zoom: comfortableZoom,
         mapTypeControl: true,
         mapTypeControlOptions: {
-          style: window.naver.maps.MapTypeControlStyle.BUTTON,
-          position: window.naver.maps.Position.TOP_RIGHT,
+          style: naverMaps.MapTypeControlStyle?.BUTTON ?? 0,
+          position: naverMaps.Position?.TOP_RIGHT ?? 0,
         },
       });
 
-      const bounds = new window.naver.maps.LatLngBounds();
+      const bounds = new naverMaps.LatLngBounds();
       restaurantMarkers.forEach(({ latLng }) => bounds.extend(latLng));
       if (userLatLng) {
         bounds.extend(userLatLng);
@@ -188,7 +189,7 @@ export const MapPage = () => {
 
         console.log('[지도] 컨테이너 크기:', { width: containerWidth, height: containerHeight });
         
-        window.naver.maps.Event.trigger(map, 'resize');
+        naverMaps.Event.trigger(map, 'resize');
         
         setTimeout(() => {
           adjustViewport();
@@ -207,7 +208,7 @@ export const MapPage = () => {
       });
 
       let idleHandled = false;
-      window.naver.maps.Event.addListener(map, 'idle', () => {
+      naverMaps.Event.addListener(map, 'idle', () => {
         if (idleHandled) {
           return;
         }
@@ -216,7 +217,7 @@ export const MapPage = () => {
       });
 
       if (userLatLng) {
-        new window.naver.maps.Marker({
+        new naverMaps.Marker({
           position: userLatLng,
           map,
           title: '내 위치',
@@ -245,13 +246,13 @@ export const MapPage = () => {
           restaurant.name === selectedRestaurant.name &&
           restaurant.address === selectedRestaurant.address;
 
-        const marker = new window.naver.maps.Marker({
+        const marker = new naverMaps.Marker({
           position: latLng,
           map,
           title: restaurant.name,
         });
 
-        const infoWindow = new window.naver.maps.InfoWindow({
+        const infoWindow = new naverMaps.InfoWindow({
           content: `
             <div style="min-width:180px;padding:10px 12px;border-radius:16px;border:1px solid rgba(148,163,184,0.4);background:rgba(15,23,42,0.9);color:white;">
               <div style="font-size:14px;font-weight:600;">${restaurant.name}</div>
@@ -265,7 +266,7 @@ export const MapPage = () => {
           `,
         });
 
-        window.naver.maps.Event.addListener(marker, 'click', () => {
+        naverMaps.Event.addListener(marker, 'click', () => {
           infoWindow.open(map, marker);
           map.setCenter(latLng);
         });
@@ -281,13 +282,14 @@ export const MapPage = () => {
     const loadScript = () => {
       const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
 
-      (window as any)[callbackName] = () => {
+      const windowWithCallback = window as unknown as Window & Record<string, () => void>;
+      windowWithCallback[callbackName] = () => {
         initMap();
-        delete (window as any)[callbackName];
+        delete windowWithCallback[callbackName];
       };
 
       window.navermap_authFailure = () => {
-        setError('네이버 지도 인증에 실패했습니다. 클라이언트 ID를 확인해주세요.');
+        setRuntimeError('네이버 지도 인증에 실패했습니다. 클라이언트 ID를 확인해주세요.');
         setLoading(false);
       };
 
@@ -306,31 +308,39 @@ export const MapPage = () => {
       const script = document.createElement('script');
       script.id = scriptId;
       script.async = true;
-      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${naverClientId}&submodules=geocoder&callback=${callbackName}`;
+      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=geocoder&callback=${callbackName}`;
       script.onerror = () => {
-        setError('네이버 지도 API 로드에 실패했습니다.');
+        setRuntimeError('네이버 지도 API 로드에 실패했습니다.');
         setLoading(false);
       };
       document.head.appendChild(script);
     };
 
-    loadScript();
+    Promise.resolve().then(() => {
+      if (!isMounted) {
+        return;
+      }
+      setRuntimeError(null);
+      setLoading(true);
+      loadScript();
+    });
 
     return () => {
       isMounted = false;
-      if ((window as any)[callbackName]) {
-        delete (window as any)[callbackName];
+      const windowWithCallback = window as unknown as Window & Record<string, () => void>;
+      if (windowWithCallback[callbackName]) {
+        delete windowWithCallback[callbackName];
       }
       window.navermap_authFailure = undefined;
     };
   }, [
-    naverClientId,
-    hasAnyLocation,
+    blockingError,
     hasLocation,
     latitude,
     longitude,
-    restaurantsKey,
-    selectedRestaurantKey,
+    restaurants,
+    selectedRestaurant,
+    naverClientId,
   ]);
 
   const handleBack = () => {

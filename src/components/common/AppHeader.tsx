@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 export const AppHeader = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  const userAddress = localStorage.getItem('user_address');
+  const userAddress = useAppSelector((state) => state.auth?.user?.address);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleLogoClick = () => {

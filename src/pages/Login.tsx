@@ -6,6 +6,7 @@ import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
+import { extractErrorMessage } from '@/utils/error';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,51 +44,28 @@ export const LoginPage = () => {
 
     try {
       const loginData = await authService.login({ email, password });
-      
-      // 토큰 및 위치 정보 저장
-      if (loginData.token) {
-        localStorage.setItem('token', loginData.token);
-        localStorage.setItem('user_id', loginData.id.toString());
-        
-        // 이메일 및 이름 저장
-        if (loginData.email) {
-          localStorage.setItem('user_email', loginData.email);
-        } else {
-          localStorage.setItem('user_email', email);
-        }
-        if (loginData.name) {
-          localStorage.setItem('user_name', loginData.name);
-        }
-        
-        // 주소 및 위치 정보 저장
-        if (loginData.address) {
-          localStorage.setItem('user_address', loginData.address);
-        }
-        if (loginData.latitude !== null) {
-          localStorage.setItem('user_latitude', loginData.latitude.toString());
-        }
-        if (loginData.longitude !== null) {
-          localStorage.setItem('user_longitude', loginData.longitude.toString());
-        }
 
-        // Redux에 사용자 정보 저장
-        dispatch(setCredentials({
-          user: {
-            id: loginData.id.toString(),
-            email: loginData.email || email,
-            name: loginData.name || '',
-            address: loginData.address || undefined,
-            createdAt: new Date().toISOString(),
-          },
-          token: loginData.token,
-        }));
-
-        // 메인 페이지로 이동
-        navigate('/');
+      if (!loginData.token) {
+        throw new Error('토큰이 발급되지 않았습니다.');
       }
-    } catch (error: any) {
+
+      dispatch(setCredentials({
+        user: {
+          id: loginData.id.toString(),
+          email: loginData.email || email,
+          name: loginData.name || '',
+          address: loginData.address ?? null,
+          latitude: loginData.latitude ?? null,
+          longitude: loginData.longitude ?? null,
+          createdAt: new Date().toISOString(),
+        },
+        token: loginData.token,
+      }));
+
+      navigate('/');
+    } catch (error: unknown) {
       console.error('로그인 실패:', error);
-      const errorMessage = error?.response?.data?.message || '로그인에 실패했습니다.';
+      const errorMessage = extractErrorMessage(error, '로그인에 실패했습니다.');
       alert(errorMessage);
     }
   };

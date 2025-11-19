@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
+import { extractErrorMessage } from '@/utils/error';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -53,9 +54,9 @@ export const RegisterPage = () => {
       if (!result.available) {
         setErrors({ ...errors, email: result.message });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('이메일 확인 실패:', error);
-      const errorMessage = error?.response?.data?.message || '이메일 확인에 실패했습니다.';
+      const errorMessage = extractErrorMessage(error, '이메일 확인에 실패했습니다.');
       setErrors({ ...errors, email: errorMessage });
       setEmailAvailable(null);
       setEmailChecked(false);
@@ -110,9 +111,9 @@ export const RegisterPage = () => {
       });
       alert('회원가입이 완료되었습니다. 로그인해주세요.');
       navigate('/login');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('회원가입 실패:', error);
-      const errorMessage = error?.response?.data?.message || '회원가입에 실패했습니다.';
+      const errorMessage = extractErrorMessage(error, '회원가입에 실패했습니다.');
       alert(errorMessage);
     } finally {
       setRegisterLoading(false);

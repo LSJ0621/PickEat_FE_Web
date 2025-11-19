@@ -7,7 +7,9 @@ export interface User {
   email: string;
   name: string;
   phone?: string;
-  address?: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   createdAt: string;
 }
 

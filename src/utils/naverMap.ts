@@ -1,13 +1,4 @@
-declare global {
-  interface Window {
-    naver: any;
-  }
-}
-
-type NaverLatLngBounds = {
-  getNE: () => { lat: () => number; lng: () => number };
-  getSW: () => { lat: () => number; lng: () => number };
-};
+import type { NaverLatLngBounds } from '@/types/naverMaps';
 
 const sanitizeHtml = (value: string) =>
   value

@@ -6,8 +6,10 @@ import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
+import { extractErrorMessage } from '@/utils/error';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { KakaoLoginResponse } from '@/types/auth';
 
 export const OAuthKakaoRedirect = () => {
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ export const OAuthKakaoRedirect = () => {
   const [needsName, setNeedsName] = useState(false);
   const [name, setName] = useState('');
   const [nameUpdating, setNameUpdating] = useState(false);
-  const [loginData, setLoginData] = useState<any>(null);
+  const [loginData, setLoginData] = useState<KakaoLoginResponse | null>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const hasProcessed = useRef(false); // 중복 요청 방지
@@ -40,60 +42,37 @@ export const OAuthKakaoRedirect = () => {
 
         // 서버에 코드 전달하여 로그인
         const data = await authService.kakaoLogin(code);
-        setLoginData(data);
-        
-        // 토큰 및 위치 정보 저장
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user_id', data.id.toString());
-          
-          // 이메일 및 이름 저장
-          if (data.email) {
-            localStorage.setItem('user_email', data.email);
-          }
-          if (data.name) {
-            localStorage.setItem('user_name', data.name);
-          }
-          
-          // 주소 및 위치 정보 저장
-          if (data.address) {
-            localStorage.setItem('user_address', data.address);
-          }
-          if (data.latitude !== null) {
-            localStorage.setItem('user_latitude', data.latitude.toString());
-          }
-          if (data.longitude !== null) {
-            localStorage.setItem('user_longitude', data.longitude.toString());
-          }
-
-          // name이 null이면 이름 입력 화면 표시
-          if (data.name === null) {
-            setNeedsName(true);
-            setLoading(false);
-            return;
-          }
-
-          // Redux에 사용자 정보 저장
-          dispatch(setCredentials({
-            user: {
-              id: data.id.toString(),
-              email: data.email || '',
-              name: data.name || '',
-              address: data.address || undefined,
-              createdAt: new Date().toISOString(),
-            },
-            token: data.token,
-          }));
-
-          // 메인 페이지로 이동
-          navigate('/');
+        if (!data.token) {
+          throw new Error('토큰이 발급되지 않았습니다.');
         }
-      } catch (err: any) {
+
+        setLoginData(data);
+
+        if (data.name === null) {
+          setNeedsName(true);
+          setLoading(false);
+          return;
+        }
+
+        dispatch(setCredentials({
+          user: {
+            id: data.id.toString(),
+            email: data.email || '',
+            name: data.name || '',
+            address: data.address ?? null,
+            latitude: data.latitude ?? null,
+            longitude: data.longitude ?? null,
+            createdAt: new Date().toISOString(),
+          },
+          token: data.token,
+        }));
+
+        navigate('/');
+      } catch (err: unknown) {
         console.error('카카오 로그인 실패:', err);
         
-        // 서버에서 보낸 에러 메시지 추출
-        const errorMessage = err?.response?.data?.message || err?.message || '로그인에 실패했습니다.';
-        const statusCode = err?.response?.status;
+        const errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
+        const statusCode = (err as { response?: { status?: number } })?.response?.status;
         
         console.error('에러 상세:', {
           status: statusCode,
@@ -125,19 +104,19 @@ export const OAuthKakaoRedirect = () => {
     setNameUpdating(true);
     try {
       const updatedUser = await authService.updateUser({ name: name.trim() });
-      
-      // 이름을 로컬 스토리지에 저장
-      if (updatedUser.name) {
-        localStorage.setItem('user_name', updatedUser.name);
+
+      if (!loginData?.token) {
+        throw new Error('토큰 정보가 없습니다.');
       }
 
-      // Redux에 사용자 정보 저장
       dispatch(setCredentials({
         user: {
           id: loginData.id.toString(),
           email: loginData.email || '',
           name: updatedUser.name || '',
-          address: loginData.address || undefined,
+          address: loginData.address ?? null,
+          latitude: loginData.latitude ?? null,
+          longitude: loginData.longitude ?? null,
           createdAt: new Date().toISOString(),
         },
         token: loginData.token,
@@ -145,9 +124,9 @@ export const OAuthKakaoRedirect = () => {
 
       // 메인 페이지로 이동
       navigate('/');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('이름 업데이트 실패:', err);
-      const errorMessage = err?.response?.data?.message || '이름 업데이트에 실패했습니다.';
+      const errorMessage = extractErrorMessage(err, '이름 업데이트에 실패했습니다.');
       alert(errorMessage);
       setNameUpdating(false);
     }
