@@ -21,7 +21,7 @@ export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
   const [showConfirmCard, setShowConfirmCard] = useState(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
-  const { latitude, longitude, address, hasLocation } = useUserLocation();
+  const { latitude, longitude, hasLocation } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
 
   const handleMenuClick = (menu: string) => {

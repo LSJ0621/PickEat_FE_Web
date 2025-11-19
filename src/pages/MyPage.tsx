@@ -7,14 +7,17 @@ import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { AppHeader } from '@/components/common/AppHeader';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { updateUser } from '@/store/slices/authSlice';
+import { extractErrorMessage } from '@/utils/error';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 
 export const MyPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const user = useAppSelector((state) => state.auth?.user);
-  const currentAddress = localStorage.getItem('user_address');
+  const dispatch = useAppDispatch();
+  const currentAddress = user?.address ?? null;
 
   // 모달 상태
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -49,7 +52,7 @@ export const MyPage = () => {
       const result = await userService.getPreferences();
       setLikes(result.preferences.likes || []);
       setDislikes(result.preferences.dislikes || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('취향 정보 조회 실패:', error);
       // 취향 정보가 없을 수도 있으므로 에러는 무시
     } finally {
@@ -66,9 +69,9 @@ export const MyPage = () => {
     try {
       const result = await userService.searchAddress(addressQuery);
       setSearchResults(result.addresses);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('주소 검색 실패:', error);
-      alert('주소 검색에 실패했습니다.');
+      alert(extractErrorMessage(error, '주소 검색에 실패했습니다.'));
     } finally {
       setIsSearching(false);
     }
@@ -95,17 +98,24 @@ export const MyPage = () => {
     setIsSaving(true);
     try {
       const result = await userService.setAddress(selectedAddress);
-      localStorage.setItem('user_address', result.address);
-      localStorage.setItem('user_latitude', selectedAddress.latitude);
-      localStorage.setItem('user_longitude', selectedAddress.longitude);
+      const latitudeValue = selectedAddress.latitude ? parseFloat(selectedAddress.latitude) : null;
+      const longitudeValue = selectedAddress.longitude ? parseFloat(selectedAddress.longitude) : null;
+      const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
+      const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
+
+      // Redux 상태도 업데이트
+      dispatch(updateUser({
+        address: result.address,
+        latitude: normalizedLatitude,
+        longitude: normalizedLongitude,
+      }));
+
       alert('주소가 저장되었습니다.');
       setSelectedAddress(null);
       setShowAddressModal(false);
-      // 페이지 새로고침으로 주소 업데이트 반영
-      window.location.reload();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('주소 저장 실패:', error);
-      alert('주소 저장에 실패했습니다.');
+      alert(extractErrorMessage(error, '주소 저장에 실패했습니다.'));
     } finally {
       setIsSaving(false);
     }
@@ -144,9 +154,9 @@ export const MyPage = () => {
       alert('취향 정보가 저장되었습니다.');
       setShowPreferencesModal(false);
       loadPreferences(); // 취향 정보 다시 로드
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('취향 정보 저장 실패:', error);
-      alert('취향 정보 저장에 실패했습니다.');
+      alert(extractErrorMessage(error, '취향 정보 저장에 실패했습니다.'));
     } finally {
       setIsSavingPreferences(false);
     }

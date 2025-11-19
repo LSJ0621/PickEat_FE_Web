@@ -3,6 +3,7 @@
  * 모든 라우트를 한 곳에서 관리합니다.
  */
 
+import { useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { HomePage } from '../pages/Home';
 import { LoginPage } from '../pages/Login';
@@ -13,6 +14,8 @@ import { OAuthKakaoRedirect } from '../pages/OAuthKakaoRedirect';
 import { OAuthGoogleRedirect } from '../pages/OAuthGoogleRedirect';
 import { MapPage } from '../pages/Map';
 import ProtectedRoute from './ProtectedRoute';
+import { useAppDispatch } from '@/store/hooks';
+import { initializeAuth } from '@/store/slices/authSlice';
 
 // 라우트 정의
 const router = createBrowserRouter([
@@ -67,6 +70,17 @@ const router = createBrowserRouter([
 ]);
 
 export default function Routes() {
+  const dispatch = useAppDispatch();
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (hasInitialized.current) {
+      return;
+    }
+    hasInitialized.current = true;
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
   return <RouterProvider router={router} />;
 }
 

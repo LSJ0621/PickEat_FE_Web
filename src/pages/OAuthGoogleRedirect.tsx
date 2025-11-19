@@ -5,6 +5,7 @@
 import { authService } from '@/api/services/auth';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
+import { extractErrorMessage } from '@/utils/error';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,52 +36,30 @@ export const OAuthGoogleRedirect = () => {
 
         // 서버에 코드 전달하여 로그인
         const loginData = await authService.googleLogin(code);
-        
-        // 토큰 및 위치 정보 저장
-        if (loginData.token) {
-          localStorage.setItem('token', loginData.token);
-          localStorage.setItem('user_id', loginData.id.toString());
-          
-          // 이메일 및 이름 저장
-          if (loginData.email) {
-            localStorage.setItem('user_email', loginData.email);
-          }
-          if (loginData.name) {
-            localStorage.setItem('user_name', loginData.name);
-          }
-          
-          // 주소 및 위치 정보 저장
-          if (loginData.address) {
-            localStorage.setItem('user_address', loginData.address);
-          }
-          if (loginData.latitude !== null) {
-            localStorage.setItem('user_latitude', loginData.latitude.toString());
-          }
-          if (loginData.longitude !== null) {
-            localStorage.setItem('user_longitude', loginData.longitude.toString());
-          }
 
-          // Redux에 사용자 정보 저장 (구글은 이름을 제공하므로 바로 저장)
-          dispatch(setCredentials({
-            user: {
-              id: loginData.id.toString(),
-              email: loginData.email || '',
-              name: loginData.name || '',
-              address: loginData.address || undefined,
-              createdAt: new Date().toISOString(),
-            },
-            token: loginData.token,
-          }));
-
-          // 메인 페이지로 이동
-          navigate('/');
+        if (!loginData.token) {
+          throw new Error('토큰이 발급되지 않았습니다.');
         }
-      } catch (err: any) {
+
+        dispatch(setCredentials({
+          user: {
+            id: loginData.id.toString(),
+            email: loginData.email || '',
+            name: loginData.name || '',
+            address: loginData.address ?? null,
+            latitude: loginData.latitude ?? null,
+            longitude: loginData.longitude ?? null,
+            createdAt: new Date().toISOString(),
+          },
+          token: loginData.token,
+        }));
+
+        navigate('/');
+      } catch (err: unknown) {
         console.error('구글 로그인 실패:', err);
         
-        // 서버에서 보낸 에러 메시지 추출
-        const errorMessage = err?.response?.data?.message || err?.message || '로그인에 실패했습니다.';
-        const statusCode = err?.response?.status;
+        const errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
+        const statusCode = (err as { response?: { status?: number } })?.response?.status;
         
         console.error('에러 상세:', {
           status: statusCode,

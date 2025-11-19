@@ -3,7 +3,7 @@
  * 타입 안전하게 LocalStorage를 사용할 수 있게 해줍니다.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   // 초기값 설정

@@ -7,7 +7,6 @@ import type {
   GetPreferencesResponse,
   GetRecommendationHistoryResponse,
   SelectedAddress,
-  SetAddressRequest,
   SetAddressResponse,
   SetPreferencesRequest,
 } from '../../types/user';

@@ -1,18 +1,19 @@
-/**
- * localStorage에서 사용자 위치 정보를 가져오는 Hook
- * 로그인 시 저장된 latitude, longitude를 사용
- */
+import { useAppSelector } from '@/store/hooks';
 
+/**
+ * Redux에서 사용자 위치 정보를 가져오는 Hook
+ */
 export function useUserLocation() {
-  const latitude = localStorage.getItem('user_latitude');
-  const longitude = localStorage.getItem('user_longitude');
-  const address = localStorage.getItem('user_address');
-  
+  const user = useAppSelector((state) => state.auth?.user);
+  const latitude = typeof user?.latitude === 'number' ? user.latitude : null;
+  const longitude = typeof user?.longitude === 'number' ? user.longitude : null;
+  const address = user?.address ?? null;
+
   return {
-    latitude: latitude ? parseFloat(latitude) : null,
-    longitude: longitude ? parseFloat(longitude) : null,
-    address: address || null,
-    hasLocation: !!(latitude && longitude),
+    latitude,
+    longitude,
+    address,
+    hasLocation: latitude !== null && longitude !== null,
   };
 }
 

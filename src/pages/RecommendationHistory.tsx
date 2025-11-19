@@ -2,12 +2,13 @@
  * 추천 이력 페이지
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { useAppSelector } from '@/store/hooks';
 import { AppHeader } from '@/components/common/AppHeader';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
+import { extractErrorMessage } from '@/utils/error';
 import type { RecommendationHistoryItem } from '@/types/user';
 
 export const RecommendationHistory = () => {
@@ -17,6 +18,19 @@ export const RecommendationHistory = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await userService.getRecommendationHistory(selectedDate || undefined);
+      setHistory(result.history);
+    } catch (error: unknown) {
+      console.error('추천 이력 조회 실패:', error);
+      alert(extractErrorMessage(error, '추천 이력을 불러오는데 실패했습니다.'));
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedDate]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -24,20 +38,7 @@ export const RecommendationHistory = () => {
     }
 
     loadHistory();
-  }, [isAuthenticated, navigate, selectedDate]);
-
-  const loadHistory = async () => {
-    setLoading(true);
-    try {
-      const result = await userService.getRecommendationHistory(selectedDate || undefined);
-      setHistory(result.history);
-    } catch (error: any) {
-      console.error('추천 이력 조회 실패:', error);
-      alert('추천 이력을 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isAuthenticated, navigate, loadHistory]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

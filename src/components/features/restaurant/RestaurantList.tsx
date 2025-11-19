@@ -7,12 +7,7 @@ import { useUserLocation } from '@/hooks/useUserLocation';
 import type { Restaurant } from '@/types/search';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-declare global {
-  interface Window {
-    naver: any;
-  }
-}
+import type { NaverLatLng } from '@/types/naverMaps';
 
 interface RestaurantListProps {
   menuName: string;
@@ -30,12 +25,9 @@ export const RestaurantList = ({
   const { address } = useUserLocation();
   const hasRestaurants = restaurants.length > 0;
   const [showMapModal, setShowMapModal] = useState(false);
-
-  useEffect(() => {
-    if (!hasRestaurants) {
-      setShowMapModal(false);
-    }
-  }, [hasRestaurants]);
+  const DISPLAY_LIMIT = 5;
+  const displayedRestaurants = restaurants.slice(0, DISPLAY_LIMIT);
+  const hasMore = restaurants.length > DISPLAY_LIMIT;
 
   const handleOpenMapModal = () => {
     if (!hasRestaurants) return;
@@ -44,6 +36,14 @@ export const RestaurantList = ({
 
   const handleCloseMapModal = () => {
     setShowMapModal(false);
+  };
+
+  const handleOpenNaverMap = () => {
+    // 메뉴명을 검색어로 사용하여 네이버 지도 웹사이트로 이동
+    const encodedMenuName = encodeURIComponent(menuName);
+    const naverMapUrl = `https://map.naver.com/v5/search/${encodedMenuName}`;
+    
+    window.location.href = naverMapUrl;
   };
 
   return (
@@ -61,9 +61,12 @@ export const RestaurantList = ({
       </div>
 
       {hasRestaurants && (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={handleOpenMapModal}>
             네이버 지도에서 보기
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleOpenNaverMap}>
+            네이버 맵 사이트에서 보기
           </Button>
         </div>
       )}
@@ -88,7 +91,7 @@ export const RestaurantList = ({
                 </button>
               )}
             </div>
-            {restaurants.map((restaurant, index) => (
+            {displayedRestaurants.map((restaurant, index) => (
               <div
                 key={index}
                 className="group rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5 shadow-xl shadow-black/30 transition hover:-translate-y-0.5 hover:border-white/40"
@@ -113,9 +116,21 @@ export const RestaurantList = ({
                 </div>
               </div>
             ))}
+            {hasMore && (
+              <div className="mt-4 text-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOpenNaverMap}
+                  className="text-orange-300 hover:text-orange-200"
+                >
+                  네이버 지도에서 더 많은 결과 확인하기
+                </Button>
+              </div>
+            )}
           </div>
 
-          {showMapModal && (
+          {showMapModal && hasRestaurants && (
             <RestaurantMapModal
               restaurants={restaurants}
               menuName={menuName}
@@ -161,8 +176,9 @@ const ensureNaverMaps = (clientId: string) => {
 
   naverMapLoaderPromise = new Promise<void>((resolve, reject) => {
     const callbackName = `naverMapInlineInit_${Date.now()}`;
-    (window as any)[callbackName] = () => {
-      delete (window as any)[callbackName];
+    const windowWithCallback = window as Window & Record<string, () => void>;
+    windowWithCallback[callbackName] = () => {
+      delete windowWithCallback[callbackName];
       resolve();
     };
 
@@ -178,7 +194,7 @@ const ensureNaverMaps = (clientId: string) => {
       script.async = true;
       script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=geocoder&callback=${callbackName}`;
       script.onerror = () => {
-        delete (window as any)[callbackName];
+        delete windowWithCallback[callbackName];
         naverMapLoaderPromise = null;
         reject(new Error('네이버 지도 스크립트 로드 실패'));
       };
@@ -244,6 +260,12 @@ const RestaurantMapModal = ({ restaurants, menuName, onClose }: RestaurantMapMod
           return;
         }
 
+        const naverMaps = window.naver?.maps;
+        if (!naverMaps) {
+          setError('네이버 지도 객체를 초기화하지 못했습니다.');
+          return;
+        }
+
         const markerTargets = restaurants
           .map((restaurant) => {
             const latLng = getLatLngFromRestaurant(restaurant);
@@ -257,7 +279,7 @@ const RestaurantMapModal = ({ restaurants, menuName, onClose }: RestaurantMapMod
             }
             return latLng ? { restaurant, latLng } : null;
           })
-          .filter((item): item is { restaurant: Restaurant; latLng: any } => !!item);
+          .filter((item): item is { restaurant: Restaurant; latLng: NaverLatLng } => item !== null);
 
         if (markerTargets.length === 0) {
           setError('표시할 좌표가 없습니다.');
@@ -266,28 +288,28 @@ const RestaurantMapModal = ({ restaurants, menuName, onClose }: RestaurantMapMod
 
         mapRef.current.innerHTML = '';
         const comfortableZoom = markerTargets.length > 3 ? 14 : 15;
-        const map = new window.naver.maps.Map(mapRef.current, {
+        const map = new naverMaps.Map(mapRef.current, {
           center: markerTargets[0].latLng,
           zoom: comfortableZoom,
         });
 
-        const bounds = new window.naver.maps.LatLngBounds();
+        const bounds = new naverMaps.LatLngBounds();
         markerTargets.forEach(({ restaurant, latLng }) => {
           bounds.extend(latLng);
-          const marker = new window.naver.maps.Marker({
+          const marker = new naverMaps.Marker({
             map,
             position: latLng,
             title: restaurant.name,
           });
 
-          const infoWindow = new window.naver.maps.InfoWindow({
+          const infoWindow = new naverMaps.InfoWindow({
             content: `<div style="padding:8px 12px;font-size:13px;color:#111;">
               <div style="font-weight:600;">${restaurant.name}</div>
               <div>${restaurant.roadAddress || restaurant.address || '주소 정보 없음'}</div>
             </div>`,
           });
 
-          window.naver.maps.Event.addListener(marker, 'click', () => {
+          naverMaps.Event.addListener(marker, 'click', () => {
             infoWindow.open(map, marker);
           });
         });
@@ -332,7 +354,7 @@ const RestaurantMapModal = ({ restaurants, menuName, onClose }: RestaurantMapMod
           console.log('[지도] 컨테이너 크기:', { width: containerWidth, height: containerHeight });
           
           // resize 이벤트 트리거로 지도가 실제 크기를 인식하도록 함
-          window.naver.maps.Event.trigger(map, 'resize');
+          naverMaps.Event.trigger(map, 'resize');
           
           // 약간의 지연 후 뷰포트 조정
           setTimeout(() => {

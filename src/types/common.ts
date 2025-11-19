@@ -36,7 +36,7 @@ export interface Location {
 declare global {
   interface Window {
     flutter_inappwebview?: {
-      callHandler: (handlerName: string, ...args: any[]) => Promise<any>;
+      callHandler: <T = unknown>(handlerName: string, ...args: unknown[]) => Promise<T>;
     };
     ReactNativeWebView?: {
       postMessage: (message: string) => void;

@@ -5,7 +5,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logout } from '@/store/slices/authSlice';
+import { logoutAsync } from '@/store/slices/authSlice';
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,8 +31,8 @@ export const UserMenu = () => {
     };
   }, [isOpen]);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(logoutAsync());
     navigate('/');
     setIsOpen(false);
   };
