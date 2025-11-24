@@ -29,6 +29,7 @@ export const MyPage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
 
   // 취향 정보 관련 state
   const [likes, setLikes] = useState<string[]>([]);
@@ -66,9 +67,11 @@ export const MyPage = () => {
     }
 
     setIsSearching(true);
+    setHasSearchedAddress(false);
     try {
       const result = await userService.searchAddress(addressQuery);
       setSearchResults(result.addresses);
+      setHasSearchedAddress(true);
     } catch (error: unknown) {
       console.error('주소 검색 실패:', error);
       alert(extractErrorMessage(error, '주소 검색에 실패했습니다.'));
@@ -296,6 +299,7 @@ export const MyPage = () => {
                   setAddressQuery('');
                   setSearchResults([]);
                   setSelectedAddress(null);
+                  setHasSearchedAddress(false);
                 }}
                 className="absolute right-6 top-6 text-slate-400 hover:text-white"
               >
@@ -346,6 +350,10 @@ export const MyPage = () => {
                       </button>
                     ))}
                   </div>
+                )}
+
+                {!isSearching && hasSearchedAddress && searchResults.length === 0 && (
+                  <p className="text-sm text-slate-400">주소를 찾을 수 없습니다.</p>
                 )}
 
                 {selectedAddress && (

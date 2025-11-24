@@ -49,11 +49,22 @@ export interface SetPreferencesRequest {
   dislikes?: string[];
 }
 
+export type RecommendationHistoryType = 'MENU' | 'PLACE';
+
+export interface RecommendationLocation {
+  lat: number;
+  lng: number;
+}
+
 export interface RecommendationHistoryItem {
   id: number;
-  recommendations: string[];
+  type: RecommendationHistoryType;
+  recommendations: string[]; // type === 'MENU'일 때만 의미 있음
   prompt: string;
   recommendedAt: string;
+  requestAddress: string | null;
+  requestLocation: RecommendationLocation | null;
+  hasPlaceRecommendations: boolean;
 }
 
 export interface GetRecommendationHistoryResponse {
