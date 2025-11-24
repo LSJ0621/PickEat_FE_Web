@@ -1,10 +1,14 @@
+import { menuService } from '@/api/services/menu';
 import { searchService } from '@/api/services/search';
 import { AppHeader } from '@/components/common/AppHeader';
 import { Button } from '@/components/common/Button';
 import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
+import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
+import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { useAppSelector } from '@/store/hooks';
+import type { PlaceRecommendationItem } from '@/types/menu';
 import type { Restaurant } from '@/types/search';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,14 +18,24 @@ export const HomePage = () => {
   const [showConfirmCard, setShowConfirmCard] = useState(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<PlaceRecommendationItem[]>([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  const { latitude, longitude, hasLocation } = useUserLocation();
+  const { latitude, longitude, hasLocation, address } = useUserLocation();
 
   const handleMenuClick = (menu: string) => {
+    const isSameMenu = selectedMenu === menu;
     setSelectedMenu(menu);
     setShowConfirmCard(true);
-    setRestaurants([]);
+
+    // 다른 메뉴를 선택했을 때만 기존 결과 초기화
+    if (!isSameMenu) {
+      setRestaurants([]);
+      setAiRecommendations([]);
+      setSelectedPlace(null);
+    }
   };
 
   const handleSearch = async () => {
@@ -59,8 +73,46 @@ export const HomePage = () => {
 
   const handleCancel = () => {
     setShowConfirmCard(false);
-    setSelectedMenu(null);
-    setRestaurants([]);
+  };
+
+  const handleAiRecommendation = async () => {
+    if (!isAuthenticated) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    if (!selectedMenu) {
+      return;
+    }
+
+    const normalizedAddress = address?.trim();
+    if (!normalizedAddress) {
+      alert('AI 추천을 사용하려면 주소를 등록해주세요.');
+      return;
+    }
+
+    const query = `${normalizedAddress} ${selectedMenu}`.trim();
+
+    setShowConfirmCard(false);
+    setIsAiLoading(true);
+
+    try {
+      const response = await menuService.recommendPlaces(query);
+      const normalized = (response.recommendations || []).map((item) => ({
+        ...item,
+        placeId: item.placeId.replace(/^places\//i, ''),
+      }));
+
+      setAiRecommendations(normalized);
+      if (normalized.length === 0) {
+        alert('AI 추천 결과가 없습니다.');
+      }
+    } catch (error) {
+      console.error('AI 추천 식당 조회 실패:', error);
+      alert('AI 추천 식당을 가져오지 못했습니다.');
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   return (
@@ -119,6 +171,20 @@ export const HomePage = () => {
                   onClose={() => {
                     setSelectedMenu(null);
                     setRestaurants([]);
+                    setAiRecommendations([]);
+                    setSelectedPlaceId(null);
+                  }}
+                />
+              )}
+              {selectedMenu && (aiRecommendations.length > 0 || isAiLoading) && (
+                <AiPlaceRecommendations
+                  menuName={selectedMenu}
+                  recommendations={aiRecommendations}
+                  loading={isAiLoading}
+                  onSelect={(recommendation) => setSelectedPlace(recommendation)}
+                  onReset={() => {
+                    setAiRecommendations([]);
+                    setSelectedPlace(null);
                   }}
                 />
               )}
@@ -137,31 +203,37 @@ export const HomePage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <p className="mb-6 text-center text-lg text-white">
-              <span className="font-semibold text-orange-300">{selectedMenu}</span>에 대한 주변 식당을 검색해드릴까요?
-            </p>
-            <div className="flex gap-3">
-              <Button
-                onClick={handleSearch}
-                disabled={!hasLocation}
-                variant="primary"
-                size="lg"
-                className="flex-1"
-              >
-                찾기
-              </Button>
-              <Button
-                onClick={handleCancel}
-                variant="ghost"
-                size="lg"
-                className="flex-1"
-              >
-                취소
-              </Button>
+            <div className="space-y-4">
+              <p className="text-center text-lg text-white">
+                <span className="font-semibold text-orange-300">{selectedMenu}</span>에 대해 어떤 방식으로 탐색할까요?
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button
+                  onClick={handleSearch}
+                  disabled={!hasLocation}
+                  variant="primary"
+                  size="lg"
+                >
+                  일반 검색 (네이버)
+                </Button>
+                <Button
+                  onClick={handleAiRecommendation}
+                  variant="secondary"
+                  size="lg"
+                  disabled={!address?.trim()}
+                >
+                  AI 추천 보기
+                </Button>
+              </div>
             </div>
             {!hasLocation && (
               <div className="mt-4 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
                 위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.
+              </div>
+            )}
+            {!address?.trim() && (
+              <div className="mt-2 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
+                주소가 있어야 AI 추천을 사용할 수 있습니다.
               </div>
             )}
           </div>
@@ -169,6 +241,11 @@ export const HomePage = () => {
       )}
         </main>
       </div>
+      <PlaceDetailsModal
+        placeId={selectedPlace?.placeId ?? null}
+        placeName={selectedPlace?.name ?? null}
+        onClose={() => setSelectedPlace(null)}
+      />
     </div>
   );
 };
