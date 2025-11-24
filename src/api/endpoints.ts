@@ -24,6 +24,11 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `${API_BASE}/menu/${id}`,
     SEARCH: `${API_BASE}/menu/search`,
     RECOMMEND: `${API_BASE}/menu/recommend`,
+    RECOMMEND_PLACES: `${API_BASE}/menu/recommend/places`,
+    RESTAURANT_BLOGS: `${API_BASE}/menu/restaurant/blogs`,
+    RECOMMENDATION_DETAIL: (id: number | string) => `${API_BASE}/menu/recommendations/${id}`,
+    PLACE_DETAIL: (placeId: string) => `${API_BASE}/menu/places/${placeId}/detail`,
+    GOOGLE_PLACES_SEARCH: `${API_BASE}/menu/google-places/search`,
   },
   
   // 검색 관련

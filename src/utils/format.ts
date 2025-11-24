@@ -43,3 +43,8 @@ export const formatPhone = (phone: string): string => {
   return phone;
 };
 
+// 날짜·시간 포맷팅 (ISO 문자열 → 'YYYY-MM-DD HH:mm' 형태)
+export const formatDateTime = (date: string | Date, format: string = 'YYYY-MM-DD HH:mm'): string => {
+  return formatDate(date, format);
+};
+
