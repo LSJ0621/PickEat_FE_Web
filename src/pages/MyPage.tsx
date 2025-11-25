@@ -2,13 +2,14 @@
  * 마이페이지
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { AppHeader } from '@/components/common/AppHeader';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { updateUser } from '@/store/slices/authSlice';
+import { AppFooter } from '@/components/common/AppFooter';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { updateUser, logoutAsync } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 
@@ -19,11 +20,9 @@ export const MyPage = () => {
   const dispatch = useAppDispatch();
   const currentAddress = user?.address ?? null;
 
-  // 모달 상태
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
 
-  // 주소 관련 state
   const [addressQuery, setAddressQuery] = useState('');
   const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -31,7 +30,6 @@ export const MyPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
 
-  // 취향 정보 관련 state
   const [likes, setLikes] = useState<string[]>([]);
   const [dislikes, setDislikes] = useState<string[]>([]);
   const [newLike, setNewLike] = useState('');
@@ -55,7 +53,6 @@ export const MyPage = () => {
       setDislikes(result.preferences.dislikes || []);
     } catch (error: unknown) {
       console.error('취향 정보 조회 실패:', error);
-      // 취향 정보가 없을 수도 있으므로 에러는 무시
     } finally {
       setIsLoadingPreferences(false);
     }
@@ -106,12 +103,13 @@ export const MyPage = () => {
       const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
       const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
 
-      // Redux 상태도 업데이트
-      dispatch(updateUser({
-        address: result.address,
-        latitude: normalizedLatitude,
-        longitude: normalizedLongitude,
-      }));
+      dispatch(
+        updateUser({
+          address: result.address,
+          latitude: normalizedLatitude,
+          longitude: normalizedLongitude,
+        })
+      );
 
       alert('주소가 저장되었습니다.');
       setSelectedAddress(null);
@@ -124,7 +122,6 @@ export const MyPage = () => {
     }
   };
 
-  // 취향 정보 관련 함수들
   const handleAddLike = () => {
     if (newLike.trim() && !likes.includes(newLike.trim())) {
       setLikes([...likes, newLike.trim()]);
@@ -151,23 +148,27 @@ export const MyPage = () => {
     setIsSavingPreferences(true);
     try {
       await userService.setPreferences({
-        likes: likes.length > 0 ? likes : undefined,
-        dislikes: dislikes.length > 0 ? dislikes : undefined,
+        likes: likes,
+        dislikes: dislikes,
       });
       alert('취향 정보가 저장되었습니다.');
       setShowPreferencesModal(false);
-      loadPreferences(); // 취향 정보 다시 로드
+      loadPreferences();
     } catch (error: unknown) {
       console.error('취향 정보 저장 실패:', error);
-      alert(extractErrorMessage(error, '취향 정보 저장에 실패했습니다.'));
+      alert(extractErrorMessage(error, '취향 정보를 저장하는 데 실패했습니다.'));
     } finally {
       setIsSavingPreferences(false);
     }
   };
 
   const handleOpenPreferencesModal = () => {
-    loadPreferences(); // 모달 열 때 최신 정보 로드
+    loadPreferences();
     setShowPreferencesModal(true);
+  };
+
+  const handleLogout = async () => {
+    await dispatch(logoutAsync());
   };
 
   if (!isAuthenticated) {
@@ -181,118 +182,126 @@ export const MyPage = () => {
         <div className="absolute -bottom-52 left-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-500/20 to-transparent blur-3xl animate-gradient" />
       </div>
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
         <AppHeader />
-        <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+
+        <div className="flex-1 py-10">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">마이페이지</h1>
           </div>
 
-        <div className="space-y-4">
-          {/* 이름 */}
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-400">이름</p>
-                <p className="mt-1 text-lg font-semibold text-white">{user?.name || '이름 없음'}</p>
+          <div className="space-y-4">
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">이름</p>
+                  <p className="mt-1 text-lg font-semibold text-white">{user?.name || '이름 없음'}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* 이메일 */}
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-400">이메일</p>
-                <p className="mt-1 text-lg font-semibold text-white">{user?.email || '이메일 없음'}</p>
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">이메일</p>
+                  <p className="mt-1 text-lg font-semibold text-white">{user?.email || '이메일 없음'}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* 취향 */}
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm text-slate-400">취향</p>
-                {isLoadingPreferences ? (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-500"></div>
-                    <span className="text-slate-400">로딩 중...</span>
-                  </div>
-                ) : (
-                  <div className="mt-3 space-y-2">
-                    {likes.length > 0 && (
-                      <div>
-                        <p className="mb-2 text-xs text-slate-400">좋아하는 것</p>
-                        <div className="flex flex-wrap gap-2">
-                          {likes.map((like, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-200"
-                            >
-                              {like}
-                            </span>
-                          ))}
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-400">취향</p>
+                  {isLoadingPreferences ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-500"></div>
+                      <span className="text-slate-400">로딩 중...</span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      {likes.length > 0 && (
+                        <div>
+                          <p className="mb-2 text-xs text-slate-400">좋아하는 것</p>
+                          <div className="flex flex-wrap gap-2">
+                            {likes.map((like, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-200"
+                              >
+                                {like}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {dislikes.length > 0 && (
-                      <div>
-                        <p className="mb-2 text-xs text-slate-400">싫어하는 것</p>
-                        <div className="flex flex-wrap gap-2">
-                          {dislikes.map((dislike, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200"
-                            >
-                              {dislike}
-                            </span>
-                          ))}
+                      )}
+                      {dislikes.length > 0 && (
+                        <div>
+                          <p className="mb-2 text-xs text-slate-400">싫어하는 것</p>
+                          <div className="flex flex-wrap gap-2">
+                            {dislikes.map((dislike, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200"
+                              >
+                                {dislike}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {likes.length === 0 && dislikes.length === 0 && (
-                      <p className="text-slate-400">설정된 취향이 없습니다.</p>
-                    )}
-                  </div>
-                )}
+                      )}
+                      {likes.length === 0 && dislikes.length === 0 && (
+                        <p className="text-sm text-slate-400">등록된 취향 정보가 없습니다.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+                    onClick={handleOpenPreferencesModal}
+                  >
+                    취향 수정
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={handleOpenPreferencesModal}
-                variant="ghost"
-                size="sm"
-                className="ml-4"
-              >
-                취향 수정
-              </Button>
+            </div>
+
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm text-slate-400">주소</p>
+                  <p className="mt-1 text-lg font-semibold text-white">
+                    {user?.address || '주소가 등록되지 않았습니다.'}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+                  onClick={() => setShowAddressModal(true)}
+                >
+                  주소 수정
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* 주소 */}
-          <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm text-slate-400">주소</p>
-                <p className="mt-1 text-lg font-semibold text-white">
-                  {currentAddress || '설정된 주소가 없습니다.'}
-                </p>
-              </div>
-              <Button
-                onClick={() => setShowAddressModal(true)}
-                variant="ghost"
-                size="sm"
-                className="ml-4"
-              >
-                주소 수정
-              </Button>
-            </div>
+          {/* 로그아웃 버튼 - 카드 리스트 아래, footer 위에 배치 */}
+          <div className="mt-6 pb-[88px] sm:pb-[104px]">
+            <Button
+              size="lg"
+              className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30 hover:-translate-y-0.5"
+              onClick={handleLogout}
+            >
+              로그아웃
+            </Button>
           </div>
         </div>
 
-        {/* 주소 수정 모달 */}
         {showAddressModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+            <div className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
               <button
                 onClick={() => {
                   setShowAddressModal(false);
@@ -357,28 +366,26 @@ export const MyPage = () => {
                 )}
 
                 {selectedAddress && (
-                  <div className="rounded-xl border border-orange-500/50 bg-orange-500/10 p-4">
-                    <p className="mb-2 text-sm font-medium text-orange-200">선택한 주소</p>
-                    <p className="text-white">{selectedAddress.roadAddress || selectedAddress.address}</p>
-                    {selectedAddress.roadAddress && (
-                      <p className="mt-1 text-xs text-slate-400">{selectedAddress.address}</p>
-                    )}
-                    <Button
-                      onClick={handleSaveAddress}
-                      isLoading={isSaving}
-                      size="md"
-                      className="mt-4"
-                    >
-                      주소 저장
-                    </Button>
+                  <div className="rounded-xl border border-white/10 bg-slate-800/50 p-4">
+                    <p className="text-sm text-slate-400">선택한 주소</p>
+                    <p className="mt-1 text-white">{selectedAddress.roadAddress || selectedAddress.address}</p>
                   </div>
                 )}
+
+                <Button
+                  onClick={handleSaveAddress}
+                  isLoading={isSaving}
+                  disabled={!selectedAddress}
+                  className="w-full"
+                  size="lg"
+                >
+                  주소 저장
+                </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 취향 수정 모달 */}
         {showPreferencesModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
             <div className="relative w-full max-w-2xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
@@ -397,7 +404,6 @@ export const MyPage = () => {
               <h2 className="mb-6 text-2xl font-bold text-white">취향 수정</h2>
 
               <div className="space-y-6">
-                {/* 좋아하는 것 */}
                 <div>
                   <label className="mb-3 block text-sm font-medium text-slate-200">좋아하는 것</label>
                   <div className="mb-3 flex gap-2">
@@ -437,7 +443,6 @@ export const MyPage = () => {
                   )}
                 </div>
 
-                {/* 싫어하는 것 */}
                 <div>
                   <label className="mb-3 block text-sm font-medium text-slate-200">싫어하는 것</label>
                   <div className="mb-3 flex gap-2">
@@ -489,8 +494,9 @@ export const MyPage = () => {
             </div>
           </div>
         )}
+
       </div>
+      <AppFooter />
     </div>
-  </div>
   );
 };

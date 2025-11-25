@@ -7,14 +7,18 @@ export interface MenuRecommendationRequest {
 }
 
 export interface MenuRecommendationResponse {
+  id: number; // 메뉴 추천 이력 ID (AI 가게 추천 시 historyId로 사용)
   recommendations: string[];
   recommendedAt: string;
+  requestAddress: string | null;
+  requestLocation: { lat: number; lng: number } | null;
 }
 
 export interface PlaceRecommendationItem {
   placeId: string;
   name: string;
   reason: string;
+  menuName?: string;
 }
 
 export interface PlaceRecommendationResponse {
@@ -47,6 +51,7 @@ export interface PlaceReview {
 
 // /menu/recommendations/:id → places 배열 항목
 export interface PlaceHistoryPlace {
+  menuName: string;
   placeId: string;
   reason: string | null;
   name: string | null;
@@ -91,4 +96,3 @@ export interface PlaceDetail {
 export interface PlaceDetailResponse {
   place: PlaceDetail;
 }
-

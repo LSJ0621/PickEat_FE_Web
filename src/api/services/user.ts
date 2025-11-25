@@ -6,6 +6,7 @@ import type {
   AddressSearchResponse,
   GetPreferencesResponse,
   GetRecommendationHistoryResponse,
+  RecommendationHistoryItem,
   SelectedAddress,
   SetAddressResponse,
   SetPreferencesRequest,
@@ -55,7 +56,30 @@ export const userService = {
       ENDPOINTS.RECOMMENDATION_HISTORY,
       { params: date ? { date } : undefined }
     );
-    return response.data;
+
+    // hasPlaceRecommendations 필드가 서버에서 다른 이름으로 올 수 있으므로 정규화
+    const normalizedHistory: RecommendationHistoryItem[] = response.data.history.map(
+      (item: RecommendationHistoryItem & { hasPlaceRecommendation?: boolean; has_place_recommendations?: boolean }) => {
+        let hasPlaceRecommendations = item.hasPlaceRecommendations;
+
+        if (typeof hasPlaceRecommendations !== 'boolean') {
+          if (typeof item.hasPlaceRecommendation === 'boolean') {
+            hasPlaceRecommendations = item.hasPlaceRecommendation;
+          } else if (typeof item.has_place_recommendations === 'boolean') {
+            hasPlaceRecommendations = item.has_place_recommendations;
+          } else {
+            hasPlaceRecommendations = false;
+          }
+        }
+
+        return {
+          ...item,
+          hasPlaceRecommendations,
+        };
+      }
+    );
+
+    return { history: normalizedHistory };
   },
 };
 
