@@ -24,13 +24,10 @@ export const menuService = {
     );
     return response.data;
   },
-  recommendPlaces: async (query: string): Promise<PlaceRecommendationResponse> => {
-    const response = await apiClient.get<PlaceRecommendationResponse>(
-      ENDPOINTS.MENU.RECOMMEND_PLACES,
-      {
-        params: { query },
-      }
-    );
+  recommendPlaces: async (params: { query: string; historyId: number; menuName: string }): Promise<PlaceRecommendationResponse> => {
+    const response = await apiClient.get<PlaceRecommendationResponse>(ENDPOINTS.MENU.RECOMMEND_PLACES, {
+      params,
+    });
     return response.data;
   },
   getRestaurantBlogs: async (query: string): Promise<RestaurantBlogsResponse> => {
@@ -55,4 +52,3 @@ export const menuService = {
     return response.data;
   },
 };
-

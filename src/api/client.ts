@@ -14,7 +14,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // Axios 인스턴스 생성
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 100000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,7 +23,7 @@ export const apiClient = axios.create({
 
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,7 +33,6 @@ const refreshClient = axios.create({
 let refreshTokenRequest: Promise<string | null> | null = null;
 
 const fetchNewAccessToken = async () => {
-  console.info('토큰 만료로 재발급받습니다.');
   const response = await refreshClient.post<AuthResponse>(ENDPOINTS.AUTH.REFRESH);
   const newToken = response.data.token;
   localStorage.setItem('token', newToken);
@@ -62,13 +61,6 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // 디버깅을 위한 요청 로깅
-    console.log('API 요청:', {
-      method: config.method?.toUpperCase(),
-      url: `${config.baseURL}${config.url}`,
-      data: config.data,
-    });
     
     return config;
   },
@@ -112,10 +104,6 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
-    }
-
-    if (error.code === 'ERR_NETWORK') {
-      console.error('네트워크 연결 오류');
     }
 
     return Promise.reject(error);
