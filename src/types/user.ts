@@ -49,8 +49,6 @@ export interface SetPreferencesRequest {
   dislikes?: string[];
 }
 
-export type RecommendationHistoryType = 'MENU' | 'PLACE';
-
 export interface RecommendationLocation {
   lat: number;
   lng: number;
@@ -58,8 +56,7 @@ export interface RecommendationLocation {
 
 export interface RecommendationHistoryItem {
   id: number;
-  type: RecommendationHistoryType;
-  recommendations: string[]; // type === 'MENU'일 때만 의미 있음
+  recommendations: string[];
   prompt: string;
   recommendedAt: string;
   requestAddress: string | null;

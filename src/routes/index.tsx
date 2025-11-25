@@ -6,6 +6,7 @@
 import { useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { HomePage } from '../pages/Home';
+import { AgentPage } from '../pages/Agent';
 import { LoginPage } from '../pages/Login';
 import { MyPage } from '../pages/MyPage';
 import { RecommendationHistory } from '../pages/RecommendationHistory';
@@ -21,9 +22,13 @@ import { initializeAuth } from '@/store/slices/authSlice';
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <HomePage />,
+  },
+  {
+    path: '/agent',
     element: (
       <ProtectedRoute>
-        <HomePage />
+        <AgentPage />
       </ProtectedRoute>
     ),
   },
