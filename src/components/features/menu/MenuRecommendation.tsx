@@ -9,11 +9,21 @@ import { Button } from '@/components/common/Button';
 import { useNavigate } from 'react-router-dom';
 
 interface MenuRecommendationProps {
-  onMenuSelect?: (menuName: string) => void;
+  onMenuSelect?: (
+    menuName: string,
+    historyId: number,
+    meta: {
+      requestAddress: string | null;
+      requestLocation: { lat: number; lng: number } | null;
+    }
+  ) => void;
 }
 
 export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) => {
   const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [menuHistoryId, setMenuHistoryId] = useState<number | null>(null);
+  const [requestAddress, setRequestAddress] = useState<string | null>(null);
+  const [requestLocation, setRequestLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
   const navigate = useNavigate();
@@ -37,6 +47,9 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
     try {
       const result = await menuService.recommend(prompt);
       setRecommendations(result.recommendations);
+      setMenuHistoryId(result.id); // 메뉴 추천 이력 ID 저장
+      setRequestAddress(result.requestAddress ?? null);
+      setRequestLocation(result.requestLocation ?? null);
     } catch (error) {
       console.error('메뉴 추천 실패:', error);
       alert('메뉴 추천에 실패했습니다.');
@@ -96,7 +109,13 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
             {recommendations.map((menu, index) => (
               <button
                 key={index}
-                onClick={() => onMenuSelect?.(menu)}
+                onClick={() =>
+                  menuHistoryId &&
+                  onMenuSelect?.(menu, menuHistoryId, {
+                    requestAddress,
+                    requestLocation,
+                  })
+                }
                 className="group cursor-pointer rounded-2xl border border-white/10 bg-gradient-to-r from-white/10 to-white/[0.02] p-4 text-left shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:border-white/40"
               >
                 <p className="text-base font-semibold text-white">{menu}</p>
