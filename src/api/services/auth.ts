@@ -3,7 +3,7 @@
  * 도메인별로 API 함수를 분리하여 관리합니다.
  */
 
-import type { AuthResponse, CheckEmailResponse, KakaoLoginResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UpdateUserRequest, UpdateUserResponse, User } from '../../types/auth';
+import type { AuthResponse, CheckEmailResponse, EmailVerificationPurpose, EmailVerificationResponse, KakaoLoginResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UpdateUserRequest, UpdateUserResponse, User } from '../../types/auth';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 
@@ -13,6 +13,31 @@ export const authService = {
     const response = await apiClient.get<CheckEmailResponse>(
       ENDPOINTS.AUTH.CHECK_EMAIL,
       { params: { email } }
+    );
+    return response.data;
+  },
+
+  // 이메일 인증 코드 발송
+  sendEmailVerificationCode: async (
+    email: string,
+    purpose: EmailVerificationPurpose = 'SIGNUP'
+  ): Promise<EmailVerificationResponse> => {
+    const response = await apiClient.post<EmailVerificationResponse>(
+      ENDPOINTS.AUTH.EMAIL_SEND_CODE,
+      { email, purpose }
+    );
+    return response.data;
+  },
+
+  // 이메일 인증 코드 검증
+  verifyEmailCode: async (
+    email: string,
+    code: string,
+    purpose: EmailVerificationPurpose = 'SIGNUP'
+  ): Promise<EmailVerificationResponse> => {
+    const response = await apiClient.post<EmailVerificationResponse>(
+      ENDPOINTS.AUTH.EMAIL_VERIFY_CODE,
+      { email, code, purpose }
     );
     return response.data;
   },
@@ -83,4 +108,3 @@ export const authService = {
     return response.data;
   },
 };
-
