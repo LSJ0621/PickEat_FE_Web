@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
-import { AppHeader } from '@/components/common/AppHeader';
-import { AppFooter } from '@/components/common/AppFooter';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateUser, logoutAsync } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
@@ -183,8 +181,6 @@ export const MyPage = () => {
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
-        <AppHeader />
-
         <div className="flex-1 py-10">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">마이페이지</h1>
@@ -272,9 +268,11 @@ export const MyPage = () => {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-slate-400">주소</p>
-                  <p className="mt-1 text-lg font-semibold text-white">
-                    {user?.address || '주소가 등록되지 않았습니다.'}
-                  </p>
+                  {user?.address ? (
+                    <p className="mt-1 text-lg font-semibold text-white">{user.address}</p>
+                  ) : (
+                    <p className="mt-3 text-sm text-slate-400">주소가 등록되지 않았습니다.</p>
+                  )}
                 </div>
                 <Button
                   size="sm"
@@ -496,7 +494,6 @@ export const MyPage = () => {
         )}
 
       </div>
-      <AppFooter />
     </div>
   );
 };
