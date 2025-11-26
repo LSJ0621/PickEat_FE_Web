@@ -24,6 +24,8 @@ export interface RegisterRequest {
   name?: string; // 선택 필드
 }
 
+export type EmailVerificationPurpose = 'SIGNUP' | 'RESET_PASSWORD';
+
 export interface AuthResponse {
   token: string;
   refreshToken: string;
@@ -70,3 +72,7 @@ export interface CheckEmailResponse {
   message: string;
 }
 
+export interface EmailVerificationResponse {
+  success: boolean;
+  message?: string;
+}

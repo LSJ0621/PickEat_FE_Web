@@ -1,5 +1,3 @@
-import { AppFooter } from '@/components/common/AppFooter';
-import { AppHeader } from '@/components/common/AppHeader';
 import { AuthPromptModal } from '@/components/common/AuthPromptModal';
 import { Button } from '@/components/common/Button';
 import { useAppSelector } from '@/store/hooks';
@@ -40,7 +38,6 @@ export const HomePage = () => {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <AppHeader />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-12 pb-44 sm:px-6 lg:px-8">
           <section className="rounded-[32px] border border-white/10 bg-white/5 p-10 text-center shadow-2xl shadow-black/40 backdrop-blur">
             <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">PickEat OS</p>
@@ -130,7 +127,6 @@ export const HomePage = () => {
             </div>
           </section>
         </main>
-        <AppFooter />
       </div>
       <AuthPromptModal
         open={showAuthPrompt}

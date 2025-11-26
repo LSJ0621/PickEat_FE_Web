@@ -16,6 +16,8 @@ export const ENDPOINTS = {
     CHECK_EMAIL: `${API_BASE}/auth/check-email`,
     KAKAO_LOGIN: `${API_BASE}/auth/kakao/doLogin`,
     GOOGLE_LOGIN: `${API_BASE}/auth/google/doLogin`,
+    EMAIL_SEND_CODE: `${API_BASE}/auth/email/send-code`,
+    EMAIL_VERIFY_CODE: `${API_BASE}/auth/email/verify-code`,
   },
   
   // 메뉴 관련
@@ -64,4 +66,3 @@ export const ENDPOINTS = {
   // 추천 이력 관련
   RECOMMENDATION_HISTORY: `${API_BASE}/menu/recommendations/history`,
 } as const;
-

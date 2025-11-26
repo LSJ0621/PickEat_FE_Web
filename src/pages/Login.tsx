@@ -4,8 +4,6 @@
 
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
-import { AppHeader } from '@/components/common/AppHeader';
-import { AppFooter } from '@/components/common/AppFooter';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
@@ -80,7 +78,6 @@ export const LoginPage = () => {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <AppHeader />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-12 pb-32 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-4xl">
             <div className="mb-8 text-center">
@@ -207,7 +204,6 @@ export const LoginPage = () => {
             </div>
           </div>
         </main>
-        <AppFooter />
       </div>
     </div>
   );

@@ -1,7 +1,5 @@
 import { menuService } from '@/api/services/menu';
 import { searchService } from '@/api/services/search';
-import { AppFooter } from '@/components/common/AppFooter';
-import { AppHeader } from '@/components/common/AppHeader';
 import { Button } from '@/components/common/Button';
 import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
 import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
@@ -229,8 +227,6 @@ export const AgentPage = () => {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <AppHeader />
-
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 pb-28 sm:px-6 lg:px-8">
           <section className="mb-10 rounded-[32px] border border-white/10 bg-white/5 p-8 text-center shadow-2xl shadow-rose-500/10 backdrop-blur">
             <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Smart Eatery Companion</p>
@@ -352,7 +348,6 @@ export const AgentPage = () => {
         placeName={selectedPlace?.name ?? null}
         onClose={() => setSelectedPlace(null)}
       />
-      <AppFooter />
     </div>
   );
 };
