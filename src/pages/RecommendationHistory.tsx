@@ -6,8 +6,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { useAppSelector } from '@/store/hooks';
-import { AppHeader } from '@/components/common/AppHeader';
-import { AppFooter } from '@/components/common/AppFooter';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
 import { extractErrorMessage } from '@/utils/error';
 import type { RecommendationHistoryItem } from '@/types/user';
@@ -90,7 +88,6 @@ export const RecommendationHistory = () => {
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 sm:px-6 lg:px-8">
-        <AppHeader />
         <div className="flex-1 py-10 pb-24">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">추천 이력</h1>
@@ -243,7 +240,6 @@ export const RecommendationHistory = () => {
             })()
           }
         </div>
-        <AppFooter />
       </div>
     </div>
   );

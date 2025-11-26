@@ -17,60 +17,89 @@ import { MapPage } from '../pages/Map';
 import ProtectedRoute from './ProtectedRoute';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 // 라우트 정의
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: (
+      <AppLayout>
+        <HomePage />
+      </AppLayout>
+    ),
   },
   {
     path: '/agent',
     element: (
-      <ProtectedRoute>
-        <AgentPage />
-      </ProtectedRoute>
+      <AppLayout>
+        <ProtectedRoute>
+          <AgentPage />
+        </ProtectedRoute>
+      </AppLayout>
     ),
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <AppLayout>
+        <LoginPage />
+      </AppLayout>
+    ),
   },
   {
     path: '/register',
-    element: <RegisterPage />,
+    element: (
+      <AppLayout>
+        <RegisterPage />
+      </AppLayout>
+    ),
   },
   {
     path: '/mypage',
     element: (
-      <ProtectedRoute>
-        <MyPage />
-      </ProtectedRoute>
+      <AppLayout>
+        <ProtectedRoute>
+          <MyPage />
+        </ProtectedRoute>
+      </AppLayout>
     ),
   },
   {
     path: '/recommendations/history',
     element: (
-      <ProtectedRoute>
-        <RecommendationHistory />
-      </ProtectedRoute>
+      <AppLayout>
+        <ProtectedRoute>
+          <RecommendationHistory />
+        </ProtectedRoute>
+      </AppLayout>
     ),
   },
   {
     path: '/map',
     element: (
-      <ProtectedRoute>
-        <MapPage />
-      </ProtectedRoute>
+      <AppLayout>
+        <ProtectedRoute>
+          <MapPage />
+        </ProtectedRoute>
+      </AppLayout>
     ),
   },
   {
     path: '/oauth/kakao/redirect',
-    element: <OAuthKakaoRedirect />,
+    element: (
+      <AppLayout showHeader={false} showFooter={false}>
+        <OAuthKakaoRedirect />
+      </AppLayout>
+    ),
   },
   {
     path: '/oauth/google/redirect',
-    element: <OAuthGoogleRedirect />,
+    element: (
+      <AppLayout showHeader={false} showFooter={false}>
+        <OAuthGoogleRedirect />
+      </AppLayout>
+    ),
   },
 ]);
 
