@@ -80,7 +80,10 @@ apiClient.interceptors.response.use(
     const isAuthEndpoint =
       originalRequest?.url?.includes(ENDPOINTS.AUTH.LOGIN) ||
       originalRequest?.url?.includes(ENDPOINTS.AUTH.REGISTER) ||
-      originalRequest?.url?.includes(ENDPOINTS.AUTH.REFRESH);
+      originalRequest?.url?.includes(ENDPOINTS.AUTH.REFRESH) ||
+      originalRequest?.url?.includes(ENDPOINTS.AUTH.PASSWORD_RESET) ||
+      originalRequest?.url?.includes(ENDPOINTS.AUTH.PASSWORD_RESET_SEND_CODE) ||
+      originalRequest?.url?.includes(ENDPOINTS.AUTH.PASSWORD_RESET_VERIFY_CODE);
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
@@ -101,7 +104,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
@@ -111,4 +114,3 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
-
