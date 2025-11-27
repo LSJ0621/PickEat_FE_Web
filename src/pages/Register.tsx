@@ -24,10 +24,9 @@ export const RegisterPage = () => {
   const [verifyCodeLoading, setVerifyCodeLoading] = useState(false);
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [verificationRemaining, setVerificationRemaining] = useState(0);
-  const [sendAttemptsLeft, setSendAttemptsLeft] = useState(5);
   const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+  const [verificationMessageVariant, setVerificationMessageVariant] = useState<'success' | 'error' | null>(null);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -63,6 +62,8 @@ export const RegisterPage = () => {
       setEmailAvailable(result.available);
       setEmailChecked(true);
       setVerificationMessage(null);
+      setVerificationMessageVariant(null);
+      setVerificationMessageVariant(null);
       if (!result.available) {
         setErrors({ ...errors, email: result.message });
       }
@@ -133,17 +134,11 @@ export const RegisterPage = () => {
     verifyCodeLoading ||
     !isCodeSent ||
     isEmailVerified ||
-    verificationRemaining <= 0 ||
     !verificationCode.trim();
 
   const verifyButtonClass = isVerifyButtonDisabled
     ? 'rounded-2xl bg-slate-800/80 px-4 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed transition'
     : 'rounded-2xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/30 hover:brightness-110 transition';
-
-  const isResendDisabled =
-    sendCodeLoading ||
-    cooldownRemaining > 0 ||
-    sendAttemptsLeft <= 0;
 
   // 인증 코드 발송
   const handleSendVerificationCode = async () => {
@@ -162,32 +157,20 @@ export const RegisterPage = () => {
       return;
     }
 
-    if (sendAttemptsLeft <= 0) {
-      setErrors((prev) => ({ ...prev, verificationCode: '하루 최대 발송 횟수를 초과했습니다.' }));
-      return;
-    }
-
-    if (cooldownRemaining > 0) {
-      return;
-    }
-
     setSendCodeLoading(true);
     setVerificationMessage(null);
+    setVerificationMessageVariant(null);
     setErrors((prev) => ({ ...prev, verificationCode: undefined }));
-    const isResending = isCodeSent; // 재발송 여부 확인
     try {
-      await authService.sendEmailVerificationCode(email, 'SIGNUP');
+      const response = await authService.sendEmailVerificationCode(email, 'SIGNUP');
+      const serverMessage =
+        response?.message || '인증 코드를 발송했습니다. 3분 이내에 입력해주세요.';
       setIsCodeSent(true);
       setIsEmailVerified(false);
       setVerificationCode('');
-      setCooldownRemaining(30);
       setVerificationRemaining(180);
-      setSendAttemptsLeft((prev) => (prev > 0 ? prev - 1 : 0));
-      if (isResending) {
-        setVerificationMessage('인증번호를 재발송 해드렸습니다!');
-      } else {
-        setVerificationMessage('인증 코드를 발송했습니다. 3분 이내에 입력해주세요.');
-      }
+      setVerificationMessage(serverMessage);
+      setVerificationMessageVariant('success');
     } catch (error: unknown) {
       console.error('인증 코드 발송 실패:', error);
       let errorMessage = '인증 코드를 발송하지 못했습니다. 잠시 후 다시 시도해주세요.';
@@ -202,15 +185,9 @@ export const RegisterPage = () => {
         );
       }
       
-      // 인증 코드 발송 관련 에러는 verificationCode 에러로 표시
-      setErrors((prev) => ({ ...prev, verificationCode: errorMessage }));
-
-      if (errorMessage.includes('최대') || errorMessage.includes('초과') || errorMessage.includes('5회')) {
-        setSendAttemptsLeft(0);
-      }
-      if (errorMessage.includes('자주 요청')) {
-        setCooldownRemaining(30);
-      }
+      // 서버에서 받은 에러 메시지만 표시
+      setVerificationMessage(errorMessage);
+      setVerificationMessageVariant('error');
     } finally {
       setSendCodeLoading(false);
     }
@@ -219,36 +196,27 @@ export const RegisterPage = () => {
   // 인증 코드 검증
   const handleVerifyCode = async () => {
     if (!isCodeSent) {
-      setErrors((prev) => ({
-        ...prev,
-        verificationCode: '인증 코드를 먼저 발송해주세요.',
-      }));
-      return;
-    }
-
-    if (verificationRemaining <= 0) {
-      setErrors((prev) => ({
-        ...prev,
-        verificationCode: '코드가 만료되었습니다. 다시 발송해주세요.',
-      }));
+      setVerificationMessage('인증 코드를 먼저 발송해주세요.');
+      setVerificationMessageVariant('error');
       return;
     }
 
     if (!verificationCode.trim()) {
-      setErrors((prev) => ({
-        ...prev,
-        verificationCode: '인증 코드를 입력해주세요.',
-      }));
+      setVerificationMessage('인증 코드를 입력해주세요.');
+      setVerificationMessageVariant('error');
       return;
     }
 
     setVerifyCodeLoading(true);
     setErrors((prev) => ({ ...prev, verificationCode: undefined }));
     setVerificationMessage(null);
+    setVerificationMessageVariant(null);
     try {
-      await authService.verifyEmailCode(email, verificationCode.trim(), 'SIGNUP');
+      const response = await authService.verifyEmailCode(email, verificationCode.trim(), 'SIGNUP');
+      const serverMessage = response?.message || '이메일 인증이 완료되었습니다.';
       setIsEmailVerified(true);
-      setVerificationMessage('이메일 인증이 완료되었습니다.');
+      setVerificationMessage(serverMessage);
+      setVerificationMessageVariant('success');
     } catch (error: unknown) {
       console.error('인증 코드 검증 실패:', error);
       let errorMessage = '인증에 실패했습니다. 코드를 확인해주세요.';
@@ -263,13 +231,11 @@ export const RegisterPage = () => {
         );
       }
       
-      setErrors((prev) => ({ ...prev, verificationCode: errorMessage }));
+      setVerificationMessage(errorMessage);
+      setVerificationMessageVariant('error');
       setIsEmailVerified(false);
 
       // 5회 실패로 인해 다음날까지 회원가입이 불가능한 경우
-      if (errorMessage.includes('불가능') || errorMessage.includes('5회 실패')) {
-        setSendAttemptsLeft(0);
-      }
     } finally {
       setVerifyCodeLoading(false);
     }
@@ -332,15 +298,6 @@ export const RegisterPage = () => {
     }
   };
 
-  // 전송 쿨다운 타이머
-  useEffect(() => {
-    if (cooldownRemaining <= 0) return;
-    const timer = setInterval(() => {
-      setCooldownRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldownRemaining]);
-
   // 인증 만료 타이머
   useEffect(() => {
     if (verificationRemaining <= 0) return;
@@ -351,7 +308,7 @@ export const RegisterPage = () => {
   }, [verificationRemaining]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10 text-white">
+    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
         <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-400/20 to-transparent blur-3xl animate-gradient" />
@@ -408,10 +365,9 @@ export const RegisterPage = () => {
                     setIsCodeSent(false);
                     setIsEmailVerified(false);
                     setVerificationCode('');
-                    setCooldownRemaining(0);
                     setVerificationRemaining(0);
-                    setSendAttemptsLeft(5);
                     setVerificationMessage(null);
+                    setVerificationMessageVariant(null);
                     setErrors({ ...errors, email: undefined });
                   }}
                   placeholder="이메일을 입력하세요"
@@ -451,20 +407,10 @@ export const RegisterPage = () => {
                   <button
                     type="button"
                     onClick={handleSendVerificationCode}
-                    disabled={isResendDisabled}
-                    className={`font-medium transition-all underline-offset-4 ${
-                      isResendDisabled
-                        ? 'cursor-not-allowed text-slate-600 no-underline'
-                        : 'text-pink-300 underline decoration-2 decoration-pink-400/50 hover:text-pink-100 hover:decoration-pink-300 hover:decoration-2'
-                    }`}
+                    className="font-medium text-pink-300 underline decoration-2 decoration-pink-400/50 underline-offset-4 transition hover:text-pink-100 hover:decoration-pink-300 hover:decoration-2"
                   >
                     재발송 받기
                   </button>
-                  {cooldownRemaining > 0 && (
-                    <span className="text-orange-300">
-                      {formatSeconds(cooldownRemaining)} 후 재발송 가능
-                    </span>
-                  )}
                 </div>
               )}
               <div className="text-sm font-medium text-slate-200">이메일 인증</div>
@@ -501,11 +447,14 @@ export const RegisterPage = () => {
                   확인
                 </Button>
               </div>
-              {isEmailVerified && (
-                <p className="mt-2 text-sm text-green-400">이메일 인증이 완료되었습니다.</p>
-              )}
-              {verificationMessage && !isEmailVerified && (
-                <p className="mt-2 text-sm text-emerald-200">{verificationMessage}</p>
+              {verificationMessage && (
+                <p
+                  className={`mt-2 text-sm ${
+                    verificationMessageVariant === 'error' ? 'text-red-400' : 'text-green-400'
+                  }`}
+                >
+                  {verificationMessage}
+                </p>
               )}
               {errors.verificationCode && (
                 <p className="mt-2 text-sm text-red-400">{errors.verificationCode}</p>
@@ -589,16 +538,6 @@ export const RegisterPage = () => {
               className="font-semibold text-white hover:text-orange-200 transition-colors"
             >
               로그인
-            </button>
-          </div>
-
-          {/* 홈으로 돌아가기 */}
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => navigate('/')}
-              className="text-sm text-slate-400 hover:text-white transition-colors"
-            >
-              ← 홈으로 돌아가기
             </button>
           </div>
         </div>

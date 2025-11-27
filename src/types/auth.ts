@@ -67,6 +67,27 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface PasswordResetSendResponse {
+  message: string;
+  retryAfter?: number;
+  remainCount?: number;
+}
+
+export interface PasswordResetVerifyResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+  newPassword: string;
+}
+
+export interface PasswordResetResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface CheckEmailResponse {
   available: boolean;
   message: string;

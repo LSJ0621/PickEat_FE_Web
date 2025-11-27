@@ -4,9 +4,11 @@
 
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
+import { StatusPopupCard } from '@/components/common/StatusPopupCard';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
+import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,6 +23,14 @@ export const LoginPage = () => {
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorPopup, setErrorPopup] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+
+  const closeErrorPopup = () => {
+    setErrorPopup((prev) => ({ ...prev, open: false }));
+  };
 
   const handleKakaoLogin = () => {
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
@@ -36,9 +46,16 @@ export const LoginPage = () => {
     navigate('/register');
   };
 
+  const handlePasswordReset = () => {
+    navigate('/password/reset/request');
+  };
+
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      alert('이메일과 비밀번호를 입력해주세요.');
+      setErrorPopup({
+        open: true,
+        message: '이메일과 비밀번호를 입력해주세요.',
+      });
       return;
     }
 
@@ -65,13 +82,32 @@ export const LoginPage = () => {
       navigate('/');
     } catch (error: unknown) {
       console.error('로그인 실패:', error);
-      const errorMessage = extractErrorMessage(error, '로그인에 실패했습니다.');
-      alert(errorMessage);
+      
+      let message = '로그인에 실패했습니다.';
+      
+      // Axios 에러인 경우 서버에서 전달한 메시지 사용
+      if (isAxiosError(error) && error.response?.data?.message) {
+        message = error.response.data.message;
+      } else {
+        message = extractErrorMessage(error, '로그인에 실패했습니다.');
+      }
+
+      setErrorPopup({
+        open: true,
+        message,
+      });
     }
   };
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-white">
+      <StatusPopupCard
+        open={errorPopup.open}
+        title="로그인에 실패했습니다"
+        message={errorPopup.message}
+        variant="error"
+        onConfirm={closeErrorPopup}
+      />
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
         <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-400/20 to-transparent blur-3xl animate-gradient" />
@@ -142,6 +178,16 @@ export const LoginPage = () => {
                   <button onClick={handleRegister} className="font-semibold text-white hover:text-orange-200">
                     회원가입
                   </button>
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-400">
+                    <span>비밀번호를 잊으셨나요?</span>
+                    <button
+                      onClick={handlePasswordReset}
+                      className="font-semibold text-pink-200 underline-offset-4 transition hover:text-white hover:underline"
+                      type="button"
+                    >
+                      재설정하기
+                    </button>
+                  </div>
                 </div>
               </div>
 

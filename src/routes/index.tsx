@@ -18,6 +18,8 @@ import ProtectedRoute from './ProtectedRoute';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PasswordResetRequestPage } from '@/pages/PasswordResetRequest';
+import { PasswordResetPage } from '@/pages/PasswordReset';
 
 // 라우트 정의
 const router = createBrowserRouter([
@@ -52,6 +54,22 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <RegisterPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/password/reset/request',
+    element: (
+      <AppLayout>
+        <PasswordResetRequestPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/password/reset',
+    element: (
+      <AppLayout>
+        <PasswordResetPage />
       </AppLayout>
     ),
   },
@@ -117,4 +135,3 @@ export default function Routes() {
 
   return <RouterProvider router={router} />;
 }
-
