@@ -3,7 +3,24 @@
  * 도메인별로 API 함수를 분리하여 관리합니다.
  */
 
-import type { AuthResponse, CheckEmailResponse, EmailVerificationPurpose, EmailVerificationResponse, KakaoLoginResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UpdateUserRequest, UpdateUserResponse, User } from '../../types/auth';
+import type {
+  AuthResponse,
+  CheckEmailResponse,
+  EmailVerificationPurpose,
+  EmailVerificationResponse,
+  KakaoLoginResponse,
+  LoginRequest,
+  LoginResponse,
+  PasswordResetRequest,
+  PasswordResetResponse,
+  PasswordResetSendResponse,
+  PasswordResetVerifyResponse,
+  RegisterRequest,
+  RegisterResponse,
+  UpdateUserRequest,
+  UpdateUserResponse,
+  User,
+} from '../../types/auth';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 
@@ -78,6 +95,33 @@ export const authService = {
     const response = await apiClient.post<KakaoLoginResponse>(
       ENDPOINTS.AUTH.GOOGLE_LOGIN,
       { code }
+    );
+    return response.data;
+  },
+
+  // 비밀번호 재설정 - 인증 코드 발송
+  sendPasswordResetCode: async (email: string): Promise<PasswordResetSendResponse> => {
+    const response = await apiClient.post<PasswordResetSendResponse>(
+      ENDPOINTS.AUTH.PASSWORD_RESET_SEND_CODE,
+      { email }
+    );
+    return response.data;
+  },
+
+  // 비밀번호 재설정 - 인증 코드 검증
+  verifyPasswordResetCode: async (email: string, code: string): Promise<PasswordResetVerifyResponse> => {
+    const response = await apiClient.post<PasswordResetVerifyResponse>(
+      ENDPOINTS.AUTH.PASSWORD_RESET_VERIFY_CODE,
+      { email, code }
+    );
+    return response.data;
+  },
+
+  // 비밀번호 재설정
+  resetPassword: async (data: PasswordResetRequest): Promise<PasswordResetResponse> => {
+    const response = await apiClient.post<PasswordResetResponse>(
+      ENDPOINTS.AUTH.PASSWORD_RESET,
+      data
     );
     return response.data;
   },

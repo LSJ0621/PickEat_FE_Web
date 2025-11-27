@@ -18,6 +18,9 @@ export const ENDPOINTS = {
     GOOGLE_LOGIN: `${API_BASE}/auth/google/doLogin`,
     EMAIL_SEND_CODE: `${API_BASE}/auth/email/send-code`,
     EMAIL_VERIFY_CODE: `${API_BASE}/auth/email/verify-code`,
+    PASSWORD_RESET_SEND_CODE: `${API_BASE}/auth/password/reset/send-code`,
+    PASSWORD_RESET_VERIFY_CODE: `${API_BASE}/auth/password/reset/verify-code`,
+    PASSWORD_RESET: `${API_BASE}/auth/password/reset`,
   },
   
   // 메뉴 관련
