@@ -1,13 +1,29 @@
 import { AuthPromptModal } from '@/components/common/AuthPromptModal';
+import { InitialSetupModal } from '@/components/common/InitialSetupModal';
 import { Button } from '@/components/common/Button';
 import { useAppSelector } from '@/store/hooks';
-import { useState } from 'react';
+import { checkUserSetupStatus } from '@/utils/userSetup';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const HomePage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
+  const user = useAppSelector((state) => state.auth?.user);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [setupStatus, setSetupStatus] = useState<ReturnType<typeof checkUserSetupStatus> | null>(null);
+
+  // 로그인 상태일 때 필요한 정보 체크
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const status = checkUserSetupStatus(user);
+      if (status.hasAnyMissing) {
+        setSetupStatus(status);
+        setShowSetupModal(true);
+      }
+    }
+  }, [isAuthenticated, user]);
 
   const featureList = [
     {
@@ -136,6 +152,16 @@ export const HomePage = () => {
         }}
         onClose={() => setShowAuthPrompt(false)}
       />
+      {setupStatus && (
+        <InitialSetupModal
+          open={showSetupModal}
+          setupStatus={setupStatus}
+          onComplete={() => {
+            setShowSetupModal(false);
+            setSetupStatus(null);
+          }}
+        />
+      )}
     </div>
   );
 };
