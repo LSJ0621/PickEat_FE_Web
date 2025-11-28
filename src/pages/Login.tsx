@@ -74,6 +74,7 @@ export const LoginPage = () => {
           address: loginData.address ?? null,
           latitude: loginData.latitude ?? null,
           longitude: loginData.longitude ?? null,
+          preferences: loginData.preferences ?? null,
           createdAt: new Date().toISOString(),
         },
         token: loginData.token,
