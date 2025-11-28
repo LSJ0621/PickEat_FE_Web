@@ -10,6 +10,10 @@ export interface User {
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  preferences?: {
+    likes: string[];
+    dislikes: string[];
+  } | null;
   createdAt: string;
 }
 
@@ -40,6 +44,10 @@ export interface KakaoLoginResponse {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  preferences?: {
+    likes: string[];
+    dislikes: string[];
+  } | null;
 }
 
 export interface LoginResponse {
@@ -50,6 +58,10 @@ export interface LoginResponse {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  preferences?: {
+    likes: string[];
+    dislikes: string[];
+  } | null;
 }
 
 export interface UpdateUserRequest {
