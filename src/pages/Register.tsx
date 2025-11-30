@@ -34,6 +34,9 @@ export const RegisterPage = () => {
     name?: string;
     verificationCode?: string;
   }>({});
+  const [showReRegisterModal, setShowReRegisterModal] = useState(false);
+  const [reRegisterEmail, setReRegisterEmail] = useState('');
+  const [reRegisterMessage, setReRegisterMessage] = useState('');
 
   // 이메일 형식 검증
   const validateEmail = (email: string): boolean => {
@@ -64,6 +67,15 @@ export const RegisterPage = () => {
       setVerificationMessage(null);
       setVerificationMessageVariant(null);
       setVerificationMessageVariant(null);
+      
+      // 재가입 가능한 경우 재가입 안내 모달 표시
+      if (!result.available && result.canReRegister) {
+        setReRegisterEmail(email);
+        setReRegisterMessage(result.message || '기존에 탈퇴 이력이 있습니다. 재가입하시겠습니까?');
+        setShowReRegisterModal(true);
+        return;
+      }
+      
       if (!result.available) {
         setErrors({ ...errors, email: result.message });
       }
@@ -542,6 +554,42 @@ export const RegisterPage = () => {
           </div>
         </div>
       </div>
+
+      {/* 재가입 안내 모달 */}
+      {showReRegisterModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl shadow-black/50 backdrop-blur">
+            <div className="space-y-4">
+              <div className="text-center">
+                <p className="text-xl font-semibold text-white">재가입 안내</p>
+                <p className="mt-3 text-base text-slate-200 leading-relaxed">
+                  {reRegisterMessage}
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={() => setShowReRegisterModal(false)}
+                  variant="ghost"
+                  size="lg"
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowReRegisterModal(false);
+                    navigate(`/re-register?email=${encodeURIComponent(reRegisterEmail)}`);
+                  }}
+                  size="lg"
+                  className="flex-1"
+                >
+                  재가입하기
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

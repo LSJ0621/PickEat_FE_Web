@@ -17,6 +17,10 @@ import type {
   PasswordResetVerifyResponse,
   RegisterRequest,
   RegisterResponse,
+  ReRegisterRequest,
+  ReRegisterResponse,
+  ReRegisterSocialRequest,
+  ReRegisterSocialResponse,
   UpdateUserRequest,
   UpdateUserResponse,
   User,
@@ -147,6 +151,24 @@ export const authService = {
   updateUser: async (data: UpdateUserRequest): Promise<UpdateUserResponse> => {
     const response = await apiClient.patch<UpdateUserResponse>(
       ENDPOINTS.USER.UPDATE,
+      data
+    );
+    return response.data;
+  },
+
+  // 재가입
+  reRegister: async (data: ReRegisterRequest): Promise<ReRegisterResponse> => {
+    const response = await apiClient.post<ReRegisterResponse>(
+      ENDPOINTS.AUTH.RE_REGISTER,
+      data
+    );
+    return response.data;
+  },
+
+  // 소셜 재가입
+  reRegisterSocial: async (data: ReRegisterSocialRequest): Promise<ReRegisterSocialResponse> => {
+    const response = await apiClient.post<ReRegisterSocialResponse>(
+      ENDPOINTS.AUTH.RE_REGISTER_SOCIAL,
       data
     );
     return response.data;

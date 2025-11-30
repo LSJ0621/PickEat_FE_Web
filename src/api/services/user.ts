@@ -11,6 +11,7 @@ import type {
   SetAddressResponse,
   SetPreferencesRequest,
 } from '../../types/user';
+import type { DeleteAccountResponse } from '../../types/auth';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 
@@ -80,6 +81,14 @@ export const userService = {
     );
 
     return { history: normalizedHistory };
+  },
+
+  // 회원 탈퇴
+  deleteAccount: async (): Promise<DeleteAccountResponse> => {
+    const response = await apiClient.delete<DeleteAccountResponse>(
+      ENDPOINTS.USER.DELETE
+    );
+    return response.data;
   },
 };
 

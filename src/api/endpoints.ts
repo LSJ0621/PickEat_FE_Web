@@ -10,6 +10,8 @@ export const ENDPOINTS = {
   AUTH: {
     LOGIN: `${API_BASE}/auth/login`,
     REGISTER: `${API_BASE}/auth/register`,
+    RE_REGISTER: `${API_BASE}/auth/re-register`,
+    RE_REGISTER_SOCIAL: `${API_BASE}/auth/re-register/social`,
     LOGOUT: `${API_BASE}/auth/logout`,
     REFRESH: `${API_BASE}/auth/refresh`,
     ME: `${API_BASE}/auth/me`,
@@ -61,6 +63,7 @@ export const ENDPOINTS = {
   // 유저 관련
   USER: {
     UPDATE: `${API_BASE}/user`,
+    DELETE: `${API_BASE}/user/me`,
     ADDRESS_SEARCH: `${API_BASE}/user/address/search`,
     ADDRESS_SET: `${API_BASE}/user/address`,
     PREFERENCES: `${API_BASE}/user/preferences`,
