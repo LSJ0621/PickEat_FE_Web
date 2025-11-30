@@ -34,6 +34,8 @@ export const MyPage = () => {
   const [newDislike, setNewDislike] = useState('');
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -169,6 +171,21 @@ export const MyPage = () => {
     await dispatch(logoutAsync());
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await userService.deleteAccount();
+      await dispatch(logoutAsync());
+      navigate('/login');
+    } catch (error: unknown) {
+      console.error('회원 탈퇴 실패:', error);
+      alert(extractErrorMessage(error, '회원 탈퇴에 실패했습니다.'));
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteAccountModal(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -182,8 +199,14 @@ export const MyPage = () => {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="flex-1 py-10">
-          <div className="mb-8">
+          <div className="mb-8 flex items-center justify-between">
             <h1 className="text-3xl font-bold text-white">마이페이지</h1>
+            <button
+              onClick={() => setShowDeleteAccountModal(true)}
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 shadow-sm shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 transition-all duration-200"
+            >
+              회원 탈퇴
+            </button>
           </div>
 
           <div className="space-y-4">
@@ -487,6 +510,43 @@ export const MyPage = () => {
                   className="w-full"
                 >
                   취향 정보 저장
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteAccountModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+              <button
+                onClick={() => setShowDeleteAccountModal(false)}
+                className="absolute right-6 top-6 text-slate-400 hover:text-white"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h2 className="mb-4 text-2xl font-bold text-white">회원 탈퇴</h2>
+              <p className="mb-6 text-slate-300">
+                정말 회원 탈퇴를 하시겠습니까?<br />
+                탈퇴 후 모든 데이터가 삭제되며 복구할 수 없습니다.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowDeleteAccountModal(false)}
+                  size="md"
+                  className="flex-1 border border-white/20 bg-transparent text-white hover:bg-white/10"
+                >
+                  취소
+                </Button>
+                <Button
+                  onClick={handleDeleteAccount}
+                  isLoading={isDeletingAccount}
+                  size="md"
+                  className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                >
+                  탈퇴하기
                 </Button>
               </div>
             </div>

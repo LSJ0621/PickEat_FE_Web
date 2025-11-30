@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
+import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { KakaoLoginResponse } from '@/types/auth';
@@ -18,6 +19,11 @@ export const OAuthKakaoRedirect = () => {
   const [name, setName] = useState('');
   const [nameUpdating, setNameUpdating] = useState(false);
   const [loginData, setLoginData] = useState<KakaoLoginResponse | null>(null);
+  const [showReRegisterModal, setShowReRegisterModal] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [pendingName, setPendingName] = useState<string | null>(null);
+  const [reRegisterMessage, setReRegisterMessage] = useState('탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
+  const [isReRegistering, setIsReRegistering] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const hasProcessed = useRef(false); // 중복 요청 방지
@@ -31,17 +37,21 @@ export const OAuthKakaoRedirect = () => {
     const handleKakaoCallback = async () => {
       // 처리 시작 표시
       hasProcessed.current = true;
+      
+      // URL에서 code 파라미터 추출
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      if (!code) {
+        setError('인증 코드를 받지 못했습니다.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        // URL에서 code 파라미터 추출
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-
-        if (!code) {
-          throw new Error('인증 코드를 받지 못했습니다.');
-        }
-
         // 서버에 코드 전달하여 로그인
         const data = await authService.kakaoLogin(code);
+        
         if (!data.token) {
           throw new Error('토큰이 발급되지 않았습니다.');
         }
@@ -72,17 +82,37 @@ export const OAuthKakaoRedirect = () => {
       } catch (err: unknown) {
         console.error('카카오 로그인 실패:', err);
         
-        const errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
-        const statusCode = (err as { response?: { status?: number } })?.response?.status;
+        // RE_REGISTER_REQUIRED 에러 확인 (400 에러)
+        if (isAxiosError(err) && err.response?.status === 400) {
+          const errorData = err.response.data as {
+            error?: string;
+            message?: string;
+            email?: string;
+            name?: string;
+            data?: { email?: string; name?: string };
+          };
+          if (errorData?.error === 'RE_REGISTER_REQUIRED') {
+            const emailFromServer = errorData.email ?? errorData.data?.email ?? null;
+            const nameFromServer = errorData.name ?? errorData.data?.name ?? null;
+            setPendingEmail(emailFromServer);
+            setPendingName(nameFromServer);
+            setReRegisterMessage(errorData.message || '탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
+            setShowReRegisterModal(true);
+            setLoading(false);
+            return;
+          }
+        }
         
-        console.error('에러 상세:', {
-          status: statusCode,
-          message: errorMessage,
-          data: err?.response?.data,
-          url: err?.config?.url,
-        });
+        // 그 외 에러 처리
+        let errorMessage = '로그인에 실패했습니다.';
+        if (isAxiosError(err) && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else {
+          errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
+        }
         
-        setError(`로그인에 실패했습니다. (${statusCode ? `상태 코드: ${statusCode}` : '네트워크 오류'})`);
+        const statusCode = isAxiosError(err) ? err.response?.status : undefined;
+        setError(`${errorMessage}${statusCode ? ` (상태 코드: ${statusCode})` : ''}`);
         setLoading(false);
       }
     };
@@ -94,6 +124,39 @@ export const OAuthKakaoRedirect = () => {
       // 필요시 요청 취소 로직 추가 가능
     };
   }, [navigate, dispatch]);
+
+  // 재가입 처리
+  const handleReRegister = async () => {
+    if (!pendingEmail) {
+      alert('이메일 정보가 없습니다.');
+      return;
+    }
+
+    setIsReRegistering(true);
+    try {
+      // 소셜 재가입 API 호출 (이메일만 전송)
+      await authService.reRegisterSocial({
+        email: pendingEmail,
+      });
+
+      // 재가입 성공: 로그인 화면으로 이동 (자동 로그인 없음)
+      alert('재가입이 완료되었습니다. 로그인해주세요.');
+      navigate('/login');
+    } catch (err: unknown) {
+      console.error('재가입 실패:', err);
+      let errorMessage = '재가입에 실패했습니다.';
+      
+      // 서버에서 전달한 메시지 사용
+      if (isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else {
+        errorMessage = extractErrorMessage(err, '재가입에 실패했습니다.');
+      }
+      
+      alert(errorMessage);
+      setIsReRegistering(false);
+    }
+  };
 
   // 이름 입력 화면
   const handleNameSubmit = async () => {
@@ -197,6 +260,50 @@ export const OAuthKakaoRedirect = () => {
     );
   }
 
+  if (showReRegisterModal) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10 text-white">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
+          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-400/20 to-transparent blur-3xl animate-gradient" />
+        </div>
+        <div className="relative z-10 w-full max-w-md">
+          <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40 backdrop-blur">
+            <h2 className="mb-4 text-2xl font-bold text-white text-center">재가입 안내</h2>
+            <p className="mb-6 text-slate-300 text-center">
+              {reRegisterMessage}
+            </p>
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-slate-300">재가입할 이메일</p>
+              <p className="text-lg font-semibold text-white">
+                {pendingEmail ?? '이메일 정보를 불러오지 못했습니다.'}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                확인을 선택하면 위 이메일로 추가 입력 없이 재가입합니다.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/login')}
+                disabled={isReRegistering}
+                className="flex-1 rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-white hover:bg-white/10 transition disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReRegister}
+                disabled={isReRegistering}
+                className="flex-1 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-600 px-4 py-3 text-white shadow-[0_10px_40px_rgba(249,115,22,0.35)] hover:shadow-[0_15px_45px_rgba(249,115,22,0.45)] hover:-translate-y-0.5 transition disabled:opacity-50"
+              >
+                {isReRegistering ? '처리 중...' : '재가입'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -215,4 +322,3 @@ export const OAuthKakaoRedirect = () => {
 
   return null;
 };
-
