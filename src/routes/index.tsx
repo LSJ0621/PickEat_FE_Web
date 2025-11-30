@@ -20,6 +20,7 @@ import { initializeAuth } from '@/store/slices/authSlice';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PasswordResetRequestPage } from '@/pages/PasswordResetRequest';
 import { PasswordResetPage } from '@/pages/PasswordReset';
+import { ReRegisterPage } from '@/pages/ReRegister';
 
 // 라우트 정의
 const router = createBrowserRouter([
@@ -70,6 +71,14 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <PasswordResetPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/re-register',
+    element: (
+      <AppLayout>
+        <ReRegisterPage />
       </AppLayout>
     ),
   },
