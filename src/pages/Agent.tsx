@@ -338,7 +338,7 @@ export const AgentPage = () => {
                   variant="primary"
                   size="lg"
                 >
-                  일반 검색 (네이버)
+                  일반 검색
                 </Button>
                 <Button
                   onClick={handleAiRecommendation}
