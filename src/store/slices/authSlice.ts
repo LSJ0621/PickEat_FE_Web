@@ -3,9 +3,11 @@
  */
 
 import { authService } from '@/api/services/auth';
+import { userService } from '@/api/services/user';
 import type { User } from '@/types/auth';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { clearAgentState } from './agentSlice';
 
 interface AuthState {
   user: User | null;
@@ -70,6 +72,8 @@ const normalizeUser = (user: User | null): User | null => {
     address: user.address ?? null,
     latitude: normalizeCoordinate(user.latitude),
     longitude: normalizeCoordinate(user.longitude),
+    // preferences는 그대로 유지 (null이거나 객체)
+    preferences: user.preferences ?? null,
   };
 };
 
@@ -88,6 +92,11 @@ const normalizeUserPartial = (user: Partial<User>): Partial<User> => {
     normalized.longitude = normalizeCoordinate(normalized.longitude as CoordinateInput);
   }
 
+  // preferences는 그대로 유지 (null이거나 객체)
+  if ('preferences' in normalized) {
+    normalized.preferences = normalized.preferences ?? null;
+  }
+
   return normalized;
 };
 
@@ -101,7 +110,19 @@ export const initializeAuth = createAsyncThunk(
 
     try {
       const user = await authService.getMe();
-      return { user: normalizeUser(user), token };
+
+      // 서버에서 preferences를 별도 API로 관리하므로, 초기화 시 한 번 더 불러와서 병합
+      try {
+        const prefsResponse = await userService.getPreferences();
+        const mergedUser: User = {
+          ...user,
+          preferences: prefsResponse.preferences ?? user.preferences ?? null,
+        };
+        return { user: normalizeUser(mergedUser), token };
+      } catch {
+        // 취향 정보 불러오기에 실패해도 로그인 자체는 유지
+        return { user: normalizeUser(user), token };
+      }
     } catch (error: unknown) {
       localStorage.removeItem('token');
       return rejectWithValue(getErrorMessage(error));
@@ -177,6 +198,8 @@ export const logoutAsync = createAsyncThunk(
       console.error('로그아웃 API 호출 실패:', error);
     } finally {
       dispatch(logout());
+      // 로그아웃 시 agent 상태도 초기화
+      dispatch(clearAgentState());
     }
   }
 );

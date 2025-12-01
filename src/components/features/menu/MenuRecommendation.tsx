@@ -4,7 +4,14 @@
 
 import { useState } from 'react';
 import { menuService } from '@/api/services/menu';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  clearSelectedMenu,
+  resetAiRecommendations,
+  setMenuRecommendations,
+  setMenuRecommendationLoading,
+  setRestaurants,
+} from '@/store/slices/agentSlice';
 import { Button } from '@/components/common/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,16 +27,18 @@ interface MenuRecommendationProps {
 }
 
 export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) => {
-  const [recommendations, setRecommendations] = useState<string[]>([]);
-  const [menuHistoryId, setMenuHistoryId] = useState<number | null>(null);
-  const [requestAddress, setRequestAddress] = useState<string | null>(null);
-  const [requestLocation, setRequestLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [prompt, setPrompt] = useState('');
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
-  // Redux에서 인증 상태 확인
+  // Redux에서 상태 가져오기
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
+  const recommendations = useAppSelector((state) => state.agent.menuRecommendations);
+  const menuHistoryId = useAppSelector((state) => state.agent.menuRecommendationHistoryId);
+  const requestAddress = useAppSelector((state) => state.agent.menuRecommendationRequestAddress);
+  const requestLocation = useAppSelector((state) => state.agent.menuRecommendationRequestLocation);
+  const loading = useAppSelector((state) => state.agent.isMenuRecommendationLoading);
+  
+  const [prompt, setPrompt] = useState('');
 
   const handleRecommend = async () => {
     if (!isAuthenticated) {
@@ -43,18 +52,27 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
       return;
     }
 
-    setLoading(true);
+    // 새 프롬프트로 추천 받을 때, 이전 검색/AI 결과 초기화
+    dispatch(clearSelectedMenu());
+    dispatch(setRestaurants([]));
+    dispatch(resetAiRecommendations());
+    dispatch(setMenuRecommendationLoading(true));
     try {
       const result = await menuService.recommend(prompt);
-      setRecommendations(result.recommendations);
-      setMenuHistoryId(result.id); // 메뉴 추천 이력 ID 저장
-      setRequestAddress(result.requestAddress ?? null);
-      setRequestLocation(result.requestLocation ?? null);
+      dispatch(
+        setMenuRecommendations({
+          recommendations: result.recommendations,
+          historyId: result.id,
+          prompt,
+          requestAddress: result.requestAddress ?? null,
+          requestLocation: result.requestLocation ?? null,
+        })
+      );
     } catch (error) {
       console.error('메뉴 추천 실패:', error);
       alert('메뉴 추천에 실패했습니다.');
     } finally {
-      setLoading(false);
+      dispatch(setMenuRecommendationLoading(false));
     }
   };
 

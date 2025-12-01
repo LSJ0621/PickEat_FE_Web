@@ -6,34 +6,80 @@ import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlace
 import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  clearSelectedMenu,
+  resetAiRecommendations,
+  setAiLoading,
+  setRestaurants,
+  setSelectedMenu,
+  setSelectedPlace,
+  setIsSearching,
+  setShowConfirmCard,
+  upsertAiRecommendations,
+} from '@/store/slices/agentSlice';
 import type { PlaceRecommendationItem } from '@/types/menu';
-import type { Restaurant } from '@/types/search';
 import type { RecommendationLocation } from '@/types/user';
 import { isAxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface MenuPlaceRecommendationGroup {
-  menuName: string;
-  recommendations: PlaceRecommendationItem[];
-}
-
 export const AgentPage = () => {
-  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
-  const [menuHistoryId, setMenuHistoryId] = useState<number | null>(null);
-  const [menuRequestAddress, setMenuRequestAddress] = useState<string | null>(null);
-  const [menuRequestLocation, setMenuRequestLocation] = useState<RecommendationLocation | null>(null);
-  const [showConfirmCard, setShowConfirmCard] = useState(false);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [aiRecommendationGroups, setAiRecommendationGroups] = useState<MenuPlaceRecommendationGroup[]>([]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiLoadingMenu, setAiLoadingMenu] = useState<string | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { latitude, longitude, hasLocation, address } = useUserLocation();
+
+  // 섹션 위치 참조 (검색 결과 / AI 추천 카드로 스크롤 이동용)
+  const restaurantSectionRef = useRef<HTMLDivElement | null>(null);
+  const aiSectionRef = useRef<HTMLDivElement | null>(null);
+
+  // Redux에서 상태 가져오기
+  const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
+  const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
+  const menuRequestAddress = useAppSelector((state) => state.agent.menuRequestAddress);
+  const menuRequestLocation = useAppSelector((state) => state.agent.menuRequestLocation);
+  const showConfirmCard = useAppSelector((state) => state.agent.showConfirmCard);
+  const restaurants = useAppSelector((state) => state.agent.restaurants);
+  const isSearching = useAppSelector((state) => state.agent.isSearching);
+  const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
+  const isAiLoading = useAppSelector((state) => state.agent.isAiLoading);
+  const aiLoadingMenu = useAppSelector((state) => state.agent.aiLoadingMenu);
+  const selectedPlace = useAppSelector((state) => state.agent.selectedPlace);
+  const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
+
+  // 카드 전체가 잘 보이도록 약간의 여백을 두고 스크롤
+  const scrollCardIntoView = (element: HTMLElement | null, offset = 80) => {
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const absoluteTop = window.scrollY + rect.top;
+    const targetTop = Math.max(absoluteTop - offset, 0);
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  };
+
+  // 직전 로딩 상태를 기억해서 "로딩 시작 시점"을 감지
+  const prevIsSearchingRef = useRef(isSearching);
+  const prevIsAiLoadingRef = useRef(isAiLoading);
+
+  // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
+  useEffect(() => {
+    const prev = prevIsSearchingRef.current;
+    if (!prev && isSearching && selectedMenu) {
+      // 이 시점에는 RestaurantList 래퍼 div가 이미 렌더링되어 ref가 연결된 상태
+      scrollCardIntoView(restaurantSectionRef.current);
+    }
+    prevIsSearchingRef.current = isSearching;
+  }, [isSearching, selectedMenu]);
+
+  // AI 추천: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
+  useEffect(() => {
+    const prev = prevIsAiLoadingRef.current;
+    if (!prev && isAiLoading && selectedMenu) {
+      scrollCardIntoView(aiSectionRef.current);
+    }
+    prevIsAiLoadingRef.current = isAiLoading;
+  }, [isAiLoading, selectedMenu]);
+
   const hasAiQueryContext =
     Boolean(
       menuRequestAddress?.trim() ||
@@ -50,14 +96,14 @@ export const AgentPage = () => {
       requestLocation: null,
     }
   ) => {
-    setSelectedMenu(menu);
-    setMenuHistoryId(historyId);
-    setMenuRequestAddress(meta.requestAddress ?? null);
-    setMenuRequestLocation(meta.requestLocation ?? null);
-    setShowConfirmCard(true);
-
-    setRestaurants([]);
-    setSelectedPlace(null);
+    dispatch(
+      setSelectedMenu({
+        menu,
+        historyId,
+        requestAddress: meta.requestAddress ?? null,
+        requestLocation: meta.requestLocation ?? null,
+      })
+    );
   };
 
   const handleSearch = async () => {
@@ -75,8 +121,8 @@ export const AgentPage = () => {
       return;
     }
 
-    setShowConfirmCard(false);
-    setIsSearching(true);
+    dispatch(setShowConfirmCard(false));
+    dispatch(setIsSearching(true));
     try {
       const result = await searchService.restaurants({
         menuName: selectedMenu,
@@ -84,29 +130,17 @@ export const AgentPage = () => {
         longitude,
         includeRoadAddress: false,
       });
-      setRestaurants(result.restaurants);
+      dispatch(setRestaurants(result.restaurants));
     } catch (error) {
       console.error('식당 검색 실패:', error);
       alert('식당 검색에 실패했습니다.');
     } finally {
-      setIsSearching(false);
+      dispatch(setIsSearching(false));
     }
   };
 
   const handleCancel = () => {
-    setShowConfirmCard(false);
-  };
-
-  const upsertAiRecommendations = (menuName: string, recommendations: PlaceRecommendationItem[]) => {
-    setAiRecommendationGroups((prev) => {
-      const existingIndex = prev.findIndex((group) => group.menuName === menuName);
-      if (existingIndex >= 0) {
-        const next = [...prev];
-        next[existingIndex] = { menuName, recommendations };
-        return next;
-      }
-      return [...prev, { menuName, recommendations }];
-    });
+    dispatch(setShowConfirmCard(false));
   };
 
   const loadStoredAiRecommendations = async (
@@ -125,8 +159,8 @@ export const AgentPage = () => {
           menuName: place.menuName,
         }));
 
-      upsertAiRecommendations(menuName, normalized);
-      setSelectedPlace(null);
+      dispatch(upsertAiRecommendations({ menuName, recommendations: normalized }));
+      dispatch(setSelectedPlace(null));
 
       if (!silent) {
         if (normalized.length === 0) {
@@ -143,13 +177,6 @@ export const AgentPage = () => {
     }
   };
 
-  const resetAiRecommendations = () => {
-    setAiRecommendationGroups([]);
-    setAiLoadingMenu(null);
-    setIsAiLoading(false);
-    setSelectedPlace(null);
-  };
-
   const handleAiRecommendation = async () => {
     if (!isAuthenticated) {
       alert('로그인이 필요합니다.');
@@ -164,7 +191,7 @@ export const AgentPage = () => {
       (group) => group.menuName === selectedMenu && group.recommendations.length > 0
     );
     if (alreadyRecommended) {
-      setShowConfirmCard(false);
+      dispatch(setShowConfirmCard(false));
       alert('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
       return;
     }
@@ -184,9 +211,8 @@ export const AgentPage = () => {
 
     const query = `${queryBase} ${selectedMenu}`.trim();
 
-    setShowConfirmCard(false);
-    setAiLoadingMenu(selectedMenu);
-    setIsAiLoading(true);
+    dispatch(setShowConfirmCard(false));
+    dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
 
     try {
       const response = await menuService.recommendPlaces({
@@ -200,7 +226,7 @@ export const AgentPage = () => {
         menuName: selectedMenu,
       }));
 
-      upsertAiRecommendations(selectedMenu, normalized);
+      dispatch(upsertAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
       if (normalized.length === 0) {
         alert('AI 추천 결과가 없습니다.');
       }
@@ -212,12 +238,9 @@ export const AgentPage = () => {
         alert('AI 추천 식당을 가져오지 못했습니다.');
       }
     } finally {
-      setIsAiLoading(false);
-      setAiLoadingMenu(null);
+      dispatch(setAiLoading({ isLoading: false, menuName: null }));
     }
   };
-
-  const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
@@ -266,29 +289,28 @@ export const AgentPage = () => {
             <div className="space-y-8">
               <MenuRecommendation onMenuSelect={handleMenuClick} />
               {selectedMenu && (restaurants.length > 0 || isSearching) && (
-                <RestaurantList 
-                  menuName={selectedMenu} 
-                  restaurants={restaurants}
-                  loading={isSearching}
-                  onClose={() => {
-                    setSelectedMenu(null);
-                    setMenuHistoryId(null);
-                    setMenuRequestAddress(null);
-                    setMenuRequestLocation(null);
-                    setRestaurants([]);
-                    setSelectedPlace(null);
-                  }}
-                />
+                <div ref={restaurantSectionRef}>
+                  <RestaurantList 
+                    menuName={selectedMenu} 
+                    restaurants={restaurants}
+                    loading={isSearching}
+                    onClose={() => {
+                      dispatch(clearSelectedMenu());
+                    }}
+                  />
+                </div>
               )}
               {(hasAiRecommendations || aiLoadingMenu) && (
-                <AiPlaceRecommendations
-                  activeMenuName={selectedMenu}
-                  recommendations={aiRecommendationGroups}
-                  isLoading={isAiLoading}
-                  loadingMenuName={aiLoadingMenu}
-                  onSelect={(recommendation) => setSelectedPlace(recommendation)}
-                  onReset={resetAiRecommendations}
-                />
+                <div ref={aiSectionRef}>
+                  <AiPlaceRecommendations
+                    activeMenuName={selectedMenu}
+                    recommendations={aiRecommendationGroups}
+                    isLoading={isAiLoading}
+                    loadingMenuName={aiLoadingMenu}
+                    onSelect={(recommendation) => dispatch(setSelectedPlace(recommendation))}
+                    onReset={() => dispatch(resetAiRecommendations())}
+                  />
+                </div>
               )}
             </div>
           )}
@@ -346,7 +368,7 @@ export const AgentPage = () => {
       <PlaceDetailsModal
         placeId={selectedPlace?.placeId ?? null}
         placeName={selectedPlace?.name ?? null}
-        onClose={() => setSelectedPlace(null)}
+        onClose={() => dispatch(setSelectedPlace(null))}
       />
     </div>
   );

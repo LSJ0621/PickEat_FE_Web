@@ -3,6 +3,7 @@
  */
 
 import { configureStore } from '@reduxjs/toolkit';
+import agentReducer from './slices/agentSlice';
 import authReducer from './slices/authSlice';
 // import menuReducer from './slices/menuSlice';
 // import cartReducer from './slices/cartSlice';
@@ -10,6 +11,7 @@ import authReducer from './slices/authSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    agent: agentReducer,
     // menu: menuReducer,
     // cart: cartReducer,
   },
