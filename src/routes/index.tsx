@@ -10,6 +10,7 @@ import { AgentPage } from '../pages/Agent';
 import { LoginPage } from '../pages/Login';
 import { MyPage } from '../pages/MyPage';
 import { RecommendationHistory } from '../pages/RecommendationHistory';
+import { MenuSelectionHistory } from '../pages/MenuSelectionHistory';
 import { RegisterPage } from '../pages/Register';
 import { OAuthKakaoRedirect } from '../pages/OAuthKakaoRedirect';
 import { OAuthGoogleRedirect } from '../pages/OAuthGoogleRedirect';
@@ -98,6 +99,16 @@ const router = createBrowserRouter([
       <AppLayout>
         <ProtectedRoute>
           <RecommendationHistory />
+        </ProtectedRoute>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/menu-selections/history',
+    element: (
+      <AppLayout>
+        <ProtectedRoute>
+          <MenuSelectionHistory />
         </ProtectedRoute>
       </AppLayout>
     ),

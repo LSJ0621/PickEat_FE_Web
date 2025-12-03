@@ -30,6 +30,7 @@ export const MyPage = () => {
 
   const [likes, setLikes] = useState<string[]>([]);
   const [dislikes, setDislikes] = useState<string[]>([]);
+  const [analysis, setAnalysis] = useState<string | null>(null);
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
@@ -51,6 +52,7 @@ export const MyPage = () => {
       const result = await userService.getPreferences();
       setLikes(result.preferences.likes || []);
       setDislikes(result.preferences.dislikes || []);
+      setAnalysis(result.preferences.analysis ?? null);
     } catch (error: unknown) {
       console.error('취향 정보 조회 실패:', error);
     } finally {
@@ -231,6 +233,23 @@ export const MyPage = () => {
             <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
+                  <p className="text-sm text-slate-400">메뉴 선택 이력</p>
+                  <p className="mt-1 text-sm text-slate-300">선택한 메뉴들을 확인하고 관리할 수 있습니다.</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => navigate('/menu-selections/history')}
+                  className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+                >
+                  이력 보기
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
                   <p className="text-sm text-slate-400">취향</p>
                   {isLoadingPreferences ? (
                     <div className="mt-2 flex items-center gap-2">
@@ -238,7 +257,13 @@ export const MyPage = () => {
                       <span className="text-slate-400">로딩 중...</span>
                     </div>
                   ) : (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-3">
+                      {analysis && (
+                        <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4">
+                          <p className="mb-2 text-xs font-medium text-purple-200">AI의 취향 분석</p>
+                          <p className="text-sm leading-relaxed text-slate-100">{analysis}</p>
+                        </div>
+                      )}
                       {likes.length > 0 && (
                         <div>
                           <p className="mb-2 text-xs text-slate-400">좋아하는 것</p>
@@ -269,7 +294,7 @@ export const MyPage = () => {
                           </div>
                         </div>
                       )}
-                      {likes.length === 0 && dislikes.length === 0 && (
+                      {likes.length === 0 && dislikes.length === 0 && !analysis && (
                         <p className="text-sm text-slate-400">등록된 취향 정보가 없습니다.</p>
                       )}
                     </div>
