@@ -96,3 +96,45 @@ export interface PlaceDetail {
 export interface PlaceDetailResponse {
   place: PlaceDetail;
 }
+
+// 메뉴 선택 관련
+export type MenuSlot = 'breakfast' | 'lunch' | 'dinner' | 'etc';
+
+export interface MenuPayload {
+  breakfast: string[];
+  lunch: string[];
+  dinner: string[];
+  etc: string[];
+}
+
+export interface MenuSelection {
+  id: number;
+  menuPayload: MenuPayload;
+  selectedDate: string;
+  historyId?: number | null;
+}
+
+export interface CreateMenuSelectionRequest {
+  menus: { slot: MenuSlot; name: string }[];
+  historyId?: number;
+}
+
+export interface CreateMenuSelectionResponse {
+  selection: MenuSelection;
+}
+
+export interface GetMenuSelectionsResponse {
+  selections: MenuSelection[];
+}
+
+export interface UpdateMenuSelectionRequest {
+  breakfast?: string[];
+  lunch?: string[];
+  dinner?: string[];
+  etc?: string[];
+  cancel?: boolean;
+}
+
+export interface UpdateMenuSelectionResponse {
+  selection: MenuSelection;
+}

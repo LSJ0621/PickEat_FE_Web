@@ -38,6 +38,7 @@ export interface SetAddressResponse {
 export interface Preferences {
   likes: string[];
   dislikes: string[];
+  analysis?: string | null;
 }
 
 export interface GetPreferencesResponse {

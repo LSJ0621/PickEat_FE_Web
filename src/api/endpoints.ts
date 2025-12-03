@@ -36,6 +36,9 @@ export const ENDPOINTS = {
     RECOMMENDATION_DETAIL: (id: number | string) => `${API_BASE}/menu/recommendations/${id}`,
     PLACE_DETAIL: (placeId: string) => `${API_BASE}/menu/places/${placeId}/detail`,
     GOOGLE_PLACES_SEARCH: `${API_BASE}/menu/google-places/search`,
+    SELECTIONS: `${API_BASE}/menu/selections`,
+    SELECTIONS_HISTORY: `${API_BASE}/menu/selections/history`,
+    SELECTION_UPDATE: (id: number) => `${API_BASE}/menu/selections/${id}`,
   },
   
   // 검색 관련
