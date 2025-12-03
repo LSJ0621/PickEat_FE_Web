@@ -43,6 +43,9 @@ interface AgentState {
   
   // UI 상태
   showConfirmCard: boolean;
+  
+  // 메뉴 선택 완료 여부 (선택 완료 시 버튼 숨김용)
+  hasMenuSelectionCompleted: boolean;
 }
 
 const initialState: AgentState = {
@@ -63,6 +66,7 @@ const initialState: AgentState = {
   aiLoadingMenu: null,
   selectedPlace: null,
   showConfirmCard: false,
+  hasMenuSelectionCompleted: false,
 };
 
 const agentSlice = createSlice({
@@ -85,6 +89,8 @@ const agentSlice = createSlice({
       state.menuRecommendationPrompt = action.payload.prompt;
       state.menuRecommendationRequestAddress = action.payload.requestAddress;
       state.menuRecommendationRequestLocation = action.payload.requestLocation;
+      // 새 추천 받으면 선택 완료 상태 초기화
+      state.hasMenuSelectionCompleted = false;
     },
     
     setMenuRecommendationLoading: (state, action: PayloadAction<boolean>) => {
@@ -176,6 +182,11 @@ const agentSlice = createSlice({
       state.showConfirmCard = action.payload;
     },
     
+    // 메뉴 선택 완료 표시
+    setMenuSelectionCompleted: (state) => {
+      state.hasMenuSelectionCompleted = true;
+    },
+    
     // 전체 상태 초기화 (로그아웃 시 사용)
     clearAgentState: () => initialState,
   },
@@ -194,6 +205,7 @@ export const {
   resetAiRecommendations,
   setSelectedPlace,
   setShowConfirmCard,
+  setMenuSelectionCompleted,
   clearAgentState,
 } = agentSlice.actions;
 

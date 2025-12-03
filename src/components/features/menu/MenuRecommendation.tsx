@@ -10,9 +10,11 @@ import {
   resetAiRecommendations,
   setMenuRecommendations,
   setMenuRecommendationLoading,
+  setMenuSelectionCompleted,
   setRestaurants,
 } from '@/store/slices/agentSlice';
 import { Button } from '@/components/common/Button';
+import { MenuSelectionModal } from './MenuSelectionModal';
 import { useNavigate } from 'react-router-dom';
 
 interface MenuRecommendationProps {
@@ -37,8 +39,10 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
   const requestAddress = useAppSelector((state) => state.agent.menuRecommendationRequestAddress);
   const requestLocation = useAppSelector((state) => state.agent.menuRecommendationRequestLocation);
   const loading = useAppSelector((state) => state.agent.isMenuRecommendationLoading);
+  const hasMenuSelectionCompleted = useAppSelector((state) => state.agent.hasMenuSelectionCompleted);
   
   const [prompt, setPrompt] = useState('');
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
 
   const handleRecommend = async () => {
     if (!isAuthenticated) {
@@ -122,7 +126,19 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
 
       {recommendations.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-white">추천 메뉴</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">추천 메뉴</h3>
+            {!hasMenuSelectionCompleted && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowSelectionModal(true)}
+                className="bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/40"
+              >
+                메뉴 선택하기
+              </Button>
+            )}
+          </div>
           <div className="mt-4 grid gap-3">
             {recommendations.map((menu, index) => (
               <button
@@ -143,6 +159,16 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
           </div>
         </div>
       )}
+
+      <MenuSelectionModal
+        open={showSelectionModal}
+        recommendations={recommendations}
+        historyId={menuHistoryId}
+        onClose={() => setShowSelectionModal(false)}
+        onComplete={() => {
+          dispatch(setMenuSelectionCompleted());
+        }}
+      />
     </div>
   );
 };
