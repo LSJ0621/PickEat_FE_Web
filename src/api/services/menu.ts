@@ -2,15 +2,20 @@
  * 메뉴 관련 API 서비스
  */
 
+import type {
+    CreateMenuSelectionRequest,
+    CreateMenuSelectionResponse,
+    GetMenuSelectionsResponse,
+    MenuRecommendationResponse,
+    PlaceDetailResponse,
+    PlaceHistoryResponse,
+    PlaceRecommendationResponse,
+    RestaurantBlogsResponse,
+    UpdateMenuSelectionRequest,
+    UpdateMenuSelectionResponse,
+} from '@/types/menu';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
-import type {
-  MenuRecommendationResponse,
-  PlaceDetailResponse,
-  PlaceHistoryResponse,
-  PlaceRecommendationResponse,
-  RestaurantBlogsResponse,
-} from '@/types/menu';
 
 export const menuService = {
   /**
@@ -49,6 +54,39 @@ export const menuService = {
     const response = await apiClient.get<PlaceDetailResponse>(
       ENDPOINTS.MENU.PLACE_DETAIL(placeId)
     );
+    return response.data;
+  },
+  // 메뉴 선택 관련
+  createMenuSelection: async (data: CreateMenuSelectionRequest): Promise<CreateMenuSelectionResponse> => {
+    const response = await apiClient.post<CreateMenuSelectionResponse>(
+      ENDPOINTS.MENU.SELECTIONS,
+      data
+    );
+    return response.data;
+  },
+  getMenuSelections: async (date?: string): Promise<GetMenuSelectionsResponse> => {
+    const response = await apiClient.get<GetMenuSelectionsResponse>(
+      ENDPOINTS.MENU.SELECTIONS_HISTORY,
+      { params: date ? { date } : undefined }
+    );
+    return response.data;
+  },
+  updateMenuSelection: async (
+    selectionId: number,
+    data: UpdateMenuSelectionRequest
+  ): Promise<UpdateMenuSelectionResponse> => {
+    const url = ENDPOINTS.MENU.SELECTION_UPDATE(selectionId);
+    console.log('[API] updateMenuSelection 호출');
+    console.log('[API] URL:', url);
+    console.log('[API] selectionId:', selectionId);
+    console.log('[API] 요청 데이터:', data);
+    console.log('[API] 요청 메서드: PATCH');
+    
+    const response = await apiClient.patch<UpdateMenuSelectionResponse>(url, data);
+    
+    console.log('[API] 응답 상태:', response.status);
+    console.log('[API] 응답 데이터:', response.data);
+    
     return response.data;
   },
 };
