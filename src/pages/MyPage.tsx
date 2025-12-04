@@ -258,12 +258,6 @@ export const MyPage = () => {
                     </div>
                   ) : (
                     <div className="mt-3 space-y-3">
-                      {analysis && (
-                        <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4">
-                          <p className="mb-2 text-xs font-medium text-purple-200">AI의 취향 분석</p>
-                          <p className="text-sm leading-relaxed text-slate-100">{analysis}</p>
-                        </div>
-                      )}
                       {likes.length > 0 && (
                         <div>
                           <p className="mb-2 text-xs text-slate-400">좋아하는 것</p>
@@ -292,6 +286,12 @@ export const MyPage = () => {
                               </span>
                             ))}
                           </div>
+                        </div>
+                      )}
+                      {analysis && (
+                        <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4">
+                          <p className="mb-2 text-xs font-medium text-purple-200">AI 리포트</p>
+                          <p className="text-sm leading-relaxed text-slate-100">{analysis}</p>
                         </div>
                       )}
                       {likes.length === 0 && dislikes.length === 0 && !analysis && (
