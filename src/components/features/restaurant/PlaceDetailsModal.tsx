@@ -159,7 +159,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
           setBlogsError(null);
         });
 
-        const response = await menuService.getRestaurantBlogs(query);
+        const response = await menuService.getRestaurantBlogs(query, name);
         if (cancelled) return;
 
         startTransition(() => {

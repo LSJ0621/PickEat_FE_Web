@@ -35,11 +35,14 @@ export const menuService = {
     });
     return response.data;
   },
-  getRestaurantBlogs: async (query: string): Promise<RestaurantBlogsResponse> => {
+  getRestaurantBlogs: async (query: string, restaurantName?: string): Promise<RestaurantBlogsResponse> => {
     const response = await apiClient.get<RestaurantBlogsResponse>(
       ENDPOINTS.MENU.RESTAURANT_BLOGS,
       {
-        params: { query },
+        params: {
+          query,
+          ...(restaurantName && { restaurantName }),
+        },
       }
     );
     return response.data;
