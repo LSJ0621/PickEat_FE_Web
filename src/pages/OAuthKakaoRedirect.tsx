@@ -66,7 +66,6 @@ export const OAuthKakaoRedirect = () => {
 
         dispatch(setCredentials({
           user: {
-            id: data.id.toString(),
             email: data.email || '',
             name: data.name || '',
             address: data.address ?? null,
@@ -175,7 +174,6 @@ export const OAuthKakaoRedirect = () => {
 
       dispatch(setCredentials({
         user: {
-          id: loginData.id.toString(),
           email: loginData.email || '',
           name: updatedUser.name || '',
           address: loginData.address ?? null,

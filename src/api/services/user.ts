@@ -2,16 +2,23 @@
  * 유저 관련 API 서비스
  */
 
+import type { DeleteAccountResponse } from '../../types/auth';
 import type {
   AddressSearchResponse,
+  BatchDeleteAddressRequest,
+  CreateAddressRequest,
+  DeleteAddressResponse,
+  GetAddressesResponse,
+  GetDefaultAddressResponse,
   GetPreferencesResponse,
   GetRecommendationHistoryResponse,
   RecommendationHistoryItem,
   SelectedAddress,
   SetAddressResponse,
   SetPreferencesRequest,
+  UpdateAddressRequest,
+  UserAddress,
 } from '../../types/user';
-import type { DeleteAccountResponse } from '../../types/auth';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 
@@ -87,6 +94,72 @@ export const userService = {
   deleteAccount: async (): Promise<DeleteAccountResponse> => {
     const response = await apiClient.delete<DeleteAccountResponse>(
       ENDPOINTS.USER.DELETE
+    );
+    return response.data;
+  },
+
+  // 주소 리스트 조회
+  getAddresses: async (): Promise<GetAddressesResponse> => {
+    const response = await apiClient.get<UserAddress[] | GetAddressesResponse>(
+      ENDPOINTS.USER.ADDRESSES
+    );
+    // 서버가 배열을 직접 반환하는 경우와 객체로 감싸서 반환하는 경우 모두 처리
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return { addresses: data };
+    }
+    return data as GetAddressesResponse;
+  },
+
+  // 기본 주소 조회
+  getDefaultAddress: async (): Promise<GetDefaultAddressResponse> => {
+    const response = await apiClient.get<GetDefaultAddressResponse>(
+      ENDPOINTS.USER.ADDRESS_DEFAULT
+    );
+    return response.data;
+  },
+
+  // 주소 추가
+  createAddress: async (data: CreateAddressRequest): Promise<UserAddress> => {
+    const response = await apiClient.post<UserAddress>(
+      ENDPOINTS.USER.ADDRESSES,
+      data
+    );
+    return response.data;
+  },
+
+  // 주소 수정
+  updateAddress: async (id: number, data: UpdateAddressRequest): Promise<UserAddress> => {
+    const response = await apiClient.patch<UserAddress>(
+      ENDPOINTS.USER.ADDRESS_BY_ID(id),
+      data
+    );
+    return response.data;
+  },
+
+  // 주소 삭제 (배열로 여러 개 삭제)
+  deleteAddresses: async (ids: number[]): Promise<DeleteAddressResponse> => {
+    const response = await apiClient.delete<DeleteAddressResponse>(
+      ENDPOINTS.USER.ADDRESSES,
+      { 
+        data: { ids } satisfies BatchDeleteAddressRequest
+      }
+    );
+    return response.data;
+  },
+
+  // 기본 주소 설정
+  setDefaultAddress: async (id: number): Promise<UserAddress> => {
+    const response = await apiClient.patch<UserAddress>(
+      ENDPOINTS.USER.ADDRESS_SET_DEFAULT(id)
+    );
+    return response.data;
+  },
+
+  // 검색 주소 설정
+  setSearchAddress: async (id: number): Promise<UserAddress> => {
+    const response = await apiClient.patch<UserAddress>(
+      ENDPOINTS.USER.ADDRESS_SET_SEARCH(id)
     );
     return response.data;
   },

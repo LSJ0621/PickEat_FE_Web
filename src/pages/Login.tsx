@@ -68,7 +68,6 @@ export const LoginPage = () => {
 
       dispatch(setCredentials({
         user: {
-          id: loginData.id.toString(),
           email: loginData.email || email,
           name: loginData.name || '',
           address: loginData.address ?? null,

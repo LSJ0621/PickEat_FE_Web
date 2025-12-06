@@ -2,29 +2,39 @@
  * 마이페이지
  */
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { updateUser, logoutAsync } from '@/store/slices/authSlice';
+import { logoutAsync, updateUser } from '@/store/slices/authSlice';
+import type { AddressSearchResult, SelectedAddress, UserAddress } from '@/types/user';
 import { extractErrorMessage } from '@/utils/error';
-import type { AddressSearchResult, SelectedAddress } from '@/types/user';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const MyPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const user = useAppSelector((state) => state.auth?.user);
   const dispatch = useAppDispatch();
-  const currentAddress = user?.address ?? null;
 
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [showAddressListModal, setShowAddressListModal] = useState(false);
 
+  // 주소 리스트 관련 상태
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<UserAddress | null>(null);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [selectedDeleteIds, setSelectedDeleteIds] = useState<number[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [confirmDefaultAddress, setConfirmDefaultAddress] = useState<UserAddress | null>(null);
+
+  // 주소 추가/수정 모달 관련 상태
   const [addressQuery, setAddressQuery] = useState('');
   const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
+  const [addressAlias, setAddressAlias] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
 
@@ -44,7 +54,15 @@ export const MyPage = () => {
       return;
     }
     loadPreferences();
+    loadAddresses();
   }, [isAuthenticated, navigate]);
+
+  // 주소 관리 모달이 닫힐 때 주소 정보 다시 불러오기
+  useEffect(() => {
+    if (!showAddressListModal) {
+      loadAddresses();
+    }
+  }, [showAddressListModal]);
 
   const loadPreferences = async () => {
     setIsLoadingPreferences(true);
@@ -57,6 +75,22 @@ export const MyPage = () => {
       console.error('취향 정보 조회 실패:', error);
     } finally {
       setIsLoadingPreferences(false);
+    }
+  };
+
+  const loadAddresses = async () => {
+    setIsLoadingAddresses(true);
+    try {
+      const [addressesResponse, defaultResponse] = await Promise.all([
+        userService.getAddresses(),
+        userService.getDefaultAddress(),
+      ]);
+      setAddresses(addressesResponse.addresses);
+      setDefaultAddress(defaultResponse.address);
+    } catch (error: unknown) {
+      console.error('주소 리스트 조회 실패:', error);
+    } finally {
+      setIsLoadingAddresses(false);
     }
   };
 
@@ -80,47 +114,154 @@ export const MyPage = () => {
   };
 
   const handleSelectAddress = (address: AddressSearchResult) => {
-    setSelectedAddress({
+    const selected: SelectedAddress = {
       address: address.address,
       roadAddress: address.roadAddress,
       postalCode: address.postalCode,
       latitude: address.latitude,
       longitude: address.longitude,
-    });
+    };
+    setSelectedAddress(selected);
     setAddressQuery('');
     setSearchResults([]);
   };
 
-  const handleSaveAddress = async () => {
+  // 주소 추가 (하나씩만)
+  const handleAddAddress = async () => {
     if (!selectedAddress) {
       alert('주소를 선택해주세요.');
       return;
     }
 
+    // 최대 4개 제한 확인
+    if (addresses.length >= 4) {
+      alert('최대 4개까지 주소를 등록할 수 있습니다.');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const result = await userService.setAddress(selectedAddress);
-      const latitudeValue = selectedAddress.latitude ? parseFloat(selectedAddress.latitude) : null;
-      const longitudeValue = selectedAddress.longitude ? parseFloat(selectedAddress.longitude) : null;
-      const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
-      const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
+      await userService.createAddress({
+        selectedAddress,
+        alias: addressAlias.trim() || undefined,
+      });
 
-      dispatch(
-        updateUser({
-          address: result.address,
-          latitude: normalizedLatitude,
-          longitude: normalizedLongitude,
-        })
-      );
-
-      alert('주소가 저장되었습니다.');
-      setSelectedAddress(null);
+      await loadAddresses();
       setShowAddressModal(false);
+      setAddressQuery('');
+      setSearchResults([]);
+      setSelectedAddress(null);
+      setAddressAlias('');
+      setHasSearchedAddress(false);
+      alert('주소가 추가되었습니다.');
     } catch (error: unknown) {
-      console.error('주소 저장 실패:', error);
-      alert(extractErrorMessage(error, '주소 저장에 실패했습니다.'));
+      console.error('주소 추가 실패:', error);
+      alert(extractErrorMessage(error, '주소 추가에 실패했습니다.'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // 기본 주소 설정
+  const handleSetDefaultAddress = async (id: number) => {
+    try {
+      const updatedAddress = await userService.setDefaultAddress(id);
+      
+      // 응답값으로 Redux 업데이트
+      const latitudeValue = updatedAddress.latitude !== null && !Number.isNaN(updatedAddress.latitude) 
+        ? updatedAddress.latitude 
+        : null;
+      const longitudeValue = updatedAddress.longitude !== null && !Number.isNaN(updatedAddress.longitude) 
+        ? updatedAddress.longitude 
+        : null;
+      
+      dispatch(
+        updateUser({
+          address: updatedAddress.roadAddress,
+          latitude: latitudeValue,
+          longitude: longitudeValue,
+        })
+      );
+      
+      await loadAddresses();
+      alert('기본 주소가 변경되었습니다.');
+    } catch (error: unknown) {
+      console.error('기본 주소 설정 실패:', error);
+      alert(extractErrorMessage(error, '기본 주소 설정에 실패했습니다.'));
+    }
+  };
+
+  // 주소 클릭 시 기본주소 변경 확인
+  const handleAddressClick = (address: UserAddress) => {
+    if (address.isDefault) {
+      return; // 기본주소는 클릭 불가
+    }
+    setConfirmDefaultAddress(address);
+  };
+
+  // 기본주소 변경 확인 후 처리
+  const handleConfirmSetDefault = async () => {
+    if (!confirmDefaultAddress) return;
+    
+    try {
+      await handleSetDefaultAddress(confirmDefaultAddress.id);
+      setConfirmDefaultAddress(null);
+    } catch (error) {
+      // handleSetDefaultAddress에서 이미 에러 처리
+    }
+  };
+
+
+  // 주소 삭제 (배열로 여러 개 삭제)
+  const handleDeleteAddresses = async (ids: number[]) => {
+    if (ids.length === 0) {
+      alert('삭제할 주소를 선택해주세요.');
+      return;
+    }
+
+    // 기본주소가 포함되어 있는지 확인
+    const hasDefaultAddress = ids.some((id) => {
+      const addr = addresses.find((a) => a.id === id);
+      return addr?.isDefault;
+    });
+
+    if (hasDefaultAddress) {
+      alert('기본주소는 삭제할 수 없습니다. 기본주소를 변경한 후 삭제해주세요.');
+      return;
+    }
+
+    if (!confirm(`정말 ${ids.length}개의 주소를 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      await userService.deleteAddresses(ids);
+      await loadAddresses();
+      setSelectedDeleteIds([]);
+      alert(`${ids.length}개의 주소가 삭제되었습니다.`);
+    } catch (error: unknown) {
+      console.error('주소 삭제 실패:', error);
+      alert(extractErrorMessage(error, '주소 삭제에 실패했습니다.'));
+    }
+  };
+
+  // 주소 삭제 선택 토글
+  const handleToggleDeleteSelection = (id: number) => {
+    if (selectedDeleteIds.includes(id)) {
+      setSelectedDeleteIds(selectedDeleteIds.filter((selectedId) => selectedId !== id));
+    } else {
+      // 기본주소는 선택할 수 없음
+      const addr = addresses.find((a) => a.id === id);
+      if (addr?.isDefault) {
+        alert('기본주소는 삭제할 수 없습니다.');
+        return;
+      }
+      // 최대 3개까지 선택 가능
+      if (selectedDeleteIds.length >= 3) {
+        alert('최대 3개까지 삭제할 수 있습니다.');
+        return;
+      }
+      setSelectedDeleteIds([...selectedDeleteIds, id]);
     }
   };
 
@@ -314,21 +455,32 @@ export const MyPage = () => {
 
             <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm text-slate-400">주소</p>
+                <div className="flex-1">
+                  <p className="text-sm text-slate-400">주소 관리</p>
                   {user?.address ? (
-                    <p className="mt-1 text-lg font-semibold text-white">{user.address}</p>
+                    <div className="mt-2">
+                      <p className="text-lg font-semibold text-white">
+                        {user.address}
+                      </p>
+                      {addresses.length > 1 && (
+                        <p className="mt-1 text-xs text-slate-400">
+                          총 {addresses.length}개의 주소가 등록되어 있습니다
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <p className="mt-3 text-sm text-slate-400">주소가 등록되지 않았습니다.</p>
                   )}
                 </div>
-                <Button
-                  size="sm"
-                  className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
-                  onClick={() => setShowAddressModal(true)}
-                >
-                  주소 수정
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+                    onClick={() => setShowAddressListModal(true)}
+                  >
+                    주소 관리
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -354,6 +506,7 @@ export const MyPage = () => {
                   setAddressQuery('');
                   setSearchResults([]);
                   setSelectedAddress(null);
+                  setAddressAlias('');
                   setHasSearchedAddress(false);
                 }}
                 className="absolute right-6 top-6 text-slate-400 hover:text-white"
@@ -362,14 +515,12 @@ export const MyPage = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h2 className="mb-6 text-2xl font-bold text-white">주소 수정</h2>
-
-              {currentAddress && (
-                <div className="mb-4 rounded-xl border border-white/10 bg-slate-800/50 p-4">
-                  <p className="text-sm text-slate-400">현재 주소</p>
-                  <p className="mt-1 text-white">{currentAddress}</p>
-                </div>
-              )}
+              <h2 className="mb-6 text-2xl font-bold text-white">주소 추가</h2>
+              <p className="mb-4 text-sm text-slate-400">
+                최대 4개까지 주소를 등록할 수 있습니다. (현재: {addresses.length}/4, 추가 가능: {Math.max(0, 4 - addresses.length)}개)
+                <br />
+                <span className="text-xs text-slate-500">주소는 하나씩만 추가할 수 있습니다.</span>
+              </p>
 
               <div className="space-y-4">
                 <div className="flex gap-2">
@@ -411,22 +562,232 @@ export const MyPage = () => {
                   <p className="text-sm text-slate-400">주소를 찾을 수 없습니다.</p>
                 )}
 
+                {/* 선택한 주소 */}
                 {selectedAddress && (
-                  <div className="rounded-xl border border-white/10 bg-slate-800/50 p-4">
-                    <p className="text-sm text-slate-400">선택한 주소</p>
-                    <p className="mt-1 text-white">{selectedAddress.roadAddress || selectedAddress.address}</p>
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                    <div className="mb-3">
+                      <p className="text-xs text-emerald-200">선택한 주소</p>
+                      <p className="mt-1 text-white font-medium">
+                        {selectedAddress.roadAddress || selectedAddress.address}
+                      </p>
+                      {selectedAddress.roadAddress && (
+                        <p className="mt-1 text-xs text-slate-400">{selectedAddress.address}</p>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={addressAlias}
+                      onChange={(e) => setAddressAlias(e.target.value)}
+                      placeholder="별칭 입력 (예: 집, 회사) - 선택사항"
+                      maxLength={20}
+                      className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                    />
+                    <button
+                      onClick={() => {
+                        setSelectedAddress(null);
+                        setAddressAlias('');
+                      }}
+                      className="mt-2 text-xs text-red-400 hover:text-red-300"
+                    >
+                      선택 취소
+                    </button>
                   </div>
                 )}
 
-                <Button
-                  onClick={handleSaveAddress}
-                  isLoading={isSaving}
-                  disabled={!selectedAddress}
-                  className="w-full"
-                  size="lg"
-                >
-                  주소 저장
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      setShowAddressModal(false);
+                      setAddressQuery('');
+                      setSearchResults([]);
+                      setSelectedAddress(null);
+                      setAddressAlias('');
+                      setHasSearchedAddress(false);
+                    }}
+                    variant="ghost"
+                    size="lg"
+                    disabled={isSaving}
+                    className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    onClick={handleAddAddress}
+                    isLoading={isSaving}
+                    disabled={!selectedAddress || addresses.length >= 4}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+                    size="lg"
+                  >
+                    주소 추가
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 주소 리스트 관리 모달 */}
+        {showAddressListModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+              <button
+                onClick={() => {
+                  setShowAddressListModal(false);
+                  setSelectedDeleteIds([]);
+                  setIsEditMode(false);
+                  setConfirmDefaultAddress(null);
+                }}
+                className="absolute right-6 top-6 text-slate-400 hover:text-white"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="flex items-center justify-between mb-6 pr-12">
+                <h2 className="text-2xl font-bold text-white">주소 관리</h2>
+                {!isEditMode && addresses.length > 1 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditMode(true)}
+                    className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                  >
+                    편집
+                  </Button>
+                )}
+                {isEditMode && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setIsEditMode(false);
+                      setSelectedDeleteIds([]);
+                    }}
+                    className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                  >
+                    완료
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {/* 기본주소 표시 */}
+                {(defaultAddress || addresses.find(addr => addr.isDefault)) && (
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        {(() => {
+                          const defaultAddr = defaultAddress || addresses.find(addr => addr.isDefault);
+                          if (!defaultAddr) return null;
+                          return (
+                            <>
+                              <p className="text-white font-medium">
+                                {defaultAddr.alias && (
+                                  <span className="mr-2 text-orange-200">{defaultAddr.alias}</span>
+                                )}
+                                {defaultAddr.roadAddress}
+                              </p>
+                              {defaultAddr.postalCode && (
+                                <p className="mt-1 text-xs text-slate-400">{defaultAddr.postalCode}</p>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 나머지 주소 리스트 */}
+                {addresses.length > 0 && (
+                  <div className="space-y-2">
+                    {addresses
+                      .filter((addr) => !addr.isDefault)
+                      .map((address) => (
+                        <div
+                          key={address.id}
+                          onClick={() => {
+                            if (!isEditMode) {
+                              handleAddressClick(address);
+                            }
+                          }}
+                          className={`rounded-xl border p-4 transition cursor-pointer ${
+                            isEditMode && selectedDeleteIds.includes(address.id)
+                              ? 'border-red-500/50 bg-red-500/20'
+                              : isEditMode
+                              ? 'border-white/10 bg-white/5 hover:bg-white/10'
+                              : 'border-white/10 bg-white/5 hover:border-orange-500/30 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-3 flex-1">
+                              {/* 삭제 체크박스 (편집 모드에서만 표시) */}
+                              {isEditMode && (
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDeleteIds.includes(address.id)}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleDeleteSelection(address.id);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-orange-500 focus:ring-orange-500"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-white font-medium">
+                                  {address.alias && (
+                                    <span className="mr-2 text-orange-200">{address.alias}</span>
+                                  )}
+                                  {address.roadAddress}
+                                </p>
+                                {address.postalCode && (
+                                  <p className="mt-1 text-xs text-slate-400">{address.postalCode}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {addresses.length === 0 && (
+                  <p className="text-center text-slate-400 py-8">등록된 주소가 없습니다.</p>
+                )}
+
+                {/* 편집 모드에서 선택된 주소 삭제 버튼 */}
+                {isEditMode && selectedDeleteIds.length > 0 && (
+                  <Button
+                    size="lg"
+                    variant="primary"
+                    onClick={() => handleDeleteAddresses(selectedDeleteIds)}
+                    className="w-full bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30"
+                  >
+                    선택한 {selectedDeleteIds.length}개 주소 삭제
+                  </Button>
+                )}
+
+                {/* 주소 추가 버튼 */}
+                {!isEditMode && addresses.length < 4 && (
+                  <Button
+                    size="lg"
+                    variant="primary"
+                    onClick={() => {
+                      setShowAddressListModal(false);
+                      setShowAddressModal(true);
+                    }}
+                    className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+                  >
+                    + 주소 추가 ({addresses.length}/4)
+                  </Button>
+                )}
+
+                {!isEditMode && addresses.length >= 4 && (
+                  <p className="text-center text-sm text-slate-400">
+                    최대 4개까지 주소를 등록할 수 있습니다.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -579,6 +940,39 @@ export const MyPage = () => {
         )}
 
       </div>
+
+      {/* 기본주소 변경 확인 모달 */}
+      {confirmDefaultAddress && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+            <h2 className="mb-4 text-xl font-bold text-white">기본주소 변경</h2>
+            <p className="mb-6 text-slate-300">
+              <span className="font-semibold text-orange-200">
+                {confirmDefaultAddress.alias ? `${confirmDefaultAddress.alias} - ` : ''}
+                {confirmDefaultAddress.roadAddress}
+              </span>
+              를 기본주소로 사용하시겠습니까?
+            </p>
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                variant="ghost"
+                onClick={() => setConfirmDefaultAddress(null)}
+                className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+              >
+                취소
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleConfirmSetDefault}
+                className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

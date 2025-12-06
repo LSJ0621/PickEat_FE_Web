@@ -3,7 +3,6 @@
  */
 
 export interface User {
-  id: string;
   email: string;
   name: string;
   phone?: string;
@@ -37,7 +36,6 @@ export interface AuthResponse {
 }
 
 export interface KakaoLoginResponse {
-  id: number;
   token: string;
   email?: string | null;
   name: string | null;
@@ -51,7 +49,6 @@ export interface KakaoLoginResponse {
 }
 
 export interface LoginResponse {
-  id: number;
   token: string;
   email?: string | null;
   name: string | null;
@@ -70,7 +67,6 @@ export interface UpdateUserRequest {
 }
 
 export interface UpdateUserResponse {
-  id: number;
   name: string | null;
   profileImage: string | null;
 }

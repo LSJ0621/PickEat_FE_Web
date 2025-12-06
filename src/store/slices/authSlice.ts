@@ -11,7 +11,6 @@ import { clearAgentState } from './agentSlice';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -19,7 +18,6 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
@@ -118,10 +116,10 @@ export const initializeAuth = createAsyncThunk(
           ...user,
           preferences: prefsResponse.preferences ?? user.preferences ?? null,
         };
-        return { user: normalizeUser(mergedUser), token };
+        return { user: normalizeUser(mergedUser) };
       } catch {
         // 취향 정보 불러오기에 실패해도 로그인 자체는 유지
-        return { user: normalizeUser(user), token };
+        return { user: normalizeUser(user) };
       }
     } catch (error: unknown) {
       localStorage.removeItem('token');
@@ -136,7 +134,6 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.user = normalizeUser(action.payload.user);
-      state.token = action.payload.token;
       state.isAuthenticated = true;
       localStorage.setItem('token', action.payload.token);
     },
@@ -148,7 +145,6 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.user = null;
-      state.token = null;
       state.isAuthenticated = false;
       localStorage.removeItem('token');
     },
@@ -168,18 +164,15 @@ const authSlice = createSlice({
       .addCase(initializeAuth.fulfilled, (state, action) => {
         if (action.payload) {
           state.user = normalizeUser(action.payload.user);
-          state.token = action.payload.token;
           state.isAuthenticated = true;
         } else {
           state.user = null;
-          state.token = null;
           state.isAuthenticated = false;
         }
         state.loading = false;
       })
       .addCase(initializeAuth.rejected, (state, action) => {
         state.user = null;
-        state.token = null;
         state.isAuthenticated = false;
         state.loading = false;
         state.error = (action.payload as string) || '인증 정보 초기화 실패';

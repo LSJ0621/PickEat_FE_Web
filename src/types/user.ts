@@ -69,3 +69,49 @@ export interface GetRecommendationHistoryResponse {
   history: RecommendationHistoryItem[];
 }
 
+// 주소 리스트 관련 타입
+export interface UserAddress {
+  id: number;
+  roadAddress: string;
+  postalCode: string | null;
+  latitude: number;
+  longitude: number;
+  isDefault: boolean;
+  isSearchAddress: boolean;
+  alias: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetAddressesResponse {
+  addresses: UserAddress[];
+}
+
+export interface GetDefaultAddressResponse {
+  address: UserAddress | null;
+}
+
+export interface CreateAddressRequest {
+  selectedAddress: SelectedAddress;
+  alias?: string;
+  isDefault?: boolean;
+  isSearchAddress?: boolean;
+}
+
+export interface UpdateAddressRequest {
+  roadAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  alias?: string;
+  isDefault?: boolean;
+  isSearchAddress?: boolean;
+}
+
+export interface DeleteAddressResponse {
+  message: string;
+}
+
+export interface BatchDeleteAddressRequest {
+  ids: number[];
+}
+
