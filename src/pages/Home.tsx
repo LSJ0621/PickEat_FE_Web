@@ -1,5 +1,6 @@
 import { AuthPromptModal } from '@/components/common/AuthPromptModal';
 import { InitialSetupModal } from '@/components/common/InitialSetupModal';
+import { AddressRegistrationModal } from '@/components/common/AddressRegistrationModal';
 import { Button } from '@/components/common/Button';
 import { useAppSelector } from '@/store/hooks';
 import { checkUserSetupStatus } from '@/utils/userSetup';
@@ -12,13 +13,19 @@ export const HomePage = () => {
   const user = useAppSelector((state) => state.auth?.user);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
   const [setupStatus, setSetupStatus] = useState<ReturnType<typeof checkUserSetupStatus> | null>(null);
 
   // 로그인 상태일 때 필요한 정보 체크
   useEffect(() => {
     if (isAuthenticated && user) {
       const status = checkUserSetupStatus(user);
-      if (status.hasAnyMissing) {
+      
+      // 주소만 없으면 주소 등록 모달 표시
+      if (status.needsAddress && !status.needsName && !status.needsPreferences) {
+        setShowAddressModal(true);
+      } else if (status.hasAnyMissing) {
+        // 이름이나 취향도 필요한 경우 초기 설정 모달 표시
         setSetupStatus(status);
         setShowSetupModal(true);
       }
@@ -162,6 +169,12 @@ export const HomePage = () => {
           }}
         />
       )}
+      <AddressRegistrationModal
+        open={showAddressModal}
+        onComplete={() => {
+          setShowAddressModal(false);
+        }}
+      />
     </div>
   );
 };

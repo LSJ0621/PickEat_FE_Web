@@ -3,15 +3,15 @@
  * 로그인 후 필요한 정보(이름, 주소, 취향)를 입력받는 다이얼로그
  */
 
-import { useState, useEffect } from 'react';
-import { userService } from '@/api/services/user';
 import { authService } from '@/api/services/auth';
+import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
-import { extractErrorMessage } from '@/utils/error';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
+import { extractErrorMessage } from '@/utils/error';
 import type { UserSetupStatus } from '@/utils/userSetup';
+import { useEffect, useState } from 'react';
 
 interface InitialSetupModalProps {
   open: boolean;
@@ -34,6 +34,7 @@ export const InitialSetupModal = ({
   const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
+  const [addressAlias, setAddressAlias] = useState('');
   const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
 
   // 취향 관련
@@ -52,6 +53,7 @@ export const InitialSetupModal = ({
       setAddressQuery('');
       setSearchResults([]);
       setSelectedAddress(null);
+      setAddressAlias('');
       setLikes([]);
       setDislikes([]);
       setNewLike('');
@@ -155,6 +157,29 @@ export const InitialSetupModal = ({
       // 주소 저장 (필요한 경우)
       if (setupStatus.needsAddress && selectedAddress) {
         const addressResult = await userService.setAddress(selectedAddress);
+        
+        // 별칭이 있으면 주소 리스트를 조회해서 방금 추가된 주소에 별칭 설정
+        if (addressAlias.trim()) {
+          try {
+            const addressesResponse = await userService.getAddresses();
+            // 응답이 배열인지 객체인지 확인
+            const addresses = Array.isArray(addressesResponse) 
+              ? addressesResponse 
+              : addressesResponse?.addresses || [];
+            
+            const newAddress = addresses.find(
+              (addr) => addr.roadAddress === addressResult.address
+            );
+            
+            if (newAddress) {
+              await userService.updateAddress(newAddress.id, { alias: addressAlias.trim() });
+            }
+          } catch (error) {
+            console.error('별칭 설정 실패:', error);
+            // 별칭 설정 실패해도 주소 저장은 성공한 것으로 처리
+          }
+        }
+
         const latitudeValue = selectedAddress.latitude ? parseFloat(selectedAddress.latitude) : null;
         const longitudeValue = selectedAddress.longitude ? parseFloat(selectedAddress.longitude) : null;
         const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
@@ -279,10 +304,29 @@ export const InitialSetupModal = ({
                 )}
 
                 {selectedAddress && (
-                  <div className="rounded-xl border border-white/10 bg-slate-800/50 p-4">
-                    <p className="text-sm text-slate-400">선택한 주소</p>
-                    <p className="mt-1 text-white">{selectedAddress.roadAddress || selectedAddress.address}</p>
-                  </div>
+                  <>
+                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                      <p className="text-xs text-emerald-200">선택한 주소</p>
+                      <p className="mt-1 text-white font-medium">
+                        {selectedAddress.roadAddress || selectedAddress.address}
+                      </p>
+                    </div>
+
+                    {/* 별칭 입력 */}
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-200">
+                        별칭 (선택사항)
+                      </label>
+                      <input
+                        type="text"
+                        value={addressAlias}
+                        onChange={(e) => setAddressAlias(e.target.value)}
+                        placeholder="별칭을 입력하세요 (예: 집, 회사)"
+                        maxLength={20}
+                        className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             </div>

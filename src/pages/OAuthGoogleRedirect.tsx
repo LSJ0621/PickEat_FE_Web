@@ -52,7 +52,6 @@ export const OAuthGoogleRedirect = () => {
 
         dispatch(setCredentials({
           user: {
-            id: loginData.id.toString(),
             email: loginData.email || '',
             name: loginData.name || '',
             address: loginData.address ?? null,
