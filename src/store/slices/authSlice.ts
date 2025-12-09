@@ -4,6 +4,7 @@
 
 import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
+import { extractErrorMessage } from '@/utils/error';
 import type { User } from '@/types/auth';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
@@ -21,28 +22,6 @@ const initialState: AuthState = {
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
-};
-
-const getErrorMessage = (error: unknown) => {
-  if (
-    error &&
-    typeof error === 'object' &&
-    'response' in error &&
-    error.response &&
-    typeof error.response === 'object' &&
-    'data' in error.response &&
-    error.response.data &&
-    typeof error.response.data === 'object' &&
-    'message' in error.response.data
-  ) {
-    return String(error.response.data.message);
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return '알 수 없는 오류가 발생했습니다.';
 };
 
 type CoordinateInput = number | string | null | undefined;
@@ -123,7 +102,7 @@ export const initializeAuth = createAsyncThunk(
       }
     } catch (error: unknown) {
       localStorage.removeItem('token');
-      return rejectWithValue(getErrorMessage(error));
+      return rejectWithValue(extractErrorMessage(error, '알 수 없는 오류가 발생했습니다.'));
     }
   }
 );

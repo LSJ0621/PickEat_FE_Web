@@ -24,7 +24,7 @@ import type {
   UpdateUserRequest,
   UpdateUserResponse,
   User,
-} from '../../types/auth';
+} from '@/types/auth';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 
@@ -77,11 +77,6 @@ export const authService = {
 
   // 카카오 로그인 (OAuth 코드 방식)
   kakaoLogin: async (code: string): Promise<KakaoLoginResponse> => {
-    console.log('카카오 로그인 요청:', {
-      endpoint: ENDPOINTS.AUTH.KAKAO_LOGIN,
-      code: code.substring(0, 10) + '...', // 코드 일부만 로깅
-    });
-    
     const response = await apiClient.post<KakaoLoginResponse>(
       ENDPOINTS.AUTH.KAKAO_LOGIN,
       { code }
@@ -91,11 +86,6 @@ export const authService = {
 
   // 구글 로그인 (OAuth 코드 방식)
   googleLogin: async (code: string): Promise<KakaoLoginResponse> => {
-    console.log('구글 로그인 요청:', {
-      endpoint: ENDPOINTS.AUTH.GOOGLE_LOGIN,
-      code: code.substring(0, 10) + '...', // 코드 일부만 로깅
-    });
-    
     const response = await apiClient.post<KakaoLoginResponse>(
       ENDPOINTS.AUTH.GOOGLE_LOGIN,
       { code }

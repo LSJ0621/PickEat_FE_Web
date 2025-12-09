@@ -48,3 +48,25 @@ export const formatDateTime = (date: string | Date, format: string = 'YYYY-MM-DD
   return formatDate(date, format);
 };
 
+// 한국어 로케일 날짜 포맷팅 (예: "2024년 1월 15일")
+export const formatDateKorean = (date: string | Date): string => {
+  const d = new Date(date);
+  return d.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+// 한국어 로케일 날짜·시간 포맷팅 (예: "2024년 1월 15일 오후 3:30")
+export const formatDateTimeKorean = (date: string | Date): string => {
+  const d = new Date(date);
+  return d.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
