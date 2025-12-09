@@ -1,7 +1,9 @@
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { StatusPopupCard } from '@/components/common/StatusPopupCard';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { extractErrorMessage } from '@/utils/error';
+import { isEmpty, isPasswordMatch } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -76,10 +78,10 @@ export const PasswordResetPage = () => {
     if (passwordError) {
       newErrors.password = passwordError;
     }
-    if (!confirmPassword.trim()) {
-      newErrors.confirmPassword = '비밀번호 확인을 입력해주세요.';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다.';
+    if (isEmpty(confirmPassword)) {
+      newErrors.confirmPassword = ERROR_MESSAGES.CONFIRM_PASSWORD_REQUIRED;
+    } else if (!isPasswordMatch(password, confirmPassword)) {
+      newErrors.confirmPassword = ERROR_MESSAGES.PASSWORD_MISMATCH;
     }
 
     if (Object.keys(newErrors).length > 0) {

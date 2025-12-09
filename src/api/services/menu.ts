@@ -79,17 +79,7 @@ export const menuService = {
     data: UpdateMenuSelectionRequest
   ): Promise<UpdateMenuSelectionResponse> => {
     const url = ENDPOINTS.MENU.SELECTION_UPDATE(selectionId);
-    console.log('[API] updateMenuSelection 호출');
-    console.log('[API] URL:', url);
-    console.log('[API] selectionId:', selectionId);
-    console.log('[API] 요청 데이터:', data);
-    console.log('[API] 요청 메서드: PATCH');
-    
     const response = await apiClient.patch<UpdateMenuSelectionResponse>(url, data);
-    
-    console.log('[API] 응답 상태:', response.status);
-    console.log('[API] 응답 데이터:', response.data);
-    
     return response.data;
   },
 };

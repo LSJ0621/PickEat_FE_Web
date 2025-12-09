@@ -2,23 +2,28 @@
  * 추천 이력 페이지
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { userService } from '@/api/services/user';
 import { useAppSelector } from '@/store/hooks';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
 import { extractErrorMessage } from '@/utils/error';
+import { formatDateTimeKorean } from '@/utils/format';
 import type { RecommendationHistoryItem } from '@/types/user';
 
 type FilterType = 'all' | 'today' | 'week' | 'custom';
 
 export const RecommendationHistory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [filterType, setFilterType] = useState<FilterType>('all');
+  const hasInitializedRef = useRef(false);
+  const prevSelectedDateRef = useRef<string>('');
+  const currentPathnameRef = useRef<string>(location.pathname);
 
   // 오늘 날짜 (YYYY-MM-DD)
   const getToday = () => {
@@ -56,25 +61,46 @@ export const RecommendationHistory = () => {
     }
   }, [selectedDate]);
 
+  // 인증 확인 및 리다이렉트
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
+  }, [isAuthenticated, navigate]);
 
-    loadHistory();
-  }, [isAuthenticated, navigate, loadHistory]);
+  // 경로 변경 감지 및 초기화 리셋 (컴포넌트 재사용 시 대비)
+  useEffect(() => {
+    if (currentPathnameRef.current !== location.pathname) {
+      hasInitializedRef.current = false;
+      prevSelectedDateRef.current = '';
+      currentPathnameRef.current = location.pathname;
+    }
+  }, [location.pathname]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // 데이터 로드 (StrictMode 대응)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    // StrictMode 대응: 초기 마운트 시 중복 호출 방지
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      loadHistory();
+      return;
+    }
+
+    // selectedDate가 변경된 경우에만 호출
+    if (prevSelectedDateRef.current !== selectedDate) {
+      prevSelectedDateRef.current = selectedDate;
+      loadHistory();
+    }
+    // loadHistory는 selectedDate를 dependency로 가지므로 selectedDate 변경 시 재생성됨
+    // dependency에서 제외하고 selectedDate만 사용하여 무한 루프 방지
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, selectedDate]);
+
 
   if (!isAuthenticated) {
     return null;
@@ -233,7 +259,7 @@ export const RecommendationHistory = () => {
               return (
                 <div className="space-y-4">
                   {menuHistory.map((item) => (
-                    <HistoryItem key={item.id} item={item} formatDate={formatDate} />
+                    <HistoryItem key={item.id} item={item} formatDate={formatDateTimeKorean} />
                   ))}
                 </div>
               );

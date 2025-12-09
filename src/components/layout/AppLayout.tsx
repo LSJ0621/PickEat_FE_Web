@@ -5,7 +5,8 @@
 
 import { AppFooter } from '@/components/common/AppFooter';
 import { AppHeader } from '@/components/common/AppHeader';
-import { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -14,10 +15,12 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children, showHeader = true, showFooter = true }: AppLayoutProps) => {
+  const location = useLocation();
+  
   return (
     <>
       {showHeader && <AppHeader />}
-      {children}
+      <div key={location.pathname}>{children}</div>
       {showFooter && <AppFooter />}
     </>
   );
