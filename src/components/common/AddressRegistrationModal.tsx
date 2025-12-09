@@ -4,10 +4,13 @@
  */
 
 import { userService } from '@/api/services/user';
+import { AddressSearchInput } from '@/components/common/AddressSearchInput';
+import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
+import { useAddressSearch } from '@/hooks/useAddressSearch';
+import { useModalScrollLock } from '@/hooks/useModalScrollLock';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
-import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 import { extractErrorMessage } from '@/utils/error';
 import { useEffect, useState } from 'react';
 
@@ -23,75 +26,25 @@ export const AddressRegistrationModal = ({
   onClose,
 }: AddressRegistrationModalProps) => {
   const dispatch = useAppDispatch();
+  const addressSearch = useAddressSearch();
 
-  const [addressQuery, setAddressQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
   const [alias, setAlias] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
 
   useEffect(() => {
     if (!open) {
       // 모달이 닫히면 상태 초기화
-      setAddressQuery('');
-      setSearchResults([]);
-      setSelectedAddress(null);
+      addressSearch.clearSearch();
+      addressSearch.setSelectedAddress(null);
       setAlias('');
-      setHasSearchedAddress(false);
     }
-  }, [open]);
+  }, [open, addressSearch.clearSearch, addressSearch.setSelectedAddress]);
 
-  useEffect(() => {
-    if (open) {
-      // 모달이 열릴 때 body 스크롤 방지
-      document.body.style.overflow = 'hidden';
-    } else {
-      // 모달이 닫히면 스크롤 복원
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      // 컴포넌트 언마운트 시 스크롤 복원
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  // 주소 검색
-  const handleSearch = async () => {
-    if (!addressQuery.trim()) {
-      return;
-    }
-
-    setIsSearching(true);
-    setHasSearchedAddress(false);
-    try {
-      const result = await userService.searchAddress(addressQuery);
-      setSearchResults(result.addresses);
-      setHasSearchedAddress(true);
-    } catch (error: unknown) {
-      console.error('주소 검색 실패:', error);
-      alert(extractErrorMessage(error, '주소 검색에 실패했습니다.'));
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSelectAddress = (address: AddressSearchResult) => {
-    setSelectedAddress({
-      address: address.address,
-      roadAddress: address.roadAddress,
-      postalCode: address.postalCode,
-      latitude: address.latitude,
-      longitude: address.longitude,
-    });
-    setAddressQuery('');
-    setSearchResults([]);
-  };
+  // 모달 열림/닫힘 시 body 스크롤 방지
+  useModalScrollLock(open);
 
   const handleSave = async () => {
-    if (!selectedAddress) {
+    if (!addressSearch.selectedAddress) {
       alert('주소를 선택해주세요.');
       return;
     }
@@ -99,7 +52,7 @@ export const AddressRegistrationModal = ({
     setIsSaving(true);
     try {
       // 처음 주소 등록이므로 PATCH /user/address 사용 (자동으로 기본주소로 설정됨)
-      const addressResult = await userService.setAddress(selectedAddress);
+      const addressResult = await userService.setAddress(addressSearch.selectedAddress);
       
       // 별칭이 있으면 주소 리스트를 조회해서 방금 추가된 주소에 별칭 설정
       if (alias.trim()) {
@@ -123,8 +76,8 @@ export const AddressRegistrationModal = ({
         }
       }
 
-      const latitudeValue = selectedAddress.latitude ? parseFloat(selectedAddress.latitude) : null;
-      const longitudeValue = selectedAddress.longitude ? parseFloat(selectedAddress.longitude) : null;
+      const latitudeValue = addressSearch.selectedAddress.latitude ? parseFloat(addressSearch.selectedAddress.latitude) : null;
+      const longitudeValue = addressSearch.selectedAddress.longitude ? parseFloat(addressSearch.selectedAddress.longitude) : null;
       const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
       const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
 
@@ -167,50 +120,25 @@ export const AddressRegistrationModal = ({
               <p className="mt-1 text-sm text-slate-400">주소를 검색하여 선택해주세요</p>
             </div>
             <div className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={addressQuery}
-                  onChange={(e) => setAddressQuery(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !isSearching) {
-                      handleSearch();
-                    }
-                  }}
-                  placeholder="주소를 검색하세요"
-                  className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
-                />
-                <Button onClick={handleSearch} isLoading={isSearching} size="md">
-                  검색
-                </Button>
-              </div>
+              <AddressSearchInput
+                addressQuery={addressSearch.addressQuery}
+                isSearching={addressSearch.isSearching}
+                onAddressQueryChange={addressSearch.setAddressQuery}
+                onSearch={addressSearch.handleSearch}
+              />
 
-              {searchResults.length > 0 && (
-                <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4">
-                  {searchResults.map((address, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSelectAddress(address)}
-                      className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-left text-sm text-white transition hover:bg-white/10"
-                    >
-                      <p className="font-medium">{address.roadAddress || address.address}</p>
-                      {address.roadAddress && (
-                        <p className="mt-1 text-xs text-slate-400">{address.address}</p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AddressSearchResults
+                searchResults={addressSearch.searchResults}
+                isSearching={addressSearch.isSearching}
+                hasSearchedAddress={addressSearch.hasSearchedAddress}
+                onSelectAddress={addressSearch.handleSelectAddress}
+              />
 
-              {!isSearching && hasSearchedAddress && searchResults.length === 0 && !selectedAddress && (
-                <p className="text-sm text-slate-400">주소를 찾을 수 없습니다.</p>
-              )}
-
-              {selectedAddress && (
+              {addressSearch.selectedAddress && (
                 <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                   <p className="text-xs text-emerald-200">선택한 주소</p>
                   <p className="mt-1 text-white font-medium">
-                    {selectedAddress.roadAddress || selectedAddress.address}
+                    {addressSearch.selectedAddress.roadAddress || addressSearch.selectedAddress.address}
                   </p>
                 </div>
               )}
@@ -218,7 +146,7 @@ export const AddressRegistrationModal = ({
           </div>
 
           {/* 별칭 입력 섹션 */}
-          {selectedAddress && (
+          {addressSearch.selectedAddress && (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white">별칭 (선택사항)</h3>
@@ -255,7 +183,7 @@ export const AddressRegistrationModal = ({
               size="lg"
               onClick={handleSave}
               isLoading={isSaving}
-              disabled={!selectedAddress || isSaving}
+              disabled={!addressSearch.selectedAddress || isSaving}
               className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-white shadow-md shadow-orange-500/30"
             >
               등록하기

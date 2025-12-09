@@ -14,6 +14,11 @@ export const isValidPassword = (password: string): boolean => {
   return password.length >= VALIDATION.PASSWORD_MIN_LENGTH;
 };
 
+// 비밀번호 확인 검증
+export const isPasswordMatch = (password: string, confirmPassword: string): boolean => {
+  return password === confirmPassword;
+};
+
 // 전화번호 검증
 export const isValidPhone = (phone: string): boolean => {
   return VALIDATION.PHONE_REGEX.test(phone);

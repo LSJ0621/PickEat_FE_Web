@@ -8,7 +8,8 @@ import { StatusPopupCard } from '@/components/common/StatusPopupCard';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
-import { isAxiosError } from 'axios';
+import { isEmpty } from '@/utils/validation';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,10 +52,10 @@ export const LoginPage = () => {
   };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
+    if (isEmpty(email) || isEmpty(password)) {
       setErrorPopup({
         open: true,
-        message: '이메일과 비밀번호를 입력해주세요.',
+        message: ERROR_MESSAGES.EMAIL_AND_PASSWORD_REQUIRED,
       });
       return;
     }
@@ -82,15 +83,7 @@ export const LoginPage = () => {
       navigate('/');
     } catch (error: unknown) {
       console.error('로그인 실패:', error);
-      
-      let message = '로그인에 실패했습니다.';
-      
-      // Axios 에러인 경우 서버에서 전달한 메시지 사용
-      if (isAxiosError(error) && error.response?.data?.message) {
-        message = error.response.data.message;
-      } else {
-        message = extractErrorMessage(error, '로그인에 실패했습니다.');
-      }
+      const message = extractErrorMessage(error, '로그인에 실패했습니다.');
 
       setErrorPopup({
         open: true,

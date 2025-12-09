@@ -2,7 +2,7 @@
  * 유저 관련 API 서비스
  */
 
-import type { DeleteAccountResponse } from '../../types/auth';
+import type { DeleteAccountResponse } from '@/types/auth';
 import type {
   AddressSearchResponse,
   BatchDeleteAddressRequest,
@@ -18,7 +18,7 @@ import type {
   SetPreferencesRequest,
   UpdateAddressRequest,
   UserAddress,
-} from '../../types/user';
+} from '@/types/user';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
 

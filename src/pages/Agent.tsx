@@ -18,7 +18,6 @@ import {
   setShowConfirmCard,
   upsertAiRecommendations,
 } from '@/store/slices/agentSlice';
-import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationLocation } from '@/types/user';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef } from 'react';

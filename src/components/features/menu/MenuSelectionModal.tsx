@@ -5,6 +5,7 @@
 
 import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
+import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { MenuSlot } from '@/types/menu';
 import { extractErrorMessage } from '@/utils/error';
 import { useState } from 'react';
@@ -81,15 +82,7 @@ export const MenuSelectionModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur">
       <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-950/95 p-6 shadow-2xl backdrop-blur">
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-6 text-slate-400 transition hover:text-white"
-          aria-label="닫기"
-        >
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <ModalCloseButton onClose={onClose} />
 
         <div className="space-y-4">
           <div>

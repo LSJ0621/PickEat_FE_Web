@@ -7,11 +7,13 @@ import { Button } from '@/components/common/Button';
 import { useAppSelector } from '@/store/hooks';
 import type { MenuPayload, MenuSelection, MenuSlot } from '@/types/menu';
 import { extractErrorMessage } from '@/utils/error';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { formatDateKorean } from '@/utils/format';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export const MenuSelectionHistory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const [selections, setSelections] = useState<MenuSelection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,16 +23,13 @@ export const MenuSelectionHistory = () => {
   const [editingSelectionId, setEditingSelectionId] = useState<number | null>(null);
   const [editingPayload, setEditingPayload] = useState<MenuPayload | null>(null);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
+  // 초기 마운트 여부 추적 (StrictMode 대응)
+  const hasInitializedRef = useRef(false);
+  const prevSelectedDateRef = useRef<string>('');
+  const currentPathnameRef = useRef<string>(location.pathname);
 
-    loadSelections();
-  }, [isAuthenticated, navigate, selectedDate]);
-
-  const loadSelections = async () => {
+  // loadSelections를 useCallback으로 안정화 (다른 곳에서도 사용되므로)
+  const loadSelections = useCallback(async () => {
     setLoading(true);
     try {
       const result = await menuService.getMenuSelections(selectedDate || undefined);
@@ -48,7 +47,47 @@ export const MenuSelectionHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
+
+  // 인증 확인 및 리다이렉트
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+  }, [isAuthenticated, navigate]);
+
+  // 경로 변경 감지 및 초기화 리셋 (컴포넌트 재사용 시 대비)
+  useEffect(() => {
+    if (currentPathnameRef.current !== location.pathname) {
+      hasInitializedRef.current = false;
+      prevSelectedDateRef.current = '';
+      currentPathnameRef.current = location.pathname;
+    }
+  }, [location.pathname]);
+
+  // 데이터 로드 (StrictMode 대응)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    // StrictMode 대응: selectedDate가 변경되지 않았고 이미 초기화했으면 스킵
+    const isDateChanged = prevSelectedDateRef.current !== selectedDate;
+    if (!isDateChanged && hasInitializedRef.current) {
+      return;
+    }
+    
+    if (isDateChanged) {
+      prevSelectedDateRef.current = selectedDate;
+    }
+    hasInitializedRef.current = true;
+
+    // loadSelections는 selectedDate를 dependency로 가지므로 selectedDate 변경 시 재생성됨
+    // dependency에서 제외하고 selectedDate만 사용하여 무한 루프 방지
+    loadSelections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, selectedDate]);
 
   const handleEdit = (selection: MenuSelection) => {
     setEditingSelectionId(selection.id);
@@ -126,14 +165,6 @@ export const MenuSelectionHistory = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   // 날짜별로 그룹핑
   const groupedSelections = selections.reduce((acc, selection) => {
@@ -250,7 +281,7 @@ export const MenuSelectionHistory = () => {
                 >
                   {/* 상단: 날짜 + (편집/전체취소) 액션 영역 */}
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-white">{formatDate(date)}</h2>
+                    <h2 className="text-xl font-semibold text-white">{formatDateKorean(date)}</h2>
                     <div className="flex items-center gap-2 text-xs">
                       {isGlobalEditing && (
                         <>
