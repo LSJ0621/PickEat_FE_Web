@@ -1,12 +1,13 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useAppSelector } from '@/store/hooks';
 import { AuthPromptModal } from '@/components/common/AuthPromptModal';
+import { useAppSelector } from '@/store/hooks';
+import type { ReactElement } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
   label: string;
   path: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   requiresAuth?: boolean;
 }
 

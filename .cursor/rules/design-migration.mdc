@@ -1,0 +1,17 @@
+---
+description: shadcn/ui 디자인 마이그레이션 가이드라인
+globs: ["**/components/**/*.tsx"]
+alwaysApply: false
+---
+
+# shadcn/ui 디자인 마이그레이션
+
+로직은 그대로 유지하고 UI만 shadcn/ui 컴포넌트로 교체. Props 인터페이스와 동작은 동일하게 유지.
+
+원칙: 기존 컴포넌트의 Props와 동작은 변경하지 않음. 내부 구현만 shadcn/ui 컴포넌트로 교체. 서비스에 맞게 스타일 커스터마이징.
+
+마이그레이션 대상: 모달 → Dialog, Input → Input, Button → Button (기존 유지 또는 shadcn/ui 버전으로 교체), Form 요소 → Form/Select/Checkbox 등.
+
+작업 순서: 1) shadcn/ui 컴포넌트 추가, 2) 기존 컴포넌트 내부를 shadcn/ui로 교체 (Props 유지), 3) 스타일 커스터마이징, 4) 기능 테스트.
+
+주의: Props 인터페이스 변경 금지, 동작 변경 금지, 점진적 교체 (한 번에 하나씩).

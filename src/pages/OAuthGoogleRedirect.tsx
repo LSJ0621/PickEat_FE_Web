@@ -3,6 +3,7 @@
  */
 
 import { authService } from '@/api/services/auth';
+import { OAuthLoadingScreen } from '@/components/common/OAuthLoadingScreen';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import { extractErrorMessage } from '@/utils/error';
@@ -15,7 +16,6 @@ export const OAuthGoogleRedirect = () => {
   const [error, setError] = useState<string | null>(null);
   const [showReRegisterModal, setShowReRegisterModal] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [pendingName, setPendingName] = useState<string | null>(null);
   const [reRegisterMessage, setReRegisterMessage] = useState('탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
   const [isReRegistering, setIsReRegistering] = useState(false);
   const navigate = useNavigate();
@@ -78,9 +78,7 @@ export const OAuthGoogleRedirect = () => {
           };
           if (errorData?.error === 'RE_REGISTER_REQUIRED') {
             const emailFromServer = errorData.email ?? errorData.data?.email ?? null;
-            const nameFromServer = errorData.name ?? errorData.data?.name ?? null;
             setPendingEmail(emailFromServer);
-            setPendingName(nameFromServer);
             setReRegisterMessage(errorData.message || '탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
             setShowReRegisterModal(true);
             setLoading(false);
@@ -89,12 +87,7 @@ export const OAuthGoogleRedirect = () => {
         }
         
         // 그 외 에러 처리
-        let errorMessage = '로그인에 실패했습니다.';
-        if (isAxiosError(err) && err.response?.data?.message) {
-          errorMessage = err.response.data.message;
-        } else {
-          errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
-        }
+        const errorMessage = extractErrorMessage(err, '로그인에 실패했습니다.');
         
         const statusCode = isAxiosError(err) ? err.response?.status : undefined;
         setError(`${errorMessage}${statusCode ? ` (상태 코드: ${statusCode})` : ''}`);
@@ -129,14 +122,7 @@ export const OAuthGoogleRedirect = () => {
       navigate('/login');
     } catch (err: unknown) {
       console.error('재가입 실패:', err);
-      let errorMessage = '재가입에 실패했습니다.';
-      
-      // 서버에서 전달한 메시지 사용
-      if (isAxiosError(err) && err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else {
-        errorMessage = extractErrorMessage(err, '재가입에 실패했습니다.');
-      }
+      const errorMessage = extractErrorMessage(err, '재가입에 실패했습니다.');
       
       alert(errorMessage);
       setIsReRegistering(false);
@@ -188,14 +174,7 @@ export const OAuthGoogleRedirect = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-lg font-medium text-gray-900">구글 로그인 진행 중...</p>
-        </div>
-      </div>
-    );
+    return <OAuthLoadingScreen provider="google" />;
   }
 
   if (error) {

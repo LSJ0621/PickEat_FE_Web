@@ -2,6 +2,8 @@ import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { StatusPopupCard } from '@/components/common/StatusPopupCard';
 import { extractErrorMessage } from '@/utils/error';
+import { isEmpty } from '@/utils/validation';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { isAxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -50,8 +52,8 @@ export const PasswordResetRequestPage = () => {
   }, [cooldownRemaining]);
 
   const handleSendCode = async () => {
-    if (!email.trim()) {
-      setErrors((prev) => ({ ...prev, email: '이메일을 입력해주세요.' }));
+    if (isEmpty(email)) {
+      setErrors((prev) => ({ ...prev, email: ERROR_MESSAGES.EMAIL_REQUIRED }));
       return;
     }
 
@@ -106,12 +108,12 @@ export const PasswordResetRequestPage = () => {
   };
 
   const handleVerifyCode = async () => {
-    if (!email.trim()) {
-      setErrors((prev) => ({ ...prev, email: '이메일을 입력해주세요.' }));
+    if (isEmpty(email)) {
+      setErrors((prev) => ({ ...prev, email: ERROR_MESSAGES.EMAIL_REQUIRED }));
       return;
     }
-    if (!code.trim()) {
-      setErrors((prev) => ({ ...prev, code: '인증 코드를 입력해주세요.' }));
+    if (isEmpty(code)) {
+      setErrors((prev) => ({ ...prev, code: ERROR_MESSAGES.VERIFICATION_CODE_REQUIRED }));
       return;
     }
 

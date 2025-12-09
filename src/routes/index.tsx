@@ -5,16 +5,16 @@
 
 import { useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HomePage } from '../pages/Home';
-import { AgentPage } from '../pages/Agent';
-import { LoginPage } from '../pages/Login';
-import { MyPage } from '../pages/MyPage';
-import { RecommendationHistory } from '../pages/RecommendationHistory';
-import { MenuSelectionHistory } from '../pages/MenuSelectionHistory';
-import { RegisterPage } from '../pages/Register';
-import { OAuthKakaoRedirect } from '../pages/OAuthKakaoRedirect';
-import { OAuthGoogleRedirect } from '../pages/OAuthGoogleRedirect';
-import { MapPage } from '../pages/Map';
+import { HomePage } from '@/pages/Home';
+import { AgentPage } from '@/pages/Agent';
+import { LoginPage } from '@/pages/Login';
+import { MyPage } from '@/pages/MyPage';
+import { RecommendationHistory } from '@/pages/RecommendationHistory';
+import { MenuSelectionHistory } from '@/pages/MenuSelectionHistory';
+import { RegisterPage } from '@/pages/Register';
+import { OAuthKakaoRedirect } from '@/pages/OAuthKakaoRedirect';
+import { OAuthGoogleRedirect } from '@/pages/OAuthGoogleRedirect';
+import { MapPage } from '@/pages/Map';
 import ProtectedRoute from './ProtectedRoute';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';

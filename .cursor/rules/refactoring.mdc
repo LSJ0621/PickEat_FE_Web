@@ -1,0 +1,63 @@
+# 리팩토링 규칙
+
+> **적용 대상**: `**/*.{ts,tsx}`  
+> **핵심 원칙**: 기능 변경 없이 구조만 개선. 계획 수립 후 단계적 작업.
+
+## 🚨 리팩토링 전 필수 체크
+
+Context7의 React 공식 문서(`/websites/react_dev`) 확인:
+- useEffect: 의존성 배열, 클린업, StrictMode
+- Custom Hook: 고수준 사용 사례, 객체 반환 시 의존성 주의
+- 상태 관리: Redux-로컬 중복, 기존 패턴 일관성
+- 성능: 무한 루프, 메모리 누수, 중복 API 호출
+
+## ✅ 각 Phase 완료 후 필수 검증
+
+```bash
+# 1. 빌드 테스트
+npm run build
+
+# 2. 타입 체크 (모든 에러 수정)
+# 3. 기능 테스트 (브라우저 런타임 확인)
+# 4. 중복 코드 검증 (아래 프로세스)
+```
+
+### 중복 코드 검증 프로세스
+
+<thinking>
+1. 기존 유틸 확인: `utils/{validation,constants,error}.ts`
+2. 유사 파일 패턴 검색: `*History.tsx`, `*Page.tsx` 등
+3. useEffect + API 호출 패턴: StrictMode 대응 확인
+4. **반복 확인**: 중복 발견 → 수정 → 빌드 → 재검색 (중복 없을 때까지)
+</thinking>
+
+**완료 기준**: 중복 코드 없음 + 빌드 성공
+
+## 📋 우선순위
+
+1. **중복 코드 제거** → 공통 함수/Hook 추출, 원본 완전 삭제
+2. 긴 파일 분리 (300줄↑)
+3. 불필요 코드 제거 (unused imports/변수/함수)
+4. `any` 타입 제거
+5. 상대 → 절대 경로
+6. 하드코딩 제거 (`utils/constants.ts`)
+7. 에러 처리 통일 (`extractErrorMessage`)
+
+## ⚠️ 주의사항
+
+**DO**:
+- 원본 완전 제거 (로직 분리 시)
+- Hook 함수를 `useCallback`으로 안정화
+- 의존성 배열에 함수만 사용: `[hookObject.functionName]` ✅
+
+**DON'T**:
+- 의존성 배열에 객체 직접 사용: `[hookObject]` ❌
+- 기능 변경과 동시 리팩토링
+- 테스트 없이 진행
+- 과도한 추상화
+
+## 🔄 진행 방식
+
+한 번에 하나의 파일/기능. 문제 시 즉시 중단.
+
+각 Phase: `계획 수립(docs/refactoringplan.md)` → `구현` → `빌드` → `타입 체크` → `기능 테스트` → `중복 검증` → `다음 Phase`
