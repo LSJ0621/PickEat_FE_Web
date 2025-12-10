@@ -6,14 +6,14 @@ import { Button } from '@/components/common/Button';
 import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
 import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
-import { useHistoryAiHistory } from '@/hooks/useHistoryAiHistory';
-import { useHistoryAiRecommendations } from '@/hooks/useHistoryAiRecommendations';
-import { useHistoryMenuActions } from '@/hooks/useHistoryMenuActions';
-import { useUserLocation } from '@/hooks/useUserLocation';
+import { useHistoryAiHistory } from '@/hooks/history/useHistoryAiHistory';
+import { useHistoryAiRecommendations } from '@/hooks/history/useHistoryAiRecommendations';
+import { useHistoryMenuActions } from '@/hooks/history/useHistoryMenuActions';
+import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useAppSelector } from '@/store/hooks';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface MenuPlaceRecommendationGroup {
   menuName: string;
@@ -52,16 +52,48 @@ export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
   };
 
   const handleSearchWithClose = async () => {
-    await menuActions.handleSearch();
+    // 모달을 먼저 닫기 (비동기 작업과 관계없이 즉시 닫힘)
+    menuActions.handleCancel();
+    
+    // 모달을 닫은 후 검색 작업 실행
+    try {
+      await menuActions.handleSearch();
+    } catch (error) {
+      // 에러는 handleSearch 내부에서 처리되므로 여기서는 무시
+    }
   };
 
   const handleAiRecommendWithClose = async () => {
+    // 모달을 먼저 닫기 (비동기 작업과 관계없이 즉시 닫힘)
+    menuActions.handleCancel();
+    
     if (!menuActions.selectedMenu) {
       return;
     }
-    await aiRecommendations.handleAiRecommend(menuActions.selectedMenu);
-    menuActions.handleCancel();
+    
+    // 모달을 닫은 후 AI 추천 작업 실행
+    try {
+      await aiRecommendations.handleAiRecommend(menuActions.selectedMenu);
+    } catch (error) {
+      // 에러는 handleAiRecommend 내부에서 처리되므로 여기서는 무시
+    }
   };
+
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!menuActions.showConfirmCard) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        menuActions.handleCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuActions.showConfirmCard, menuActions.handleCancel]);
 
   const aiRecommendationGroups: MenuPlaceRecommendationGroup[] = useMemo(() => {
     if (!menuActions.selectedMenu || aiRecommendations.aiRecommendations.length === 0) {
@@ -172,8 +204,19 @@ export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
 
       {/* 확인 카드 모달 */}
       {menuActions.showConfirmCard && menuActions.selectedMenu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            // 배경 클릭 시 모달 닫기
+            if (e.target === e.currentTarget) {
+              menuActions.handleCancel();
+            }
+          }}
+        >
+          <div 
+            className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={menuActions.handleCancel}
               className="absolute right-6 top-6 text-slate-400 hover:text-white"

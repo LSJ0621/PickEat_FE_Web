@@ -1,9 +1,10 @@
 import { PlaceBlogsSection } from './PlaceBlogsSection';
 import { PlaceMiniMap } from './PlaceMiniMap';
 import { PlaceReviewsSection } from './PlaceReviewsSection';
-import { usePlaceDetails } from '@/hooks/usePlaceDetails';
+import { usePlaceDetails } from '@/hooks/place/usePlaceDetails';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { MAP_CONFIG } from '@/utils/constants';
 
 interface PlaceDetailsModalProps {
@@ -17,7 +18,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [photoTransition, setPhotoTransition] = useState<'fade' | 'none'>('none');
   const naverClientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
-
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
   // 사진 인덱스 초기화
   useEffect(() => {
@@ -25,6 +26,31 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
       setCurrentPhotoIndex(0);
     }
   }, [placeDetail?.photos]);
+
+  // 모달이 열릴 때 스크롤 위치를 맨 위로 초기화
+  useEffect(() => {
+    if (placeId && modalContentRef.current) {
+      // DOM이 완전히 렌더링된 후 스크롤 초기화
+      const timer = setTimeout(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.scrollTop = 0;
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [placeId, status]); // placeId와 status 모두 감지
+
+  // 데이터가 로드되어 ready 상태가 될 때도 스크롤 초기화
+  useEffect(() => {
+    if (status === 'ready' && placeId && modalContentRef.current) {
+      // requestAnimationFrame을 사용하여 DOM 렌더링 완료 후 스크롤 초기화
+      requestAnimationFrame(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.scrollTop = 0;
+        }
+      });
+    }
+  }, [status, placeId]);
 
 
   // 사진 네비게이션
@@ -48,13 +74,63 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
     }
   };
 
-  if (!placeId) {
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    if (!placeId) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [placeId, onClose]);
+
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(!!placeId);
+
+  useEffect(() => {
+    if (placeId) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [placeId]);
+
+  if (!shouldRender) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4 backdrop-blur">
-      <div className="relative w-full max-w-2xl rounded-[32px] border border-white/10 bg-slate-950/95 p-6 text-white shadow-2xl">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-[10000] flex items-start justify-center bg-black/70 p-4 pt-8 backdrop-blur overflow-y-auto ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+      onClick={(e) => {
+        // 배경 클릭 시 모달 닫기
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        ref={modalContentRef}
+        className={`relative w-full max-w-2xl max-h-[calc(100vh-2rem)] rounded-[32px] border border-white/10 bg-slate-950/95 p-6 text-white shadow-2xl overflow-y-auto custom-scroll ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <ModalCloseButton onClose={onClose} />
 
         {status === 'loading' && (
@@ -70,7 +146,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
         )}
 
         {status === 'ready' && (
-          <div className="max-h-[80vh] overflow-y-auto rounded-xl custom-scroll space-y-6">
+          <div className="space-y-6">
             {/* 가게 이름 (제목) */}
             <div>
               <h3 className="text-2xl font-bold text-white">
@@ -163,7 +239,8 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

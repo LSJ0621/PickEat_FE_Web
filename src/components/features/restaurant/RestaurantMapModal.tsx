@@ -256,9 +256,46 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
     };
   }, [clientId, markerKey, restaurants]);
 
+  // 모달이 처음 마운트될 때는 애니메이션을 즉시 활성화하여 깜빡임 방지
+  const [isAnimating, setIsAnimating] = useState(true);
+  const [shouldRender, setShouldRender] = useState(restaurants.length > 0);
+  const isFirstMountRef = useRef(true);
+
+  useEffect(() => {
+    if (restaurants.length > 0) {
+      setShouldRender(true);
+      // 처음 마운트 시에는 이미 isAnimating이 true로 설정되어 있으므로 스킵
+      // restaurants가 변경된 경우에만 애니메이션 재시작
+      if (!isFirstMountRef.current) {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      }
+      isFirstMountRef.current = false;
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [restaurants.length]);
+
+  if (!shouldRender) {
+    return null;
+  }
+
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur">
-      <div className="relative flex w-full max-w-6xl flex-col gap-6 rounded-[36px] border border-white/10 bg-slate-950/95 p-6 text-white shadow-[0_40px_120px_rgba(2,6,23,0.8)] lg:flex-row lg:p-10">
+    <div 
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative flex w-full max-w-6xl flex-col gap-6 rounded-[36px] border border-white/10 bg-slate-950/95 p-6 text-white shadow-[0_40px_120px_rgba(2,6,23,0.8)] lg:flex-row lg:p-10 ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <ModalCloseButton onClose={onClose} size="lg" />
 
         <div className="w-full lg:w-80">

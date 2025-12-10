@@ -7,12 +7,13 @@ import { userService } from '@/api/services/user';
 import { AddressSearchInput } from '@/components/common/AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
-import { useAddressSearch } from '@/hooks/useAddressSearch';
-import { useModalScrollLock } from '@/hooks/useModalScrollLock';
+import { useAddressSearch } from '@/hooks/address/useAddressSearch';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
-import { extractErrorMessage } from '@/utils/error';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface AddressRegistrationModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ export const AddressRegistrationModal = ({
 }: AddressRegistrationModalProps) => {
   const dispatch = useAppDispatch();
   const addressSearch = useAddressSearch();
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const [alias, setAlias] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -45,7 +47,7 @@ export const AddressRegistrationModal = ({
 
   const handleSave = async () => {
     if (!addressSearch.selectedAddress) {
-      alert('주소를 선택해주세요.');
+      handleError('주소를 선택해주세요.', 'AddressRegistration');
       return;
     }
 
@@ -71,7 +73,6 @@ export const AddressRegistrationModal = ({
             await userService.updateAddress(newAddress.id, { alias: alias.trim() });
           }
         } catch (error) {
-          console.error('별칭 설정 실패:', error);
           // 별칭 설정 실패해도 주소 저장은 성공한 것으로 처리
         }
       }
@@ -89,22 +90,48 @@ export const AddressRegistrationModal = ({
         })
       );
 
+      handleSuccess('주소가 등록되었습니다.');
       onComplete();
     } catch (error: unknown) {
-      console.error('주소 저장 실패:', error);
-      alert(extractErrorMessage(error, '주소 저장에 실패했습니다.'));
+      handleError(error, 'AddressRegistration');
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (!open) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <div className="space-y-6">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-white">주소 등록</h2>
@@ -191,7 +218,8 @@ export const AddressRegistrationModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
