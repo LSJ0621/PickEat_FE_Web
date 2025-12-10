@@ -4,7 +4,7 @@
  */
 
 import { menuService } from '@/api/services/menu';
-import { useUserLocation } from '@/hooks/useUserLocation';
+import { useUserLocation } from '@/hooks/map/useUserLocation';
 import type { RestaurantBlog } from '@/types/menu';
 import { extractErrorMessage } from '@/utils/error';
 import { startTransition, useEffect, useRef, useState } from 'react';
@@ -68,7 +68,6 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
           return;
         }
         
-        console.error('블로그 검색 실패:', error);
         startTransition(() => {
           setBlogsError(extractErrorMessage(error, '블로그 검색에 실패했습니다.'));
           setBlogsLoading(false);

@@ -8,15 +8,16 @@ import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { InitialSetupAddressSection } from './InitialSetupAddressSection';
 import { InitialSetupPreferencesSection } from './InitialSetupPreferencesSection';
-import { useModalScrollLock } from '@/hooks/useModalScrollLock';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
 import type { SelectedAddress } from '@/types/user';
-import { extractErrorMessage } from '@/utils/error';
 import { isEmpty } from '@/utils/validation';
 import { ERROR_MESSAGES } from '@/utils/constants';
 import type { UserSetupStatus } from '@/utils/userSetup';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface InitialSetupModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ export const InitialSetupModal = ({
   onComplete,
 }: InitialSetupModalProps) => {
   const dispatch = useAppDispatch();
+  const { handleError } = useErrorHandler();
 
   // 이름 관련
   const [name, setName] = useState('');
@@ -64,12 +66,12 @@ export const InitialSetupModal = ({
   const handleSaveAll = async () => {
     // 유효성 검사
     if (setupStatus.needsName && isEmpty(name)) {
-      alert(ERROR_MESSAGES.NAME_REQUIRED);
+      handleError(ERROR_MESSAGES.NAME_REQUIRED, 'InitialSetupModal');
       return;
     }
 
     if (setupStatus.needsAddress && !selectedAddress) {
-      alert('주소를 선택해주세요.');
+      handleError('주소를 선택해주세요.', 'InitialSetupModal');
       return;
     }
 
@@ -102,7 +104,6 @@ export const InitialSetupModal = ({
               await userService.updateAddress(newAddress.id, { alias: addressAlias.trim() });
             }
           } catch (error) {
-            console.error('별칭 설정 실패:', error);
             // 별칭 설정 실패해도 주소 저장은 성공한 것으로 처리
           }
         }
@@ -138,8 +139,7 @@ export const InitialSetupModal = ({
       // 완료 처리
       onComplete();
     } catch (error: unknown) {
-      console.error('정보 저장 실패:', error);
-      alert(extractErrorMessage(error, '정보 저장에 실패했습니다.'));
+      handleError(error, 'InitialSetupModal');
     } finally {
       setIsSaving(false);
     }
@@ -151,13 +151,39 @@ export const InitialSetupModal = ({
     (!setupStatus.needsAddress || selectedAddress !== null) &&
     (!setupStatus.needsPreferences || likes.length > 0 || dislikes.length > 0);
 
-  if (!open) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/20 p-4 backdrop-blur-sm ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <div className="space-y-6">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-white">서비스 이용을 위한 정보 입력</h2>
@@ -217,7 +243,8 @@ export const InitialSetupModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

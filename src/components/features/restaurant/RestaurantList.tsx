@@ -3,7 +3,7 @@
  */
 
 import { Button } from '@/components/common/Button';
-import { useUserLocation } from '@/hooks/useUserLocation';
+import { useUserLocation } from '@/hooks/map/useUserLocation';
 import type { Restaurant } from '@/types/search';
 import { useState } from 'react';
 import { RestaurantListItem } from './RestaurantListItem';

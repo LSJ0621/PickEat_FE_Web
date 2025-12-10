@@ -5,23 +5,23 @@
 
 import { useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HomePage } from '@/pages/Home';
-import { AgentPage } from '@/pages/Agent';
-import { LoginPage } from '@/pages/Login';
-import { MyPage } from '@/pages/MyPage';
-import { RecommendationHistory } from '@/pages/RecommendationHistory';
-import { MenuSelectionHistory } from '@/pages/MenuSelectionHistory';
-import { RegisterPage } from '@/pages/Register';
-import { OAuthKakaoRedirect } from '@/pages/OAuthKakaoRedirect';
-import { OAuthGoogleRedirect } from '@/pages/OAuthGoogleRedirect';
-import { MapPage } from '@/pages/Map';
+import { HomePage } from '@/pages/main/Home';
+import { AgentPage } from '@/pages/main/Agent';
+import { LoginPage } from '@/pages/auth/Login';
+import { MyPage } from '@/pages/user/MyPage';
+import { RecommendationHistory } from '@/pages/history/RecommendationHistory';
+import { MenuSelectionHistory } from '@/pages/history/MenuSelectionHistory';
+import { RegisterPage } from '@/pages/auth/Register';
+import { OAuthKakaoRedirect } from '@/pages/auth/oauth/OAuthKakaoRedirect';
+import { OAuthGoogleRedirect } from '@/pages/auth/oauth/OAuthGoogleRedirect';
+import { MapPage } from '@/pages/main/Map';
 import ProtectedRoute from './ProtectedRoute';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { PasswordResetRequestPage } from '@/pages/PasswordResetRequest';
-import { PasswordResetPage } from '@/pages/PasswordReset';
-import { ReRegisterPage } from '@/pages/ReRegister';
+import { PasswordResetRequestPage } from '@/pages/auth/PasswordResetRequest';
+import { PasswordResetPage } from '@/pages/auth/PasswordReset';
+import { ReRegisterPage } from '@/pages/auth/ReRegister';
 
 // 라우트 정의
 const router = createBrowserRouter([

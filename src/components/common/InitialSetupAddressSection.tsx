@@ -5,7 +5,7 @@
 
 import { AddressSearchInput } from '@/components/common/AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
-import { useAddressSearch } from '@/hooks/useAddressSearch';
+import { useAddressSearch } from '@/hooks/address/useAddressSearch';
 import type { SelectedAddress } from '@/types/user';
 
 interface InitialSetupAddressSectionProps {
