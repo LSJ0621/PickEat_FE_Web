@@ -5,21 +5,22 @@
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import {
-  AddressAddModal,
-  AddressListModal,
-  AddressSection,
+    AddressAddModal,
+    AddressListModal,
+    AddressSection,
 } from '@/components/features/user/address';
 import {
-  PreferencesEditModal,
-  PreferencesSection,
+    PreferencesEditModal,
+    PreferencesSection,
 } from '@/components/features/user/preferences';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAddressList } from '@/hooks/address/useAddressList';
 import { useAddressModal } from '@/hooks/address/useAddressModal';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { usePreferences } from '@/hooks/user/usePreferences';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutAsync } from '@/store/slices/authSlice';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export const MyPage = () => {
@@ -36,6 +37,10 @@ export const MyPage = () => {
   const [showAddressListModal, setShowAddressListModal] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  
+  // 기본주소 변경 확인 모달 애니메이션 상태
+  const [isConfirmModalAnimating, setIsConfirmModalAnimating] = useState(false);
+  const [shouldRenderConfirmModal, setShouldRenderConfirmModal] = useState(false);
 
   // Custom Hooks
   // Redux 상태를 초기값으로 사용 (중복 API 호출 방지)
@@ -114,6 +119,22 @@ export const MyPage = () => {
     prevShowAddressListModalRef.current = showAddressListModal;
     // useCallback으로 안정화된 함수만 의존성으로 사용 (객체 전체 사용 금지)
   }, [showAddressListModal, addressList.loadAddresses]);
+
+  // 기본주소 변경 확인 모달 애니메이션
+  useEffect(() => {
+    if (addressList.confirmDefaultAddress) {
+      setShouldRenderConfirmModal(true);
+      requestAnimationFrame(() => {
+        setIsConfirmModalAnimating(true);
+      });
+    } else {
+      setIsConfirmModalAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRenderConfirmModal(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [addressList.confirmDefaultAddress]);
 
   const handleOpenPreferencesModal = () => {
     preferences.loadPreferences();
@@ -335,39 +356,44 @@ export const MyPage = () => {
         )}
 
       {/* 기본주소 변경 확인 모달 */}
-        {addressList.confirmDefaultAddress && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
-            <h2 className="mb-4 text-xl font-bold text-white">기본주소 변경</h2>
-            <p className="mb-6 text-slate-300">
-              <span className="font-semibold text-orange-200">
-                  {addressList.confirmDefaultAddress.alias
-                    ? `${addressList.confirmDefaultAddress.alias} - `
-                    : ''}
-                  {addressList.confirmDefaultAddress.roadAddress}
-              </span>
-              를 기본주소로 사용하시겠습니까?
-            </p>
-            <div className="flex gap-3">
-              <Button
-                size="lg"
-                variant="ghost"
-                  onClick={() => addressList.setConfirmDefaultAddress(null)}
-                className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
-              >
-                취소
-              </Button>
-              <Button
-                size="lg"
-                  onClick={addressList.handleConfirmSetDefault}
-                className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
-              >
-                확인
-              </Button>
+        {shouldRenderConfirmModal && addressList.confirmDefaultAddress && createPortal(
+          <div className={`fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
+            isConfirmModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+          }`}>
+            <div className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
+              isConfirmModalAnimating ? 'modal-content-enter' : 'modal-content-exit'
+            }`}>
+              <h2 className="mb-4 text-xl font-bold text-white">기본주소 변경</h2>
+              <p className="mb-6 text-slate-300">
+                <span className="font-semibold text-orange-200">
+                    {addressList.confirmDefaultAddress.alias
+                      ? `${addressList.confirmDefaultAddress.alias} - `
+                      : ''}
+                    {addressList.confirmDefaultAddress.roadAddress}
+                </span>
+                를 기본주소로 사용하시겠습니까?
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  variant="ghost"
+                    onClick={() => addressList.setConfirmDefaultAddress(null)}
+                  className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                >
+                  취소
+                </Button>
+                <Button
+                  size="lg"
+                    onClick={addressList.handleConfirmSetDefault}
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+                >
+                  확인
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   );
