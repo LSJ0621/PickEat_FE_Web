@@ -60,8 +60,7 @@
 3. **Custom Hook 추출**: 비즈니스 로직을 Hook으로 분리
 4. **코드 품질 개선**: console.log 제거, 상대 경로 수정
 5. **불필요한 코드 제거**: 사용하지 않는 파일/import/변수/함수 제거
-6. **디자인 마이그레이션**: shadcn/ui로 UI 교체 (로직은 유지)
-7. **유지보수성 향상**: 중복 코드 제거, 분리된 로직은 원본에서 제거하여 단일 책임 원칙 준수
+6. **유지보수성 향상**: 중복 코드 제거, 분리된 로직은 원본에서 제거하여 단일 책임 원칙 준수
 
 ---
 
@@ -76,7 +75,7 @@ src/components/
 │   ├── menu/
 │   └── restaurant/
 ├── layout/          # 레이아웃
-└── ui/              # shadcn/ui 컴포넌트
+└── ui/              # UI 컴포넌트
 ```
 
 ### 개선된 구조 (리팩토링 후)
@@ -107,7 +106,7 @@ src/components/
 │       │   └── index.ts
 │       └── index.ts
 ├── layout/          # 레이아웃 (기존 유지)
-└── ui/              # shadcn/ui 컴포넌트 (기존 유지)
+└── ui/              # UI 컴포넌트 (기존 유지)
 ```
 
 **폴더 구조 원칙**:
@@ -475,7 +474,6 @@ src/components/features/restaurant/
 - **Phase 6**: 불필요한 코드 제거
 - **Phase 7**: 추가 파일 컴포넌트 분리 (300줄 초과 파일)
 - **Phase 8**: 중복 코드 통합 및 재사용 컴포넌트 생성
-- **Phase 9**: shadcn/ui 디자인 마이그레이션
 
 각 Phase는 독립적으로 완료 가능하며, 필요시 중단하고 다음 단계로 진행 가능.
 
@@ -875,7 +873,7 @@ src/components/features/restaurant/
 2. 주요 위치에서 공통 컴포넌트로 교체
 3. **빌드 및 타입 체크**: `npm run build` 실행하여 TypeScript 컴파일 에러 확인 및 수정
 
-**주의**: shadcn/ui 적용 시 자동으로 해결될 수 있으므로 선택적
+**주의**: 선택적 개선 사항
 
 ---
 
@@ -939,84 +937,59 @@ src/components/features/restaurant/
 
 ---
 
-### Phase 9: shadcn/ui 디자인 마이그레이션
+## 📝 수행 결과 요약
 
-**목표**: 로직은 그대로 유지하고 UI만 shadcn/ui 컴포넌트로 교체
+### Phase 1: MyPage.tsx 리팩토링 (완료)
 
-**원칙**:
-- Props 인터페이스와 동작은 변경하지 않음
-- 내부 구현만 shadcn/ui 컴포넌트로 교체
-- 서비스에 맞게 스타일 커스터마이징
+#### 주요 성과
+- **파일 크기 감소**: 978줄 → 345줄 (64% 감소)
+- **컴포넌트 분리**: 주소 섹션, 취향 섹션을 독립 컴포넌트로 분리
+- **Hook 분리**: `useAddressManagement`를 `useAddressList`와 `useAddressModal`로 분리
+- **코드 가독성 향상**: 관심사 분리로 유지보수성 개선
 
-**마이그레이션 대상**:
+#### 변경된 파일
+- `MyPage.tsx`: 메인 컴포넌트 간소화
+- `components/features/user/address/AddressSection.tsx`: 주소 섹션 컴포넌트 생성
+- `components/features/user/preferences/PreferencesSection.tsx`: 취향 섹션 컴포넌트 생성
+- `hooks/address/useAddressList.ts`: 주소 리스트 관리 Hook 생성
+- `hooks/address/useAddressModal.ts`: 주소 모달 관리 Hook 생성
 
-1. **모달 컴포넌트 → Dialog**
-   - `StatusPopupCard` → shadcn/ui Dialog 사용
-   - `AuthPromptModal` → shadcn/ui Dialog 사용
-   - `InitialSetupModal` → shadcn/ui Dialog 사용
-   - `AddressRegistrationModal` → shadcn/ui Dialog 사용
-   - 기타 모달들도 동일하게 교체
+### Phase 2-7: 추가 리팩토링 작업
 
-2. **Input 필드 → shadcn/ui Input**
-   - 기존 input 태그를 shadcn/ui Input으로 교체
-   - 스타일은 기존과 유사하게 유지
+#### 주요 성과
+- **폴더 구조 개선**: Pages와 Hooks 폴더를 기능별로 재구성
+- **코드 일관성**: import 경로 통일, 상대 경로 제거
+- **성능 최적화**: StrictMode 대응, 불필요한 리렌더링 방지
 
-3. **Button (선택적)**
-   - 기존 Button은 프로젝트 전용 스타일이므로 유지 가능
-   - 또는 shadcn/ui Button으로 교체하고 variant로 커스터마이징
+### Phase 8: 컴포넌트 및 Hook 통합 (부분 완료)
 
-4. **Form 요소들**
-   - Select, Checkbox, Radio 등 필요한 컴포넌트 추가
-   - 기존 폼 요소를 shadcn/ui로 교체
+#### 완료된 작업
+- **useAddressManagement Hook 분리** (완료)
+  - `useAddressList.ts`: 주소 리스트 관리 (13개 리턴값)
+  - `useAddressModal.ts`: 주소 모달 관리 (14개 리턴값)
+  - `MyPage.tsx`에서 두 Hook을 독립적으로 사용
 
-**작업 순서**:
-1. 필요한 shadcn/ui 컴포넌트 추가 (`npx shadcn@latest add dialog`, `add select` 등)
-2. 기존 컴포넌트 내부를 shadcn/ui로 교체 (Props 인터페이스는 그대로)
-3. 스타일 커스터마이징 (기존 디자인과 유사하게)
-4. 기능 테스트 (동작 확인)
-5. **빌드 및 타입 체크**: `npm run build` 실행하여 TypeScript 컴파일 에러 확인 및 수정
+#### 진행 중/예정 작업
+- 주소 검색 UI 통합
+- 로딩 스피너 통합
+- 모달 스크롤 방지 Hook 생성
 
-**예시: StatusPopupCard 마이그레이션**
-```typescript
-// 기존: 커스텀 모달
-<div className="fixed inset-0 z-[100]...">
-  <div className="...">
-    {/* 내용 */}
-  </div>
-</div>
+### 전체 성과 요약
 
-// 변경 후: shadcn/ui Dialog 사용 (Props는 동일)
-<Dialog open={open} onOpenChange={(open) => !open && onConfirm()}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogDescription>{message}</DialogDescription>
-    </DialogHeader>
-    <DialogFooter>
-      <Button onClick={onConfirm}>{confirmLabel}</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-```
+#### 정량적 성과
+- **코드 라인 감소**: MyPage.tsx 64% 감소 (978줄 → 345줄)
+- **Hook 분리**: 27개 리턴값을 가진 Hook을 2개 Hook으로 분리
+- **컴포넌트 분리**: 2개 섹션 컴포넌트 생성
+- **폴더 구조**: Pages와 Hooks 폴더 재구성
 
-**주의사항**:
-- Props 인터페이스 변경 금지 (기존 사용처에 영향 없도록)
-- 동작 변경 금지 (onConfirm, onClose 등 동일하게 작동)
-- 점진적 교체 (한 번에 하나씩)
-- 각 교체 후 기능 테스트 필수
+#### 정성적 성과
+- **유지보수성**: 관심사 분리로 코드 이해도 향상
+- **재사용성**: 분리된 컴포넌트와 Hook의 재사용 가능성 증가
+- **가독성**: 작은 단위의 컴포넌트로 코드 읽기 쉬워짐
+- **테스트 용이성**: 분리된 단위로 테스트 작성 용이
 
----
-
-### Phase 9 체크리스트
-- [ ] shadcn/ui Dialog 추가
-- [ ] shadcn/ui Select 추가 (필요시)
-- [ ] shadcn/ui Checkbox 추가 (필요시)
-- [ ] StatusPopupCard → Dialog로 마이그레이션
-- [ ] AuthPromptModal → Dialog로 마이그레이션
-- [ ] InitialSetupModal → Dialog로 마이그레이션
-- [ ] AddressRegistrationModal → Dialog로 마이그레이션
-- [ ] Input 필드들을 shadcn/ui Input으로 교체
-- [ ] 스타일 커스터마이징 (기존 디자인 유지)
-- [ ] 기능 테스트 완료
-- [ ] 빌드 성공 확인
-
+#### 기술적 개선
+- **Single Responsibility Principle**: 각 Hook과 컴포넌트가 단일 책임을 가지도록 개선
+- **관심사 분리**: UI 컴포넌트와 비즈니스 로직 분리
+- **타입 안정성**: TypeScript 타입 정의 유지 및 개선
+- **React 패턴 준수**: React 공식 문서 권장 패턴 적용

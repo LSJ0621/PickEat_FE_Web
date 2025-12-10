@@ -27,15 +27,11 @@ export const ENDPOINTS = {
   
   // 메뉴 관련
   MENU: {
-    LIST: `${API_BASE}/menu`,
-    DETAIL: (id: string) => `${API_BASE}/menu/${id}`,
-    SEARCH: `${API_BASE}/menu/search`,
     RECOMMEND: `${API_BASE}/menu/recommend`,
     RECOMMEND_PLACES: `${API_BASE}/menu/recommend/places`,
     RESTAURANT_BLOGS: `${API_BASE}/menu/restaurant/blogs`,
     RECOMMENDATION_DETAIL: (id: number | string) => `${API_BASE}/menu/recommendations/${id}`,
     PLACE_DETAIL: (placeId: string) => `${API_BASE}/menu/places/${placeId}/detail`,
-    GOOGLE_PLACES_SEARCH: `${API_BASE}/menu/google-places/search`,
     SELECTIONS: `${API_BASE}/menu/selections`,
     SELECTIONS_HISTORY: `${API_BASE}/menu/selections/history`,
     SELECTION_UPDATE: (id: number) => `${API_BASE}/menu/selections/${id}`,
@@ -44,23 +40,6 @@ export const ENDPOINTS = {
   // 검색 관련
   SEARCH: {
     RESTAURANTS: `${API_BASE}/search/restaurants`,
-  },
-  
-  // 주문 관련
-  ORDER: {
-    CREATE: `${API_BASE}/order`,
-    LIST: `${API_BASE}/order`,
-    DETAIL: (id: string) => `${API_BASE}/order/${id}`,
-    CANCEL: (id: string) => `${API_BASE}/order/${id}/cancel`,
-  },
-  
-  // 장바구니 관련
-  CART: {
-    GET: `${API_BASE}/cart`,
-    ADD: `${API_BASE}/cart`,
-    UPDATE: (id: string) => `${API_BASE}/cart/${id}`,
-    DELETE: (id: string) => `${API_BASE}/cart/${id}`,
-    CLEAR: `${API_BASE}/cart/clear`,
   },
   
   // 유저 관련

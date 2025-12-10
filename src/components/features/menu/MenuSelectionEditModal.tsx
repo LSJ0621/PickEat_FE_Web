@@ -7,8 +7,9 @@ import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { MenuSlot, UpdateMenuSelectionRequest } from '@/types/menu';
-import { extractErrorMessage } from '@/utils/error';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface MenuSelectionEditModalProps {
   open: boolean;
@@ -35,6 +36,7 @@ export const MenuSelectionEditModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const hasLoadedRef = useRef(false);
   const prevOpenRef = useRef(false);
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const loadRecommendationMenus = useCallback(async () => {
     setIsLoadingMenus(true);
@@ -58,7 +60,6 @@ export const MenuSelectionEditModal = ({
       // 현재 선택된 메뉴들을 초기 선택으로 설정
       setSelectedMenus(new Set(currentMenuNames));
     } catch (error) {
-      console.error('추천 메뉴 목록 조회 실패:', error);
       // 실패 시 현재 선택된 메뉴들을 기본 목록으로 사용
       setAvailableMenus(currentMenuNames);
       setSelectedMenus(new Set(currentMenuNames));
@@ -109,7 +110,7 @@ export const MenuSelectionEditModal = ({
 
   const handleSave = async () => {
     if (selectedMenus.size === 0) {
-      alert('최소 하나의 메뉴를 선택해주세요.');
+      handleError('최소 하나의 메뉴를 선택해주세요.', 'MenuSelectionEdit');
       return;
     }
 
@@ -131,25 +132,51 @@ export const MenuSelectionEditModal = ({
         requestData.etc = selectedMenuArray;
       }
       await menuService.updateMenuSelection(selectionId, requestData);
-      alert('메뉴 선택이 수정되었습니다.');
+      handleSuccess('메뉴 선택이 수정되었습니다.');
       onComplete();
       onClose();
       // 모달 닫을 때 선택 상태 초기화
       setSelectedMenus(new Set());
     } catch (error) {
-      alert(extractErrorMessage(error, '메뉴 선택 수정에 실패했습니다.'));
+      handleError(error, 'MenuSelectionEdit');
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (!open) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur">
-      <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-950/95 p-6 shadow-2xl backdrop-blur">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-950/95 p-6 shadow-2xl backdrop-blur ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <ModalCloseButton onClose={onClose} />
 
         <div className="space-y-4">
@@ -221,7 +248,8 @@ export const MenuSelectionEditModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

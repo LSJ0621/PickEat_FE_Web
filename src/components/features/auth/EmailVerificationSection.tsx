@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
-import type { UseEmailVerificationReturn } from '@/hooks/useEmailVerification';
+import type { UseEmailVerificationReturn } from '@/hooks/auth/useEmailVerification';
 
 interface EmailVerificationSectionProps {
   emailVerification: UseEmailVerificationReturn;

@@ -167,7 +167,7 @@ export const logoutAsync = createAsyncThunk(
     try {
       await authService.logout();
     } catch (error) {
-      console.error('로그아웃 API 호출 실패:', error);
+      // 로그아웃 API 호출 실패는 무시 (로컬 상태는 정리됨)
     } finally {
       dispatch(logout());
       // 로그아웃 시 agent 상태도 초기화

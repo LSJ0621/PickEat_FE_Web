@@ -1,6 +1,8 @@
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { UserAddress } from '@/types/user';
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 interface AddressListModalProps {
   open: boolean;
@@ -29,7 +31,25 @@ export const AddressListModal = ({
   onDeleteAddresses,
   onAddAddress,
 }: AddressListModalProps) => {
-  if (!open) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
     return null;
   }
 
@@ -44,9 +64,17 @@ export const AddressListModal = ({
 
   const defaultAddr = defaultAddress || addresses.find((addr) => addr.isDefault);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <ModalCloseButton onClose={handleClose} />
         <div className="flex items-center justify-between mb-6 pr-12">
           <h2 className="text-2xl font-bold text-white">주소 관리</h2>
@@ -181,7 +209,8 @@ export const AddressListModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
