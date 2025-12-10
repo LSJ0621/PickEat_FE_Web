@@ -5,21 +5,20 @@ import { MenuRecommendation } from '@/components/features/menu/MenuRecommendatio
 import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
 import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
-  clearSelectedMenu,
-  resetAiRecommendations,
-  setAiLoading,
-  setRestaurants,
-  setSelectedMenu,
-  setSelectedPlace,
-  setIsSearching,
-  setShowConfirmCard,
-  upsertAiRecommendations,
+    clearSelectedMenu,
+    resetAiRecommendations,
+    setAiLoading,
+    setIsSearching,
+    setRestaurants,
+    setSelectedMenu,
+    setSelectedPlace,
+    setShowConfirmCard,
+    upsertAiRecommendations,
 } from '@/store/slices/agentSlice';
-import type { RecommendationLocation } from '@/types/user';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +38,6 @@ export const AgentPage = () => {
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
   const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
   const menuRequestAddress = useAppSelector((state) => state.agent.menuRequestAddress);
-  const menuRequestLocation = useAppSelector((state) => state.agent.menuRequestLocation);
   const showConfirmCard = useAppSelector((state) => state.agent.showConfirmCard);
   const restaurants = useAppSelector((state) => state.agent.restaurants);
   const isSearching = useAppSelector((state) => state.agent.isSearching);
@@ -84,7 +82,6 @@ export const AgentPage = () => {
   const hasAiQueryContext =
     Boolean(
       menuRequestAddress?.trim() ||
-        menuRequestLocation ||
         address?.trim() ||
         (latitude !== null && longitude !== null)
     );
@@ -92,9 +89,8 @@ export const AgentPage = () => {
   const handleMenuClick = (
     menu: string,
     historyId: number,
-    meta: { requestAddress: string | null; requestLocation: RecommendationLocation | null } = {
+    meta: { requestAddress: string | null } = {
       requestAddress: null,
-      requestLocation: null,
     }
   ) => {
     dispatch(
@@ -102,7 +98,6 @@ export const AgentPage = () => {
         menu,
         historyId,
         requestAddress: meta.requestAddress ?? null,
-        requestLocation: meta.requestLocation ?? null,
       })
     );
   };
@@ -212,11 +207,9 @@ export const AgentPage = () => {
     }
 
     const normalizedAddress = menuRequestAddress?.trim() || address?.trim();
-    const locationFallback = menuRequestLocation
-      ? `${menuRequestLocation.lat},${menuRequestLocation.lng}`
-      : latitude !== null && longitude !== null
-        ? `${latitude},${longitude}`
-        : null;
+    const locationFallback = latitude !== null && longitude !== null
+      ? `${latitude},${longitude}`
+      : null;
     const queryBase = normalizedAddress || locationFallback;
 
     if (!queryBase) {

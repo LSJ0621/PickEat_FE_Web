@@ -61,12 +61,20 @@ export interface RecommendationHistoryItem {
   prompt: string;
   recommendedAt: string;
   requestAddress: string | null;
-  requestLocation: RecommendationLocation | null;
+  // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)
   hasPlaceRecommendations: boolean;
 }
 
+export interface PageInfo {
+  page: number;
+  limit: number;
+  totalCount: number;
+  hasNext: boolean;
+}
+
 export interface GetRecommendationHistoryResponse {
-  history: RecommendationHistoryItem[];
+  items: RecommendationHistoryItem[];
+  pageInfo: PageInfo;
 }
 
 // 주소 리스트 관련 타입

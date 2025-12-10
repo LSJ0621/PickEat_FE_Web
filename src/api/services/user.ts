@@ -4,20 +4,20 @@
 
 import type { DeleteAccountResponse } from '@/types/auth';
 import type {
-  AddressSearchResponse,
-  BatchDeleteAddressRequest,
-  CreateAddressRequest,
-  DeleteAddressResponse,
-  GetAddressesResponse,
-  GetDefaultAddressResponse,
-  GetPreferencesResponse,
-  GetRecommendationHistoryResponse,
-  RecommendationHistoryItem,
-  SelectedAddress,
-  SetAddressResponse,
-  SetPreferencesRequest,
-  UpdateAddressRequest,
-  UserAddress,
+    AddressSearchResponse,
+    BatchDeleteAddressRequest,
+    CreateAddressRequest,
+    DeleteAddressResponse,
+    GetAddressesResponse,
+    GetDefaultAddressResponse,
+    GetPreferencesResponse,
+    GetRecommendationHistoryResponse,
+    RecommendationHistoryItem,
+    SelectedAddress,
+    SetAddressResponse,
+    SetPreferencesRequest,
+    UpdateAddressRequest,
+    UserAddress,
 } from '@/types/user';
 import apiClient from '../client';
 import { ENDPOINTS } from '../endpoints';
@@ -59,14 +59,32 @@ export const userService = {
   },
 
   // 추천 이력 조회
-  getRecommendationHistory: async (date?: string): Promise<GetRecommendationHistoryResponse> => {
+  getRecommendationHistory: async (
+    options?: {
+      date?: string;
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<GetRecommendationHistoryResponse> => {
+    const params: Record<string, string | number> = {};
+    
+    if (options?.date) {
+      params.date = options.date;
+    }
+    if (options?.page !== undefined) {
+      params.page = options.page;
+    }
+    if (options?.limit !== undefined) {
+      params.limit = options.limit;
+    }
+
     const response = await apiClient.get<GetRecommendationHistoryResponse>(
       ENDPOINTS.RECOMMENDATION_HISTORY,
-      { params: date ? { date } : undefined }
+      { params: Object.keys(params).length > 0 ? params : undefined }
     );
 
     // hasPlaceRecommendations 필드가 서버에서 다른 이름으로 올 수 있으므로 정규화
-    const normalizedHistory: RecommendationHistoryItem[] = response.data.history.map(
+    const normalizedHistory: RecommendationHistoryItem[] = response.data.items.map(
       (item: RecommendationHistoryItem & { hasPlaceRecommendation?: boolean; has_place_recommendations?: boolean }) => {
         let hasPlaceRecommendations = item.hasPlaceRecommendations;
 
@@ -87,7 +105,7 @@ export const userService = {
       }
     );
 
-    return { history: normalizedHistory };
+    return { items: normalizedHistory, pageInfo: response.data.pageInfo };
   },
 
   // 회원 탈퇴

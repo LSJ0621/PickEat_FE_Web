@@ -37,7 +37,6 @@ export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
   const hasAiQueryContext =
     Boolean(
       item.requestAddress?.trim() ||
-        item.requestLocation ||
         address?.trim() ||
         (latitude !== null && longitude !== null)
     );
