@@ -11,7 +11,7 @@ export interface MenuRecommendationResponse {
   recommendations: string[];
   recommendedAt: string;
   requestAddress: string | null;
-  requestLocation: { lat: number; lng: number } | null;
+  // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)
 }
 
 export interface PlaceRecommendationItem {
@@ -70,7 +70,7 @@ export interface PlaceHistoryMeta {
   prompt: string;
   recommendedAt: string;
   requestAddress: string | null;
-  requestLocation: { lat: number; lng: number } | null;
+  // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)
   hasPlaceRecommendations: boolean;
 }
 
