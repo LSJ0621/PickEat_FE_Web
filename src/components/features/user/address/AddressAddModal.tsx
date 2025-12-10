@@ -3,6 +3,8 @@ import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { AddressSearchResult, SelectedAddress, UserAddress } from '@/types/user';
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 interface AddressAddModalProps {
   open: boolean;
@@ -41,7 +43,25 @@ export const AddressAddModal = ({
   onAddAddress,
   onClearSelection,
 }: AddressAddModalProps) => {
-  if (!open) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
     return null;
   }
 
@@ -52,9 +72,17 @@ export const AddressAddModal = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
+  return createPortal(
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div 
+        className={`relative w-full max-w-xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
         <ModalCloseButton onClose={onClose} />
         <h2 className="mb-6 text-2xl font-bold text-white">주소 추가</h2>
         <p className="mb-4 text-sm text-slate-400">
@@ -130,7 +158,8 @@ export const AddressAddModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

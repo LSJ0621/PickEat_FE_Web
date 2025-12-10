@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { menuService } from '@/api/services/menu';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   clearSelectedMenu,
@@ -31,6 +32,7 @@ interface MenuRecommendationProps {
 export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { handleError } = useErrorHandler();
   
   // Redux에서 상태 가져오기
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
@@ -46,13 +48,13 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
 
   const handleRecommend = async () => {
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.');
+      handleError('로그인이 필요합니다.', 'MenuRecommendation');
       navigate('/login');
       return;
     }
 
     if (!prompt.trim()) {
-      alert('메뉴 추천 요청을 입력해주세요.');
+      handleError('메뉴 추천 요청을 입력해주세요.', 'MenuRecommendation');
       return;
     }
 
@@ -73,8 +75,7 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
         })
       );
     } catch (error) {
-      console.error('메뉴 추천 실패:', error);
-      alert('메뉴 추천에 실패했습니다.');
+      handleError(error, 'MenuRecommendation');
     } finally {
       dispatch(setMenuRecommendationLoading(false));
     }
