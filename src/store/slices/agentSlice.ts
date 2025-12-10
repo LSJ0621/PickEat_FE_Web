@@ -5,7 +5,6 @@
 
 import type { PlaceRecommendationItem } from '@/types/menu';
 import type { Restaurant } from '@/types/search';
-import type { RecommendationLocation } from '@/types/user';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -20,14 +19,12 @@ interface AgentState {
   menuRecommendationHistoryId: number | null;
   menuRecommendationPrompt: string;
   menuRecommendationRequestAddress: string | null;
-  menuRecommendationRequestLocation: RecommendationLocation | null;
   isMenuRecommendationLoading: boolean;
   
   // 메뉴 선택 관련
   selectedMenu: string | null;
   menuHistoryId: number | null;
   menuRequestAddress: string | null;
-  menuRequestLocation: RecommendationLocation | null;
   
   // 네이버 검색 결과
   restaurants: Restaurant[];
@@ -53,12 +50,10 @@ const initialState: AgentState = {
   menuRecommendationHistoryId: null,
   menuRecommendationPrompt: '',
   menuRecommendationRequestAddress: null,
-  menuRecommendationRequestLocation: null,
   isMenuRecommendationLoading: false,
   selectedMenu: null,
   menuHistoryId: null,
   menuRequestAddress: null,
-  menuRequestLocation: null,
   restaurants: [],
   isSearching: false,
   aiRecommendationGroups: [],
@@ -81,14 +76,12 @@ const agentSlice = createSlice({
         historyId: number;
         prompt: string;
         requestAddress: string | null;
-        requestLocation: RecommendationLocation | null;
       }>
     ) => {
       state.menuRecommendations = action.payload.recommendations;
       state.menuRecommendationHistoryId = action.payload.historyId;
       state.menuRecommendationPrompt = action.payload.prompt;
       state.menuRecommendationRequestAddress = action.payload.requestAddress;
-      state.menuRecommendationRequestLocation = action.payload.requestLocation;
       // 새 추천 받으면 선택 완료 상태 초기화
       state.hasMenuSelectionCompleted = false;
     },
@@ -102,7 +95,6 @@ const agentSlice = createSlice({
       state.menuRecommendationHistoryId = null;
       state.menuRecommendationPrompt = '';
       state.menuRecommendationRequestAddress = null;
-      state.menuRecommendationRequestLocation = null;
     },
     
     // 메뉴 선택 관련
@@ -112,13 +104,11 @@ const agentSlice = createSlice({
         menu: string;
         historyId: number;
         requestAddress: string | null;
-        requestLocation: RecommendationLocation | null;
       }>
     ) => {
       state.selectedMenu = action.payload.menu;
       state.menuHistoryId = action.payload.historyId;
       state.menuRequestAddress = action.payload.requestAddress;
-      state.menuRequestLocation = action.payload.requestLocation;
       state.showConfirmCard = true;
       // 메뉴 선택 시 선택된 장소만 초기화 (검색 결과와 AI 추천은 유지)
       state.selectedPlace = null;
@@ -128,7 +118,6 @@ const agentSlice = createSlice({
       state.selectedMenu = null;
       state.menuHistoryId = null;
       state.menuRequestAddress = null;
-      state.menuRequestLocation = null;
       // clearSelectedMenu는 사용자가 검색 결과를 닫을 때만 호출되므로 검색 결과는 유지
       // (다른 메뉴를 선택하면 setSelectedMenu가 호출되고, 새로운 검색을 하면 setRestaurants가 호출됨)
       state.selectedPlace = null;

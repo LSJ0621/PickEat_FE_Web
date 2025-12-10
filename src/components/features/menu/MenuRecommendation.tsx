@@ -2,21 +2,21 @@
  * 메뉴 추천 컴포넌트
  */
 
-import { useState } from 'react';
 import { menuService } from '@/api/services/menu';
+import { Button } from '@/components/common/Button';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
-  clearSelectedMenu,
-  resetAiRecommendations,
-  setMenuRecommendations,
-  setMenuRecommendationLoading,
-  setMenuSelectionCompleted,
-  setRestaurants,
+    clearSelectedMenu,
+    resetAiRecommendations,
+    setMenuRecommendationLoading,
+    setMenuRecommendations,
+    setMenuSelectionCompleted,
+    setRestaurants,
 } from '@/store/slices/agentSlice';
-import { Button } from '@/components/common/Button';
-import { MenuSelectionModal } from './MenuSelectionModal';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MenuSelectionModal } from './MenuSelectionModal';
 
 interface MenuRecommendationProps {
   onMenuSelect?: (
@@ -24,7 +24,6 @@ interface MenuRecommendationProps {
     historyId: number,
     meta: {
       requestAddress: string | null;
-      requestLocation: { lat: number; lng: number } | null;
     }
   ) => void;
 }
@@ -39,7 +38,6 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
   const recommendations = useAppSelector((state) => state.agent.menuRecommendations);
   const menuHistoryId = useAppSelector((state) => state.agent.menuRecommendationHistoryId);
   const requestAddress = useAppSelector((state) => state.agent.menuRecommendationRequestAddress);
-  const requestLocation = useAppSelector((state) => state.agent.menuRecommendationRequestLocation);
   const loading = useAppSelector((state) => state.agent.isMenuRecommendationLoading);
   const hasMenuSelectionCompleted = useAppSelector((state) => state.agent.hasMenuSelectionCompleted);
   
@@ -71,7 +69,6 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
           historyId: result.id,
           prompt,
           requestAddress: result.requestAddress ?? null,
-          requestLocation: result.requestLocation ?? null,
         })
       );
     } catch (error) {
@@ -148,7 +145,6 @@ export const MenuRecommendation = ({ onMenuSelect }: MenuRecommendationProps) =>
                   menuHistoryId &&
                   onMenuSelect?.(menu, menuHistoryId, {
                     requestAddress,
-                    requestLocation,
                   })
                 }
                 className="group cursor-pointer rounded-2xl border border-white/10 bg-gradient-to-r from-white/10 to-white/[0.02] p-4 text-left shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:border-white/40"

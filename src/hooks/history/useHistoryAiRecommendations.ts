@@ -4,8 +4,8 @@
  */
 
 import { menuService } from '@/api/services/menu';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
@@ -78,11 +78,9 @@ export const useHistoryAiRecommendations = (
       }
 
       const normalizedAddress = historyItem.requestAddress?.trim() || address?.trim();
-      const locationFallback = historyItem.requestLocation
-        ? `${historyItem.requestLocation.lat},${historyItem.requestLocation.lng}`
-        : latitude !== null && longitude !== null
-          ? `${latitude},${longitude}`
-          : null;
+      const locationFallback = latitude !== null && longitude !== null
+        ? `${latitude},${longitude}`
+        : null;
       const queryBase = normalizedAddress || locationFallback;
 
       if (!queryBase) {
