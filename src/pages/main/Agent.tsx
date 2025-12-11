@@ -5,19 +5,20 @@ import { MenuRecommendation } from '@/components/features/menu/MenuRecommendatio
 import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
 import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
+import { useScrollToSection } from '@/hooks/common/useScrollToSection';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
-    clearSelectedMenu,
-    resetAiRecommendations,
-    setAiLoading,
-    setIsSearching,
-    setRestaurants,
-    setSelectedMenu,
-    setSelectedPlace,
-    setShowConfirmCard,
-    upsertAiRecommendations,
+  clearSelectedMenu,
+  resetAiRecommendations,
+  setAiLoading,
+  setIsSearching,
+  setRestaurants,
+  setSelectedMenu,
+  setSelectedPlace,
+  setShowConfirmCard,
+  upsertAiRecommendations,
 } from '@/store/slices/agentSlice';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef } from 'react';
@@ -47,37 +48,17 @@ export const AgentPage = () => {
   const selectedPlace = useAppSelector((state) => state.agent.selectedPlace);
   const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
 
-  // 카드 전체가 잘 보이도록 약간의 여백을 두고 스크롤
-  const scrollCardIntoView = (element: HTMLElement | null, offset = 80) => {
-    if (!element) return;
-    const rect = element.getBoundingClientRect();
-    const absoluteTop = window.scrollY + rect.top;
-    const targetTop = Math.max(absoluteTop - offset, 0);
-    window.scrollTo({ top: targetTop, behavior: 'smooth' });
-  };
-
-  // 직전 로딩 상태를 기억해서 "로딩 시작 시점"을 감지
-  const prevIsSearchingRef = useRef(isSearching);
-  const prevIsAiLoadingRef = useRef(isAiLoading);
-
   // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
-  useEffect(() => {
-    const prev = prevIsSearchingRef.current;
-    if (!prev && isSearching && selectedMenu) {
-      // 이 시점에는 RestaurantList 래퍼 div가 이미 렌더링되어 ref가 연결된 상태
-      scrollCardIntoView(restaurantSectionRef.current);
-    }
-    prevIsSearchingRef.current = isSearching;
-  }, [isSearching, selectedMenu]);
+  useScrollToSection({
+    elementRef: restaurantSectionRef,
+    shouldScroll: isSearching && selectedMenu !== null,
+  });
 
   // AI 추천: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
-  useEffect(() => {
-    const prev = prevIsAiLoadingRef.current;
-    if (!prev && isAiLoading && selectedMenu) {
-      scrollCardIntoView(aiSectionRef.current);
-    }
-    prevIsAiLoadingRef.current = isAiLoading;
-  }, [isAiLoading, selectedMenu]);
+  useScrollToSection({
+    elementRef: aiSectionRef,
+    shouldScroll: isAiLoading && selectedMenu !== null,
+  });
 
   const hasAiQueryContext =
     Boolean(

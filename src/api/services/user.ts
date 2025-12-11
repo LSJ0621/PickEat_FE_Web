@@ -2,6 +2,8 @@
  * 유저 관련 API 서비스
  */
 
+import apiClient from '@/api/client';
+import { ENDPOINTS } from '@/api/endpoints';
 import type { DeleteAccountResponse } from '@/types/auth';
 import type {
     AddressSearchResponse,
@@ -19,8 +21,6 @@ import type {
     UpdateAddressRequest,
     UserAddress,
 } from '@/types/user';
-import apiClient from '../client';
-import { ENDPOINTS } from '../endpoints';
 
 export const userService = {
   // 주소 검색

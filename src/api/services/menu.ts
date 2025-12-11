@@ -2,6 +2,8 @@
  * 메뉴 관련 API 서비스
  */
 
+import apiClient from '@/api/client';
+import { ENDPOINTS } from '@/api/endpoints';
 import type {
     CreateMenuSelectionRequest,
     CreateMenuSelectionResponse,
@@ -14,8 +16,6 @@ import type {
     UpdateMenuSelectionRequest,
     UpdateMenuSelectionResponse,
 } from '@/types/menu';
-import apiClient from '../client';
-import { ENDPOINTS } from '../endpoints';
 
 export const menuService = {
   /**

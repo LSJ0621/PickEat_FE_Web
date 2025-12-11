@@ -15,17 +15,18 @@ import {
 } from '@/components/features/user/preferences';
 import { useAddressList } from '@/hooks/address/useAddressList';
 import { useAddressModal } from '@/hooks/address/useAddressModal';
+import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { usePreferences } from '@/hooks/user/usePreferences';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutAsync } from '@/store/slices/authSlice';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const MyPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const user = useAppSelector((state) => state.auth?.user);
   const dispatch = useAppDispatch();
@@ -37,10 +38,6 @@ export const MyPage = () => {
   const [showAddressListModal, setShowAddressListModal] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  
-  // 기본주소 변경 확인 모달 애니메이션 상태
-  const [isConfirmModalAnimating, setIsConfirmModalAnimating] = useState(false);
-  const [shouldRenderConfirmModal, setShouldRenderConfirmModal] = useState(false);
 
   // Custom Hooks
   // Redux 상태를 초기값으로 사용 (중복 API 호출 방지)
@@ -54,10 +51,11 @@ export const MyPage = () => {
     onAddressAdded: addressList.loadAddresses,
   });
 
+  // 기본주소 변경 확인 모달 애니메이션
+  const confirmModalAnimation = useModalAnimation(addressList.confirmDefaultAddress !== null);
+
   // 모달이 실제로 닫혔는지 추적 (초기 마운트 시 실행 방지)
   const prevShowAddressListModalRef = useRef<boolean>(false);
-  const hasInitializedRef = useRef(false);
-  const currentPathnameRef = useRef<string>(location.pathname);
 
   // 인증 확인 및 리다이렉트
   useEffect(() => {
@@ -67,46 +65,22 @@ export const MyPage = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // 경로 변경 감지 및 초기화 리셋 (컴포넌트 재사용 시 대비)
-  useEffect(() => {
-    if (currentPathnameRef.current !== location.pathname) {
-      hasInitializedRef.current = false;
-      currentPathnameRef.current = location.pathname;
-    }
-  }, [location.pathname]);
-
   // 데이터 로드 (StrictMode 대응)
-  useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-    
-    // StrictMode 대응: 이미 초기화했으면 스킵
-    if (hasInitializedRef.current) {
-      return;
-    }
-    hasInitializedRef.current = true;
-    
-    // Redux에 preferences가 있으면 초기값으로 사용, 없을 때만 API 호출
-    // (중복 API 호출 방지)
-    const hasPreferencesInRedux = user?.preferences?.likes || user?.preferences?.dislikes;
-    
-    // React 공식 문서 권장: 함수를 useEffect 내부에서 직접 호출
-    // useCallback으로 안정화된 함수만 의존성으로 사용
-    async function loadData() {
+  useInitialDataLoad({
+    enabled: isAuthenticated,
+    loadFn: async () => {
+      // Redux에 preferences가 있으면 초기값으로 사용, 없을 때만 API 호출
+      // (중복 API 호출 방지)
+      const hasPreferencesInRedux = user?.preferences?.likes || user?.preferences?.dislikes;
+      
       // Redux에 preferences가 없을 때만 API 호출
       if (!hasPreferencesInRedux) {
         await preferences.loadPreferences();
       }
       // 주소는 항상 로드 (Redux에 저장되지 않음)
       await addressList.loadAddresses();
-    }
-    
-    loadData();
-    // 함수는 useCallback으로 안정화되어 있어 안정적이지만, 
-    // user?.preferences는 변경될 수 있으므로 dependency에서 제외 (초기 로드만 필요)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+    },
+  });
 
   // 주소 관리 모달이 닫힐 때 주소 정보 다시 불러오기
   useEffect(() => {
@@ -120,21 +94,6 @@ export const MyPage = () => {
     // useCallback으로 안정화된 함수만 의존성으로 사용 (객체 전체 사용 금지)
   }, [showAddressListModal, addressList.loadAddresses]);
 
-  // 기본주소 변경 확인 모달 애니메이션
-  useEffect(() => {
-    if (addressList.confirmDefaultAddress) {
-      setShouldRenderConfirmModal(true);
-      requestAnimationFrame(() => {
-        setIsConfirmModalAnimating(true);
-      });
-    } else {
-      setIsConfirmModalAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRenderConfirmModal(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [addressList.confirmDefaultAddress]);
 
   const handleOpenPreferencesModal = () => {
     preferences.loadPreferences();
@@ -356,12 +315,12 @@ export const MyPage = () => {
         )}
 
       {/* 기본주소 변경 확인 모달 */}
-        {shouldRenderConfirmModal && addressList.confirmDefaultAddress && createPortal(
+        {confirmModalAnimation.shouldRender && addressList.confirmDefaultAddress && createPortal(
           <div className={`fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
-            isConfirmModalAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+            confirmModalAnimation.isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
           }`}>
             <div className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-              isConfirmModalAnimating ? 'modal-content-enter' : 'modal-content-exit'
+              confirmModalAnimation.isAnimating ? 'modal-content-enter' : 'modal-content-exit'
             }`}>
               <h2 className="mb-4 text-xl font-bold text-white">기본주소 변경</h2>
               <p className="mb-6 text-slate-300">

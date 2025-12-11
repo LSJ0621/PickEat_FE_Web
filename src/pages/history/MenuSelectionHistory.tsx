@@ -4,16 +4,16 @@
 
 import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
+import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { MenuPayload, MenuSelection, MenuSlot } from '@/types/menu';
 import { formatDateKorean } from '@/utils/format';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const MenuSelectionHistory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError, handleSuccess } = useErrorHandler();
   const [selections, setSelections] = useState<MenuSelection[]>([]);
@@ -23,11 +23,6 @@ export const MenuSelectionHistory = () => {
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingSelectionId, setEditingSelectionId] = useState<number | null>(null);
   const [editingPayload, setEditingPayload] = useState<MenuPayload | null>(null);
-
-  // 초기 마운트 여부 추적 (StrictMode 대응)
-  const hasInitializedRef = useRef(false);
-  const prevSelectedDateRef = useRef<string>('');
-  const currentPathnameRef = useRef<string>(location.pathname);
 
   // loadSelections를 useCallback으로 안정화 (다른 곳에서도 사용되므로)
   const loadSelections = useCallback(async () => {
@@ -57,37 +52,12 @@ export const MenuSelectionHistory = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // 경로 변경 감지 및 초기화 리셋 (컴포넌트 재사용 시 대비)
-  useEffect(() => {
-    if (currentPathnameRef.current !== location.pathname) {
-      hasInitializedRef.current = false;
-      prevSelectedDateRef.current = '';
-      currentPathnameRef.current = location.pathname;
-    }
-  }, [location.pathname]);
-
   // 데이터 로드 (StrictMode 대응)
-  useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    // StrictMode 대응: selectedDate가 변경되지 않았고 이미 초기화했으면 스킵
-    const isDateChanged = prevSelectedDateRef.current !== selectedDate;
-    if (!isDateChanged && hasInitializedRef.current) {
-      return;
-    }
-    
-    if (isDateChanged) {
-      prevSelectedDateRef.current = selectedDate;
-    }
-    hasInitializedRef.current = true;
-
-    // loadSelections는 selectedDate를 dependency로 가지므로 selectedDate 변경 시 재생성됨
-    // dependency에서 제외하고 selectedDate만 사용하여 무한 루프 방지
-    loadSelections();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, selectedDate]);
+  useInitialDataLoad({
+    enabled: isAuthenticated,
+    loadFn: loadSelections,
+    dependencies: [selectedDate],
+  });
 
   const handleEdit = (selection: MenuSelection) => {
     setEditingSelectionId(selection.id);
