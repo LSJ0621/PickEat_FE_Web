@@ -20,18 +20,30 @@ export const useModalAnimation = (isOpen: boolean): UseModalAnimationReturn => {
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
+    let animationFrameId: number | null = null;
+    let timeoutId: number | null = null;
+
     if (isOpen) {
       setShouldRender(true);
-      requestAnimationFrame(() => {
+      animationFrameId = requestAnimationFrame(() => {
         setIsAnimating(true);
       });
     } else {
       setIsAnimating(false);
-      const timer = setTimeout(() => {
+      timeoutId = window.setTimeout(() => {
         setShouldRender(false);
       }, 300);
-      return () => clearTimeout(timer);
     }
+
+    // Cleanup: pending animation frame과 timeout 취소
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [isOpen]);
 
   return {
