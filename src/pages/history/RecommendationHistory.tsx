@@ -4,16 +4,15 @@
 
 import { userService } from '@/api/services/user';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
+import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { RecommendationHistoryItem } from '@/types/user';
-import { formatDateTimeKorean } from '@/utils/format';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const RecommendationHistory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError } = useErrorHandler();
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([]);
@@ -22,9 +21,6 @@ export const RecommendationHistory = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [hasNext, setHasNext] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const hasInitializedRef = useRef(false);
-  const prevSelectedDateRef = useRef<string>('');
-  const currentPathnameRef = useRef<string>(location.pathname);
   const pageRef = useRef(1);
   const isLoadingRef = useRef(false);
 
@@ -93,36 +89,16 @@ export const RecommendationHistory = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (currentPathnameRef.current !== location.pathname) {
-      hasInitializedRef.current = false;
-      prevSelectedDateRef.current = '';
-      currentPathnameRef.current = location.pathname;
-      pageRef.current = 1;
-      setHasNext(false);
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true;
+  // 데이터 로드 (StrictMode 대응)
+  useInitialDataLoad({
+    enabled: isAuthenticated,
+    loadFn: () => {
       pageRef.current = 1;
       setHasNext(false);
       loadHistory(1, false);
-      return;
-    }
-
-    if (prevSelectedDateRef.current !== selectedDate) {
-      prevSelectedDateRef.current = selectedDate;
-      pageRef.current = 1;
-      loadHistory(1, false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, selectedDate]);
+    },
+    dependencies: [selectedDate],
+  });
   if (!isAuthenticated) {
     return null;
   }
@@ -230,7 +206,7 @@ export const RecommendationHistory = () => {
                 <>
                   <div className="space-y-4">
                     {menuHistory.map((item) => (
-                      <HistoryItem key={item.id} item={item} formatDate={formatDateTimeKorean} />
+                      <HistoryItem key={item.id} item={item} />
                     ))}
                   </div>
                   
