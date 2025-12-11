@@ -24,18 +24,33 @@ export const useInitialDataLoad = (options: UseInitialDataLoadOptions): void => 
   const location = useLocation();
   const hasInitializedRef = useRef(false);
   const currentPathnameRef = useRef<string>(location.pathname);
+  const loadFnRef = useRef(loadFn);
+
+  // 항상 최신 loadFn 유지 (stale closure 방지)
+  useEffect(() => {
+    loadFnRef.current = loadFn;
+  }, [loadFn]);
 
   // 경로 변경 감지 및 초기화 리셋 (컴포넌트 재사용 시 대비)
   useEffect(() => {
     if (currentPathnameRef.current !== location.pathname) {
       hasInitializedRef.current = false;
       currentPathnameRef.current = location.pathname;
+      
+      // 경로 변경 시 enabled가 true이면 즉시 데이터 다시 로드
+      if (enabled) {
+        hasInitializedRef.current = true;
+        void loadFnRef.current();
+      }
     }
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, enabled]);
 
   // 데이터 로드 (StrictMode 대응)
   useEffect(() => {
     if (!enabled) {
+      // enabled가 false가 되면 리셋하여 다음에 enabled=true일 때 다시 로드되도록
+      hasInitializedRef.current = false;
       return;
     }
 
@@ -46,7 +61,7 @@ export const useInitialDataLoad = (options: UseInitialDataLoadOptions): void => 
     hasInitializedRef.current = true;
 
     // React 공식 문서 권장: 함수를 useEffect 내부에서 직접 호출
-    void loadFn();
+    void loadFnRef.current();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, ...dependencies]);
 };
