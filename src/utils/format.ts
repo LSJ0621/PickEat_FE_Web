@@ -70,3 +70,12 @@ export const formatDateTimeKorean = (date: string | Date): string => {
   });
 };
 
+// 초를 MM:SS 형식으로 포맷팅
+export const formatSeconds = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${remainingSeconds}`;
+};
+

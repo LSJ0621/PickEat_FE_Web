@@ -4,9 +4,10 @@
  */
 
 import { menuService } from '@/api/services/menu';
+import { usePrevious } from '@/hooks/common/usePrevious';
 import type { PlaceDetail } from '@/types/menu';
 import { extractErrorMessage } from '@/utils/error';
-import { startTransition, useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -23,21 +24,19 @@ export const usePlaceDetails = (placeId: string | null): UsePlaceDetailsReturn =
   const [status, setStatus] = useState<LoadState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [placeDetail, setPlaceDetail] = useState<PlaceDetail | null>(null);
-  const prevPlaceIdRef = useRef<string | null>(null);
+  const prevPlaceId = usePrevious(placeId);
 
   useEffect(() => {
     if (!placeId) {
       setPlaceDetail(null);
       setStatus('idle');
-      prevPlaceIdRef.current = null;
       return;
     }
 
     // StrictMode 대응: placeId가 변경되지 않았으면 스킵
-    if (prevPlaceIdRef.current === placeId) {
+    if (prevPlaceId === placeId) {
       return;
     }
-    prevPlaceIdRef.current = placeId;
 
     let cancelled = false;
 

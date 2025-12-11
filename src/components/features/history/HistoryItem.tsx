@@ -13,6 +13,7 @@ import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useAppSelector } from '@/store/hooks';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
+import { formatDateTimeKorean } from '@/utils/format';
 import { useEffect, useMemo, useState } from 'react';
 
 interface MenuPlaceRecommendationGroup {
@@ -22,10 +23,9 @@ interface MenuPlaceRecommendationGroup {
 
 interface HistoryItemProps {
   item: RecommendationHistoryItem;
-  formatDate: (dateString: string) => string;
 }
 
-export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
+export const HistoryItem = ({ item }: HistoryItemProps) => {
   const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
   const { latitude, longitude, hasLocation, address } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
@@ -106,7 +106,7 @@ export const HistoryItem = ({ item, formatDate }: HistoryItemProps) => {
       <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/30 backdrop-blur">
         <div className="mb-4 flex items-start justify-between">
           <div>
-            <p className="text-sm text-slate-400">{formatDate(item.recommendedAt)}</p>
+            <p className="text-sm text-slate-400">{formatDateTimeKorean(item.recommendedAt)}</p>
             {item.prompt && (
               <p className="mt-2 text-slate-300">"{item.prompt}"</p>
             )}
