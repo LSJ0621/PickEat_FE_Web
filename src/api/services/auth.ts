@@ -3,30 +3,30 @@
  * 도메인별로 API 함수를 분리하여 관리합니다.
  */
 
+import apiClient from '@/api/client';
+import { ENDPOINTS } from '@/api/endpoints';
 import type {
-  AuthResponse,
-  CheckEmailResponse,
-  EmailVerificationPurpose,
-  EmailVerificationResponse,
-  KakaoLoginResponse,
-  LoginRequest,
-  LoginResponse,
-  PasswordResetRequest,
-  PasswordResetResponse,
-  PasswordResetSendResponse,
-  PasswordResetVerifyResponse,
-  RegisterRequest,
-  RegisterResponse,
-  ReRegisterRequest,
-  ReRegisterResponse,
-  ReRegisterSocialRequest,
-  ReRegisterSocialResponse,
-  UpdateUserRequest,
-  UpdateUserResponse,
-  User,
+    AuthResponse,
+    CheckEmailResponse,
+    EmailVerificationPurpose,
+    EmailVerificationResponse,
+    KakaoLoginResponse,
+    LoginRequest,
+    LoginResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
+    PasswordResetSendResponse,
+    PasswordResetVerifyResponse,
+    RegisterRequest,
+    RegisterResponse,
+    ReRegisterRequest,
+    ReRegisterResponse,
+    ReRegisterSocialRequest,
+    ReRegisterSocialResponse,
+    UpdateUserRequest,
+    UpdateUserResponse,
+    User,
 } from '@/types/auth';
-import apiClient from '../client';
-import { ENDPOINTS } from '../endpoints';
 
 export const authService = {
   // 이메일 중복 확인

@@ -3,10 +3,10 @@
  * Axios 인스턴스를 생성하고 인터셉터를 설정합니다.
  */
 
+import { ENDPOINTS } from '@/api/endpoints';
+import type { AuthResponse } from '@/types/auth';
 import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import type { AuthResponse } from '../types/auth';
-import { ENDPOINTS } from './endpoints';
 
 // API 기본 URL 설정
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;

@@ -4,10 +4,12 @@
  */
 
 import { authService } from '@/api/services/auth';
+import { useVerificationTimer } from '@/hooks/auth/useVerificationTimer';
 import { ERROR_MESSAGES } from '@/utils/constants';
 import { extractErrorMessage } from '@/utils/error';
+import { formatSeconds } from '@/utils/format';
 import { isEmpty, isValidEmail } from '@/utils/validation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export type VerificationType = 'SIGNUP' | 'RE_REGISTER';
 
@@ -64,30 +66,14 @@ export const useEmailVerification = (
   const [verifyCodeLoading, setVerifyCodeLoading] = useState(false);
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [verificationRemaining, setVerificationRemaining] = useState(0);
   const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
   const [verificationMessageVariant, setVerificationMessageVariant] = useState<
     'success' | 'error' | null
   >(null);
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
 
-  // 인증 만료 타이머
-  useEffect(() => {
-    if (verificationRemaining <= 0) return;
-    const timer = setInterval(() => {
-      setVerificationRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [verificationRemaining]);
-
-  // 인증 타이머 포맷
-  const formatSeconds = useCallback((seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
-    return `${minutes}:${remainingSeconds}`;
-  }, []);
+  // 인증 타이머
+  const verificationTimer = useVerificationTimer();
 
   // 이메일 중복 확인
   const handleCheckEmail = useCallback(async () => {
@@ -160,7 +146,7 @@ export const useEmailVerification = (
       setIsCodeSent(true);
       setIsEmailVerified(false);
       setVerificationCode('');
-      setVerificationRemaining(180);
+      verificationTimer.start(180);
       setVerificationMessage(serverMessage);
       setVerificationMessageVariant('success');
     } catch (error: unknown) {
@@ -199,7 +185,7 @@ export const useEmailVerification = (
       const response = await authService.verifyEmailCode(email, verificationCode.trim(), verificationType);
       const serverMessage = response?.message || '이메일 인증이 완료되었습니다.';
       setIsEmailVerified(true);
-      setVerificationRemaining(0);
+      verificationTimer.stop();
       setVerificationMessage(serverMessage);
       setVerificationMessageVariant('success');
     } catch (error: unknown) {
@@ -223,8 +209,8 @@ export const useEmailVerification = (
       if (isEmailVerified) {
         return '인증 완료';
       }
-      if (isCodeSent && verificationRemaining > 0) {
-        return `유효시간 ${formatSeconds(verificationRemaining)}`;
+      if (isCodeSent && verificationTimer.remaining > 0) {
+        return `유효시간 ${formatSeconds(verificationTimer.remaining)}`;
       }
       return sendCodeLoading ? '발송 중...' : '인증번호 발송';
     }
@@ -236,11 +222,11 @@ export const useEmailVerification = (
     if (isEmailVerified) {
       return '인증 완료';
     }
-    if (isCodeSent && verificationRemaining > 0) {
-      return `유효시간 ${formatSeconds(verificationRemaining)}`;
+    if (isCodeSent && verificationTimer.remaining > 0) {
+      return `유효시간 ${formatSeconds(verificationTimer.remaining)}`;
     }
     return sendCodeLoading ? '발송 중...' : '인증번호 발송';
-  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, isEmailVerified, isCodeSent, verificationRemaining, formatSeconds, sendCodeLoading]);
+  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, isEmailVerified, isCodeSent, verificationTimer.remaining, sendCodeLoading]);
 
   // 이메일 액션 버튼 비활성화 여부
   const isEmailActionDisabled = useCallback(() => {
@@ -249,7 +235,7 @@ export const useEmailVerification = (
       if (isEmailVerified) {
         return true;
       }
-      if (isCodeSent && verificationRemaining > 0) {
+      if (isCodeSent && verificationTimer.remaining > 0) {
         return true;
       }
       return sendCodeLoading || !email.trim();
@@ -262,11 +248,11 @@ export const useEmailVerification = (
     if (isEmailVerified) {
       return true;
     }
-    if (isCodeSent && verificationRemaining > 0) {
+    if (isCodeSent && verificationTimer.remaining > 0) {
       return true;
     }
     return sendCodeLoading;
-  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, email, isEmailVerified, isCodeSent, verificationRemaining, sendCodeLoading]);
+  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, email, isEmailVerified, isCodeSent, verificationTimer.remaining, sendCodeLoading]);
 
   // 이메일 변경 시 인증 상태 초기화
   const handleEmailChange = useCallback((newEmail: string) => {
@@ -276,7 +262,7 @@ export const useEmailVerification = (
     setIsCodeSent(false);
     setIsEmailVerified(false);
     setVerificationCode('');
-    setVerificationRemaining(0);
+    verificationTimer.reset();
     setVerificationMessage(null);
     setVerificationMessageVariant(null);
     setEmailError(undefined);
@@ -289,7 +275,7 @@ export const useEmailVerification = (
       if (isEmailVerified) {
         return;
       }
-      if (isCodeSent && verificationRemaining > 0) {
+      if (isCodeSent && verificationTimer.remaining > 0) {
         return;
       }
       await handleSendVerificationCode();
@@ -306,12 +292,12 @@ export const useEmailVerification = (
       return;
     }
 
-    if (isCodeSent && verificationRemaining > 0) {
+    if (isCodeSent && verificationTimer.remaining > 0) {
       return;
     }
 
     await handleSendVerificationCode();
-  }, [isReRegister, emailChecked, emailAvailable, isEmailVerified, isCodeSent, verificationRemaining, handleCheckEmail, handleSendVerificationCode]);
+  }, [isReRegister, emailChecked, emailAvailable, isEmailVerified, isCodeSent, verificationTimer.remaining, handleCheckEmail, handleSendVerificationCode]);
 
   // 인증 상태 초기화
   const resetEmailVerification = useCallback(() => {
@@ -321,7 +307,7 @@ export const useEmailVerification = (
     setEmailAvailable(null);
     setIsCodeSent(false);
     setIsEmailVerified(false);
-    setVerificationRemaining(0);
+    verificationTimer.reset();
     setVerificationMessage(null);
     setVerificationMessageVariant(null);
     setEmailError(undefined);
@@ -338,7 +324,7 @@ export const useEmailVerification = (
     verifyCodeLoading,
     isCodeSent,
     isEmailVerified,
-    verificationRemaining,
+    verificationRemaining: verificationTimer.remaining,
     verificationMessage,
     verificationMessageVariant,
     emailError,
