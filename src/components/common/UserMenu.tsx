@@ -13,6 +13,7 @@ export const UserMenu = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const userName = useAppSelector((state) => state.auth?.user?.name);
+  const userRole = useAppSelector((state) => state.auth?.user?.role);
 
   // 외부 클릭 시 메뉴 닫기
   useEffect(() => {
@@ -79,6 +80,14 @@ export const UserMenu = () => {
             >
               추천 이력
             </button>
+            {userRole === 'ADMIN' && (
+              <button
+                onClick={() => handleMenuItemClick('/admin/bug-reports')}
+                className="w-full px-4 py-2 text-left text-sm text-white transition hover:bg-white/10"
+              >
+                문의사항 관리
+              </button>
+            )}
             <div className="my-1 border-t border-white/10" />
             <button
               onClick={handleLogout}

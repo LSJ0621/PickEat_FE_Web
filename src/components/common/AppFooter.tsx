@@ -17,6 +17,7 @@ export const AppFooter = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
+  const userRole = useAppSelector((state) => state.auth?.user?.role);
   const [showPrompt, setShowPrompt] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
@@ -51,6 +52,16 @@ export const AppFooter = () => {
       ),
     },
     {
+      label: '버그 제보',
+      path: '/bug-report',
+      requiresAuth: true,
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      ),
+    },
+    {
       label: '마이페이지',
       path: '/mypage',
       requiresAuth: true,
@@ -66,6 +77,12 @@ export const AppFooter = () => {
     if (item.requiresAuth && !isAuthenticated) {
       setPendingPath(item.path);
       setShowPrompt(true);
+      return;
+    }
+    // 버그 제보 버튼인 경우 역할에 따라 경로 분기
+    if (item.path === '/bug-report') {
+      const targetPath = userRole === 'ADMIN' ? '/admin/bug-reports' : '/bug-report';
+      navigate(targetPath);
       return;
     }
     navigate(item.path);
