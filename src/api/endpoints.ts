@@ -58,4 +58,16 @@ export const ENDPOINTS = {
   
   // 추천 이력 관련
   RECOMMENDATION_HISTORY: `${API_BASE}/menu/recommendations/history`,
+  
+  // 버그 리포트 관련
+  BUG_REPORT: {
+    CREATE: `${API_BASE}/bug-reports`,
+  },
+  
+  // 관리자 관련
+  ADMIN: {
+    BUG_REPORTS: `${API_BASE}/admin/bug-reports`,
+    BUG_REPORT_DETAIL: (id: number | string) => `${API_BASE}/admin/bug-reports/${id}`,
+    BUG_REPORT_UPDATE_STATUS: (id: number | string) => `${API_BASE}/admin/bug-reports/${id}/status`,
+  },
 } as const;

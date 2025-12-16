@@ -78,3 +78,17 @@ export const MAP_CONFIG = {
   },
 } as const;
 
+// 버그 리포트 관련
+export const BUG_REPORT = {
+  MAX_IMAGES: 5,
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
+  ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
+  TITLE_MAX_LENGTH: 30,
+  DESCRIPTION_MAX_LENGTH: 500,
+  CATEGORIES: {
+    BUG: '버그 제보',
+    INQUIRY: '문의 사항',
+    OTHER: '기타',
+  } as const,
+} as const;
+

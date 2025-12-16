@@ -5,6 +5,7 @@
 import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
 import { extractErrorMessage } from '@/utils/error';
+import { decodeJwt } from '@/utils/jwt';
 import type { User } from '@/types/auth';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
@@ -85,6 +86,13 @@ export const initializeAuth = createAsyncThunk(
       return null;
     }
 
+    // JWT 토큰에서 role 추출
+    const decodedToken = decodeJwt(token);
+    if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
+      localStorage.removeItem('token');
+      return null;
+    }
+
     try {
       const user = await authService.getMe();
 
@@ -93,12 +101,17 @@ export const initializeAuth = createAsyncThunk(
         const prefsResponse = await userService.getPreferences();
         const mergedUser: User = {
           ...user,
+          role: decodedToken.role,
           preferences: prefsResponse.preferences ?? user.preferences ?? null,
         };
         return { user: normalizeUser(mergedUser) };
       } catch {
         // 취향 정보 불러오기에 실패해도 로그인 자체는 유지
-        return { user: normalizeUser(user) };
+        const mergedUser: User = {
+          ...user,
+          role: decodedToken.role,
+        };
+        return { user: normalizeUser(mergedUser) };
       }
     } catch (error: unknown) {
       localStorage.removeItem('token');
@@ -112,7 +125,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.user = normalizeUser(action.payload.user);
+      const decodedToken = decodeJwt(action.payload.token);
+      const userWithRole: User = {
+        ...action.payload.user,
+        role: decodedToken?.role,
+      };
+      state.user = normalizeUser(userWithRole);
       state.isAuthenticated = true;
       localStorage.setItem('token', action.payload.token);
     },
