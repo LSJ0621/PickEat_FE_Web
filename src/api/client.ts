@@ -15,18 +15,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 100000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Content-Type은 요청 데이터 타입(FormData / JSON)에 따라 axios가 자동 설정하도록 둔다.
   withCredentials: true,
 });
-
+ 
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 });
 

@@ -14,6 +14,7 @@ export interface User {
     dislikes: string[];
   } | null;
   createdAt: string;
+  role?: string;
 }
 
 export interface LoginRequest {

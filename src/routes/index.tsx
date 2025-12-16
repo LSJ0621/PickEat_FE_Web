@@ -22,6 +22,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { PasswordResetRequestPage } from '@/pages/auth/PasswordResetRequest';
 import { PasswordResetPage } from '@/pages/auth/PasswordReset';
 import { ReRegisterPage } from '@/pages/auth/ReRegister';
+import { BugReportPage } from '@/pages/bug-report/BugReportPage';
+import { AdminBugReportListPage } from '@/pages/admin/bug-reports/AdminBugReportListPage';
 
 // 라우트 정의
 const router = createBrowserRouter([
@@ -136,6 +138,26 @@ const router = createBrowserRouter([
     element: (
       <AppLayout showHeader={false} showFooter={false}>
         <OAuthGoogleRedirect />
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/bug-report',
+    element: (
+      <AppLayout>
+        <ProtectedRoute>
+          <BugReportPage />
+        </ProtectedRoute>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/bug-reports',
+    element: (
+      <AppLayout>
+        <ProtectedRoute>
+          <AdminBugReportListPage />
+        </ProtectedRoute>
       </AppLayout>
     ),
   },
