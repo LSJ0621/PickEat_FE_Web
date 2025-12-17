@@ -19,6 +19,7 @@ interface AgentState {
   menuRecommendationHistoryId: number | null;
   menuRecommendationPrompt: string;
   menuRecommendationRequestAddress: string | null;
+  menuRecommendationReason: string | null;
   isMenuRecommendationLoading: boolean;
   
   // 메뉴 선택 관련
@@ -50,6 +51,7 @@ const initialState: AgentState = {
   menuRecommendationHistoryId: null,
   menuRecommendationPrompt: '',
   menuRecommendationRequestAddress: null,
+  menuRecommendationReason: null,
   isMenuRecommendationLoading: false,
   selectedMenu: null,
   menuHistoryId: null,
@@ -76,12 +78,14 @@ const agentSlice = createSlice({
         historyId: number;
         prompt: string;
         requestAddress: string | null;
+        reason: string;
       }>
     ) => {
       state.menuRecommendations = action.payload.recommendations;
       state.menuRecommendationHistoryId = action.payload.historyId;
       state.menuRecommendationPrompt = action.payload.prompt;
       state.menuRecommendationRequestAddress = action.payload.requestAddress;
+      state.menuRecommendationReason = action.payload.reason;
       // 새 추천 받으면 선택 완료 상태 초기화
       state.hasMenuSelectionCompleted = false;
     },
@@ -95,6 +99,7 @@ const agentSlice = createSlice({
       state.menuRecommendationHistoryId = null;
       state.menuRecommendationPrompt = '';
       state.menuRecommendationRequestAddress = null;
+      state.menuRecommendationReason = null;
     },
     
     // 메뉴 선택 관련

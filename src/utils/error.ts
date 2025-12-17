@@ -12,13 +12,19 @@ export const extractErrorMessage = (error: unknown, fallbackMessage = '오류가
     return error;
   }
 
-  if (error instanceof Error) {
-    return error.message;
-  }
-
+  // 우선순위: 서버 응답 message > 기본 message
   if (error && typeof error === 'object') {
     const apiError = error as ApiErrorResponse;
-    return apiError.response?.data?.message || apiError.message || fallbackMessage;
+    if (apiError.response?.data?.message) {
+      return apiError.response.data.message;
+    }
+    if (apiError.message) {
+      return apiError.message;
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
   }
 
   return fallbackMessage;

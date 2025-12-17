@@ -89,7 +89,7 @@ export const AiPlaceRecommendations = ({
                 {/* 아코디언 헤더 */}
                 <button
                   onClick={() => toggleMenu(group.menuName)}
-                  className="w-full px-4 py-3 text-left transition-all duration-300 hover:bg-white/5"
+                  className="group w-full px-4 py-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -104,9 +104,9 @@ export const AiPlaceRecommendations = ({
                         </span>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 rounded-full p-1 transition-all duration-300 group-hover:bg-white/10">
                       <svg
-                        className={`h-5 w-5 text-slate-400 transition-transform duration-300 ${
+                        className={`h-5 w-5 text-slate-400 transition-transform duration-300 group-hover:text-white ${
                           isExpanded ? 'rotate-0' : '-rotate-90'
                         }`}
                         fill="none"

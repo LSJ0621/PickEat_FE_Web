@@ -41,13 +41,7 @@ export const useErrorHandler = () => {
 
       // 에러 타입별 duration 설정
       const duration = type === ErrorType.VALIDATION ? 4000 : 5000;
-
       toast.error(message, duration);
-
-      // 개발 환경에서만 콘솔 로그
-      if (import.meta.env.DEV) {
-        console.error(`[${context || 'Error'}]`, error);
-      }
     },
     [toast]
   );
