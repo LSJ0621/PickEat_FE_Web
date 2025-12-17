@@ -36,7 +36,7 @@ export const AuthPromptModal = ({ open, onConfirm, onClose, message }: AuthPromp
 
   return createPortal(
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
     >

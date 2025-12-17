@@ -2,9 +2,9 @@ import { menuService } from '@/api/services/menu';
 import { searchService } from '@/api/services/search';
 import { Button } from '@/components/common/Button';
 import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
-import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
 import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
-import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
+import { ResultsSection } from '@/components/features/agent/ResultsSection';
+import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
 import { useScrollToSection } from '@/hooks/common/useScrollToSection';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -32,32 +32,33 @@ export const AgentPage = () => {
   const { handleError, handleSuccess } = useErrorHandler();
 
   // 섹션 위치 참조 (검색 결과 / AI 추천 카드로 스크롤 이동용)
-  const restaurantSectionRef = useRef<HTMLDivElement | null>(null);
-  const aiSectionRef = useRef<HTMLDivElement | null>(null);
+  const restaurantSectionRef = useRef<HTMLDivElement>(null);
+  const aiSectionRef = useRef<HTMLDivElement>(null);
+  const resultsSectionRef = useRef<ResultsSectionRef>(null);
 
   // Redux에서 상태 가져오기
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
   const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
   const menuRequestAddress = useAppSelector((state) => state.agent.menuRequestAddress);
   const showConfirmCard = useAppSelector((state) => state.agent.showConfirmCard);
-  const restaurants = useAppSelector((state) => state.agent.restaurants);
   const isSearching = useAppSelector((state) => state.agent.isSearching);
   const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
   const isAiLoading = useAppSelector((state) => state.agent.isAiLoading);
-  const aiLoadingMenu = useAppSelector((state) => state.agent.aiLoadingMenu);
   const selectedPlace = useAppSelector((state) => state.agent.selectedPlace);
-  const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
 
-  // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
+  // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤 (모바일에서만)
+  // 문제 4 해결: 데스크톱에서는 그리드 레이아웃으로 이미 보이므로 스크롤 불필요
   useScrollToSection({
     elementRef: restaurantSectionRef,
     shouldScroll: isSearching && selectedMenu !== null,
+    offset: 80,
   });
 
-  // AI 추천: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤
+  // AI 추천: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤 (모바일에서만)
   useScrollToSection({
     elementRef: aiSectionRef,
     shouldScroll: isAiLoading && selectedMenu !== null,
+    offset: 80,
   });
 
   const hasAiQueryContext =
@@ -99,6 +100,8 @@ export const AgentPage = () => {
     }
 
     dispatch(setShowConfirmCard(false));
+    // 일반 검색 탭으로 자동 전환
+    resultsSectionRef.current?.switchToTab('search');
     dispatch(setIsSearching(true));
     try {
       const result = await searchService.restaurants({
@@ -183,6 +186,8 @@ export const AgentPage = () => {
     );
     if (alreadyRecommended) {
       dispatch(setShowConfirmCard(false));
+      // 이미 추천받은 메뉴도 AI 탭으로 전환
+      resultsSectionRef.current?.switchToTab('ai');
       handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
       return;
     }
@@ -201,6 +206,8 @@ export const AgentPage = () => {
     const query = `${queryBase} ${selectedMenu}`.trim();
 
     dispatch(setShowConfirmCard(false));
+    // AI 추천 탭으로 자동 전환
+    resultsSectionRef.current?.switchToTab('ai');
     dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
 
     try {
@@ -239,24 +246,24 @@ export const AgentPage = () => {
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 pb-28 sm:px-6 lg:px-8">
-          <section className="mb-10 rounded-[32px] border border-white/10 bg-white/5 p-8 text-center shadow-2xl shadow-rose-500/10 backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Smart Eatery Companion</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+          <section className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center shadow-2xl shadow-rose-500/10 backdrop-blur sm:mb-6 sm:rounded-[32px] sm:p-6 lg:mb-8">
+            <p className="text-xs uppercase tracking-[0.3em] text-orange-200/80 sm:text-sm sm:tracking-[0.4em]">Smart Eatery Companion</p>
+            <h2 className="mt-2 text-xl font-semibold text-white sm:mt-3 sm:text-2xl md:mt-4 md:text-3xl lg:text-4xl">
               기분 · 날씨 · 위치를 이해하는 추천과
               <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
                 {' '}
                 주변 맛집 탐색
               </span>
             </h2>
-            <p className="mx-auto mt-3 max-w-3xl text-base text-slate-300">
+            <p className="mx-auto mt-1.5 max-w-3xl text-xs text-slate-300 sm:mt-2 sm:text-sm md:mt-3 md:text-base">
               PickEat 홈에서 AI 추천을 받고, 바로 근처 매장까지 확인하세요. 
             </p>
             {!isAuthenticated && (
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-                <Button size="lg" onClick={() => navigate('/login')}>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:mt-6 sm:gap-4 lg:mt-8">
+                <Button size="md" onClick={() => navigate('/login')} className="sm:size-lg">
                   로그인하고 추천 받기
                 </Button>
-                <Button variant="ghost" size="lg" onClick={() => navigate('/login')}>
+                <Button variant="ghost" size="md" onClick={() => navigate('/login')} className="sm:size-lg">
                   카카오로 빠른 시작
                 </Button>
               </div>
@@ -274,32 +281,20 @@ export const AgentPage = () => {
               </Button>
             </div>
           ) : (
-            <div className="space-y-8">
-              <MenuRecommendation onMenuSelect={handleMenuClick} />
-              {selectedMenu && (restaurants.length > 0 || isSearching) && (
-                <div ref={restaurantSectionRef}>
-                  <RestaurantList 
-                    menuName={selectedMenu} 
-                    restaurants={restaurants}
-                    loading={isSearching}
-                    onClose={() => {
-                      dispatch(clearSelectedMenu());
-                    }}
-                  />
-                </div>
-              )}
-              {(hasAiRecommendations || aiLoadingMenu) && (
-                <div ref={aiSectionRef}>
-                  <AiPlaceRecommendations
-                    activeMenuName={selectedMenu}
-                    recommendations={aiRecommendationGroups}
-                    isLoading={isAiLoading}
-                    loadingMenuName={aiLoadingMenu}
-                    onSelect={(recommendation) => dispatch(setSelectedPlace(recommendation))}
-                    onReset={() => dispatch(resetAiRecommendations())}
-                  />
-                </div>
-              )}
+            <div className="flex flex-col gap-6 lg:gap-8">
+              {/* 메뉴 추천 섹션 */}
+              <MenuRecommendation onMenuSelect={handleMenuClick} selectedMenu={selectedMenu} />
+              
+              {/* 결과 영역 */}
+              <ResultsSection
+                ref={resultsSectionRef}
+                selectedMenu={selectedMenu}
+                onClearMenu={() => dispatch(clearSelectedMenu())}
+                onSelectPlace={(recommendation) => dispatch(setSelectedPlace(recommendation))}
+                onResetAiRecommendations={() => dispatch(resetAiRecommendations())}
+                restaurantSectionRef={restaurantSectionRef}
+                aiSectionRef={aiSectionRef}
+              />
             </div>
           )}
 

@@ -277,7 +277,6 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
             <AiPlaceRecommendations
               activeMenuName={menuActions.selectedMenu}
               recommendations={aiRecommendationGroups}
-              isLoading={aiRecommendations.isAiLoading}
               loadingMenuName={aiRecommendations.aiLoadingMenu}
               onSelect={(recommendation) => setSelectedPlace(recommendation)}
               onReset={() => {
