@@ -9,6 +9,7 @@ export interface MenuRecommendationRequest {
 export interface MenuRecommendationResponse {
   id: number; // 메뉴 추천 이력 ID (AI 가게 추천 시 historyId로 사용)
   recommendations: string[];
+  reason: string;
   recommendedAt: string;
   requestAddress: string | null;
   // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)
@@ -68,6 +69,7 @@ export interface PlaceHistoryMeta {
   id: number;
   type: 'MENU' | 'PLACE';
   prompt: string;
+  reason: string;
   recommendedAt: string;
   requestAddress: string | null;
   // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)

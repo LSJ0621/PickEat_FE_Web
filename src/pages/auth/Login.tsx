@@ -6,10 +6,11 @@ import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { StatusPopupCard } from '@/components/common/StatusPopupCard';
 import { useAppDispatch } from '@/store/hooks';
-import { setCredentials } from '@/store/slices/authSlice';
+import { initializeAuth, setLoading } from '@/store/slices/authSlice';
+import { ERROR_MESSAGES } from '@/utils/constants';
 import { extractErrorMessage } from '@/utils/error';
 import { isEmpty } from '@/utils/validation';
-import { ERROR_MESSAGES } from '@/utils/constants';
+import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ export const LoginPage = () => {
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorPopup, setErrorPopup] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
@@ -52,6 +54,10 @@ export const LoginPage = () => {
   };
 
   const handleLogin = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
     if (isEmpty(email) || isEmpty(password)) {
       setErrorPopup({
         open: true,
@@ -61,33 +67,41 @@ export const LoginPage = () => {
     }
 
     try {
+      setIsSubmitting(true);
+      dispatch(setLoading(true));
       const loginData = await authService.login({ email, password });
 
       if (!loginData.token) {
         throw new Error('토큰이 발급되지 않았습니다.');
       }
 
-      dispatch(setCredentials({
-        user: {
-          email: loginData.email || email,
-          name: loginData.name || '',
-          address: loginData.address ?? null,
-          latitude: loginData.latitude ?? null,
-          longitude: loginData.longitude ?? null,
-          preferences: loginData.preferences ?? null,
-          createdAt: new Date().toISOString(),
-        },
-        token: loginData.token,
-      }));
+      localStorage.setItem('token', loginData.token);
+      await dispatch(initializeAuth()).unwrap();
 
       navigate('/');
     } catch (error: unknown) {
-      const message = extractErrorMessage(error, '로그인에 실패했습니다.');
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      const serverMessage =
+        isAxiosError(error) &&
+        typeof error.response?.data === 'object' &&
+        error.response?.data !== null &&
+        'message' in error.response.data &&
+        typeof (error.response.data as { message?: unknown }).message === 'string'
+          ? (error.response.data as { message: string }).message
+          : undefined;
+
+      const message =
+        status === 401
+          ? serverMessage || extractErrorMessage(error, '로그인에 실패했습니다.')
+          : extractErrorMessage(error, '로그인에 실패했습니다.');
 
       setErrorPopup({
         open: true,
         message,
       });
+    } finally {
+      setIsSubmitting(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -154,14 +168,22 @@ export const LoginPage = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="비밀번호를 입력하세요"
                       className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                          if (isSubmitting) {
+                            return;
+                          }
                           handleLogin();
                         }
                       }}
                     />
                   </div>
-                  <Button onClick={handleLogin} size="lg" className="w-full">
+                  <Button
+                    onClick={handleLogin}
+                    size="lg"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
                     로그인
                   </Button>
                 </div>

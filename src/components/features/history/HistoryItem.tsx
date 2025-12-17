@@ -110,6 +110,15 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
             {item.prompt && (
               <p className="mt-2 text-slate-300">"{item.prompt}"</p>
             )}
+          {item.reason && (
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-200">
+              <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-200/80">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-[10px] text-white shadow-sm shadow-orange-500/40">i</span>
+                추천 이유
+              </div>
+              <p className="leading-relaxed text-slate-200">{item.reason}</p>
+            </div>
+          )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

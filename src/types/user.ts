@@ -59,6 +59,7 @@ export interface RecommendationHistoryItem {
   id: number;
   recommendations: string[];
   prompt: string;
+  reason: string;
   recommendedAt: string;
   requestAddress: string | null;
   // requestLocation 제거됨 (서버에서 더 이상 제공하지 않음)

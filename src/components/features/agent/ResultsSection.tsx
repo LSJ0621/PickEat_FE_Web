@@ -33,6 +33,12 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   // Redux에서 상태 가져오기 (기존 selector 패턴 유지)
   const restaurants = useAppSelector((state) => state.agent.restaurants);
   const isSearching = useAppSelector((state) => state.agent.isSearching);
+  const menuRecommendations = useAppSelector(
+    (state) => state.agent.menuRecommendations,
+  );
+  const isMenuRecommendationLoading = useAppSelector(
+    (state) => state.agent.isMenuRecommendationLoading,
+  );
   const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
   const aiLoadingMenu = useAppSelector((state) => state.agent.aiLoadingMenu);
   const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
@@ -59,6 +65,9 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
 
   // 선택된 메뉴가 있고 결과가 있을 때만 탭 표시
   const hasResults = selectedMenu && (searchCount > 0 || hasAiRecommendations || isSearching || aiLoadingMenu);
+  // 메뉴 추천을 눌러본 이후에만 빈 상태 안내를 노출
+  const hasRequestedMenuRecommendation =
+    menuRecommendations.length > 0 || isMenuRecommendationLoading;
 
   // 메뉴 선택 시 스크롤 처리 (탭 변경은 모달에서 선택한 후에만)
   useEffect(() => {
@@ -182,7 +191,13 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   }, [selectedMenu, searchCount, isSearching, aiLoadingMenu, aiRecommendationGroups]);
 
   // 빈 상태
-  if (!selectedMenu && searchCount === 0 && !hasAiRecommendations && !aiLoadingMenu) {
+  if (
+    !selectedMenu &&
+    searchCount === 0 &&
+    !hasAiRecommendations &&
+    !aiLoadingMenu &&
+    hasRequestedMenuRecommendation
+  ) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center shadow-[0_20px_60px_rgba(15,23,42,0.6)] backdrop-blur sm:rounded-3xl sm:p-8">
         <div className="flex flex-col items-center gap-3 sm:gap-4">
@@ -192,7 +207,6 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
           <div>
             <h3 className="text-base font-semibold text-white sm:text-lg">메뉴를 선택해주세요</h3>
             <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">
-              <span className="hidden sm:inline">왼쪽에서 메뉴 추천을 받고, 원하는 메뉴를 선택하면 여기에 결과가 표시됩니다.</span>
               <span className="sm:hidden">메뉴 추천을 받고 선택해주세요.</span>
             </p>
           </div>

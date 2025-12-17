@@ -192,7 +192,8 @@ export const AgentPage = () => {
       return;
     }
 
-    const normalizedAddress = menuRequestAddress?.trim() || address?.trim();
+    // 주소 우선순위: 현재 주소 > 요청에 저장된 주소 > 좌표
+    const normalizedAddress = address?.trim() || menuRequestAddress?.trim();
     const locationFallback = latitude !== null && longitude !== null
       ? `${latitude},${longitude}`
       : null;
