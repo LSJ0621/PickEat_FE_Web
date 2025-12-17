@@ -14,7 +14,7 @@ export const RestaurantListItem = ({ restaurant, index }: RestaurantListItemProp
   return (
     <div
       key={index}
-      className="group rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5 shadow-xl shadow-black/30 transition hover:-translate-y-0.5 hover:border-white/40"
+      className="cursor-default rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5 shadow-xl shadow-black/30"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
