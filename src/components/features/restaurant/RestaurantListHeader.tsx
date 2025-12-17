@@ -35,10 +35,10 @@ export const RestaurantListHeader = ({
       {hasRestaurants && (
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={onOpenMapModal}>
-            네이버 지도에서 보기
+            지도 보기
           </Button>
           <Button variant="ghost" size="sm" onClick={onOpenNaverMap}>
-            네이버 맵 사이트에서 보기
+            사이트 보기
           </Button>
         </div>
       )}

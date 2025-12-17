@@ -17,6 +17,7 @@ interface UseScrollToSectionOptions {
 /**
  * 섹션으로 스크롤하는 Hook
  * shouldScroll이 true가 되었을 때 해당 요소로 스크롤합니다.
+ * 데스크톱(768px 이상)에서는 스크롤하지 않습니다.
  */
 export const useScrollToSection = (
   options: UseScrollToSectionOptions
@@ -27,7 +28,8 @@ export const useScrollToSection = (
   useEffect(() => {
     const prev = prevShouldScrollRef.current;
     // 이전에는 false였고 지금 true가 되었을 때만 스크롤
-    if (!prev && shouldScroll && elementRef.current) {
+    // 데스크톱에서는 그리드 레이아웃으로 이미 보이므로 스크롤 불필요 (문제 4 해결)
+    if (!prev && shouldScroll && elementRef.current && window.innerWidth < 768) {
       const element = elementRef.current;
       const rect = element.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
