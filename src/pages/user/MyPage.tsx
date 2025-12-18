@@ -44,6 +44,7 @@ export const MyPage = () => {
   const preferences = usePreferences({
     initialLikes: user?.preferences?.likes,
     initialDislikes: user?.preferences?.dislikes,
+    initialAnalysis: user?.preferences?.analysis ?? null,
   });
   const addressList = useAddressList();
   const addressModal = useAddressModal({
@@ -72,9 +73,10 @@ export const MyPage = () => {
       // Redux에 preferences가 있으면 초기값으로 사용, 없을 때만 API 호출
       // (중복 API 호출 방지)
       const hasPreferencesInRedux = user?.preferences?.likes || user?.preferences?.dislikes;
-      
-      // Redux에 preferences가 없을 때만 API 호출
-      if (!hasPreferencesInRedux) {
+      const hasAnalysisInRedux = Boolean(user?.preferences?.analysis);
+
+      // 취향 태그가 없거나 AI 분석이 없으면 최신 취향 정보 로드
+      if (!hasPreferencesInRedux || !hasAnalysisInRedux) {
         await preferences.loadPreferences();
       }
       // 주소는 항상 로드 (Redux에 저장되지 않음)
