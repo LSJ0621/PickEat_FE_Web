@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 interface UsePreferencesOptions {
   initialLikes?: string[];
   initialDislikes?: string[];
+  initialAnalysis?: string | null;
 }
 
 export const usePreferences = (options?: UsePreferencesOptions) => {
@@ -14,17 +15,24 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [likes, setLikes] = useState<string[]>(options?.initialLikes || []);
   const [dislikes, setDislikes] = useState<string[]>(options?.initialDislikes || []);
-  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<string | null>(
+    options?.initialAnalysis ?? null,
+  );
   const prevInitialLikesRef = useRef<string[] | undefined>(options?.initialLikes);
   const prevInitialDislikesRef = useRef<string[] | undefined>(options?.initialDislikes);
+  const prevInitialAnalysisRef = useRef<string | null | undefined>(
+    options?.initialAnalysis,
+  );
   
   // 초기값이 변경되면 상태 업데이트 (Redux 상태 동기화)
   useEffect(() => {
     // 배열 참조 비교를 피하기 위해 JSON.stringify 사용 (간단한 배열이므로 안전)
     const currentLikes = JSON.stringify(options?.initialLikes);
     const currentDislikes = JSON.stringify(options?.initialDislikes);
+    const currentAnalysis = options?.initialAnalysis ?? null;
     const prevLikes = JSON.stringify(prevInitialLikesRef.current);
     const prevDislikes = JSON.stringify(prevInitialDislikesRef.current);
+    const prevAnalysis = prevInitialAnalysisRef.current ?? null;
 
     if (currentLikes !== prevLikes && options?.initialLikes !== undefined) {
       setLikes(options.initialLikes);
@@ -34,7 +42,11 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       setDislikes(options.initialDislikes);
       prevInitialDislikesRef.current = options.initialDislikes;
     }
-  }, [options?.initialLikes, options?.initialDislikes]);
+    if (currentAnalysis !== prevAnalysis && options?.initialAnalysis !== undefined) {
+      setAnalysis(currentAnalysis);
+      prevInitialAnalysisRef.current = options.initialAnalysis ?? null;
+    }
+  }, [options?.initialLikes, options?.initialDislikes, options?.initialAnalysis]);
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
