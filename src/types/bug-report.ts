@@ -10,7 +10,9 @@ export type BugReportStatus = 'UNCONFIRMED' | 'CONFIRMED';
 
 export interface BugReport {
   id: number;
-  userId: number;
+  user: {
+    id: number;
+  };
   category: BugReportCategory;
   title: string;
   description: string;

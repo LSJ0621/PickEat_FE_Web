@@ -5,7 +5,6 @@
 export interface User {
   email: string;
   name: string;
-  phone?: string;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -13,7 +12,6 @@ export interface User {
     likes: string[];
     dislikes: string[];
   } | null;
-  createdAt: string;
   role?: string;
 }
 
@@ -64,12 +62,10 @@ export interface LoginResponse {
 
 export interface UpdateUserRequest {
   name?: string;
-  profileImage?: string;
 }
 
 export interface UpdateUserResponse {
   name: string | null;
-  profileImage: string | null;
 }
 
 export interface RegisterResponse {
