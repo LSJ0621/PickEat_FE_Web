@@ -32,7 +32,16 @@ export interface SetAddressRequest {
 }
 
 export interface SetAddressResponse {
-  address: string;
+  id: number;
+  roadAddress: string;
+  postalCode: string | null;
+  latitude: number;
+  longitude: number;
+  isDefault: boolean;
+  isSearchAddress: boolean;
+  alias: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Preferences {

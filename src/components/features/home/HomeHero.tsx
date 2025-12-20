@@ -66,26 +66,6 @@ export const HomeHero = () => {
             </>
           )}
         </div>
-
-        {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 animate-bounce sm:bottom-20">
-          <div className="flex flex-col items-center gap-2 text-slate-400">
-            <span className="text-xs uppercase tracking-wider">Scroll</span>
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
-            </svg>
-          </div>
-        </div>
       </section>
 
       <AuthPromptModal
