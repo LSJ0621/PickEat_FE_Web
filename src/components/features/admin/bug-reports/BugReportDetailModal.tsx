@@ -213,7 +213,7 @@ export const BugReportDetailModal = ({
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">유저 ID</span>
-                <span className="text-slate-300">{bugReport.userId}</span>
+                <span className="text-slate-300">{bugReport.user.id}</span>
               </div>
             </div>
 

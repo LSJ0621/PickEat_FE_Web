@@ -97,7 +97,7 @@ export const InitialSetupModal = ({
               : addressesResponse?.addresses || [];
             
             const newAddress = addresses.find(
-              (addr) => addr.roadAddress === addressResult.address
+              (addr) => addr.roadAddress === addressResult.roadAddress
             );
             
             if (newAddress) {
@@ -115,7 +115,7 @@ export const InitialSetupModal = ({
 
         dispatch(
           updateUser({
-            address: addressResult.address,
+            address: addressResult.roadAddress,
             latitude: normalizedLatitude,
             longitude: normalizedLongitude,
           })
