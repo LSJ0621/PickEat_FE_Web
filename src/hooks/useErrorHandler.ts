@@ -3,10 +3,10 @@
  * 일관된 에러 처리 방식을 제공
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { isAxiosError } from 'axios';
 import { extractErrorMessage } from '@/utils/error';
-import { useToast } from '@/components/common/ToastProvider';
+import { useToast } from '@/hooks/common/useToast';
 
 export const ErrorType = {
   VALIDATION: 'validation',
@@ -35,7 +35,8 @@ export const useErrorHandler = () => {
   const toast = useToast();
 
   const handleError = useCallback(
-    (error: unknown, context?: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (error: unknown, _context?: string) => {
       const message = extractErrorMessage(error, '오류가 발생했습니다.');
       const type = getErrorType(error);
 
@@ -53,6 +54,10 @@ export const useErrorHandler = () => {
     [toast]
   );
 
-  return { handleError, handleSuccess };
+  // Memoize the return value to prevent infinite re-renders in consumers
+  return useMemo(
+    () => ({ handleError, handleSuccess }),
+    [handleError, handleSuccess]
+  );
 };
 

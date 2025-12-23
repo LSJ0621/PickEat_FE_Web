@@ -94,7 +94,7 @@ export const MyPage = () => {
     // 현재 상태를 이전 상태로 저장
     prevShowAddressListModalRef.current = showAddressListModal;
     // useCallback으로 안정화된 함수만 의존성으로 사용 (객체 전체 사용 금지)
-  }, [showAddressListModal, addressList.loadAddresses]);
+  }, [showAddressListModal, addressList]);
 
 
   const handleOpenPreferencesModal = () => {

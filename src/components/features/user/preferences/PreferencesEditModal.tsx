@@ -41,6 +41,7 @@ export const PreferencesEditModal = ({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       requestAnimationFrame(() => {
         setIsAnimating(true);

@@ -4,6 +4,7 @@
 
 import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
@@ -23,6 +24,10 @@ export const MenuSelectionHistory = () => {
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingSelectionId, setEditingSelectionId] = useState<number | null>(null);
   const [editingPayload, setEditingPayload] = useState<MenuPayload | null>(null);
+  const [cancelConfirm, setCancelConfirm] = useState<{ show: boolean; selectionId: number | null }>({
+    show: false,
+    selectionId: null,
+  });
 
   // loadSelections를 useCallback으로 안정화 (다른 곳에서도 사용되므로)
   const loadSelections = useCallback(async () => {
@@ -42,7 +47,7 @@ export const MenuSelectionHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, handleError]);
 
   // 인증 확인 및 리다이렉트
   useEffect(() => {
@@ -104,7 +109,7 @@ export const MenuSelectionHistory = () => {
         etc,
       });
 
-      alert('메뉴 선택이 저장되었습니다.');
+      handleSuccess('메뉴 선택이 저장되었습니다.');
       await loadSelections();
       setEditingSelectionId(null);
       setEditingPayload(null);
@@ -116,11 +121,15 @@ export const MenuSelectionHistory = () => {
     }
   };
 
-  const handleCancel = async (selectionId: number) => {
-    if (!confirm('이 메뉴 선택을 취소하시겠습니까?')) {
-      return;
-    }
+  const handleCancelClick = (selectionId: number) => {
+    setCancelConfirm({ show: true, selectionId });
+  };
 
+  const handleCancelConfirm = async () => {
+    const selectionId = cancelConfirm.selectionId;
+    if (!selectionId) return;
+
+    setCancelConfirm({ show: false, selectionId: null });
     setIsUpdating(selectionId);
     try {
       await menuService.updateMenuSelection(selectionId, { cancel: true });
@@ -131,6 +140,10 @@ export const MenuSelectionHistory = () => {
     } finally {
       setIsUpdating(null);
     }
+  };
+
+  const handleCancelCancel = () => {
+    setCancelConfirm({ show: false, selectionId: null });
   };
 
 
@@ -256,7 +269,7 @@ export const MenuSelectionHistory = () => {
                           {isEditing && (
                             <button
                               type="button"
-                              onClick={() => handleCancel(selection.id)}
+                              onClick={() => handleCancelClick(selection.id)}
                               disabled={isUpdating === selection.id}
                               className="font-medium text-red-400 hover:text-red-300 disabled:opacity-60"
                             >
@@ -347,6 +360,18 @@ export const MenuSelectionHistory = () => {
           </div>
         )}
       </div>
+
+      {/* 취소 확인 모달 */}
+      <ConfirmDialog
+        open={cancelConfirm.show}
+        title="메뉴 선택 취소"
+        message="이 메뉴 선택을 취소하시겠습니까?"
+        onConfirm={handleCancelConfirm}
+        onCancel={handleCancelCancel}
+        confirmLabel="취소하기"
+        cancelLabel="돌아가기"
+        variant="danger"
+      />
     </div>
   );
 };

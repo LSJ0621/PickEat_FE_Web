@@ -6,13 +6,14 @@
 import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
 import { RestaurantList } from '@/components/features/restaurant/RestaurantList';
 import { useAppSelector } from '@/store/hooks';
+import type { PlaceRecommendationItem } from '@/types/menu';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { ResultsTabs } from './ResultsTabs';
 
 interface ResultsSectionProps {
   selectedMenu: string | null;
   onClearMenu: () => void;
-  onSelectPlace: (recommendation: any) => void;
+  onSelectPlace: (recommendation: PlaceRecommendationItem) => void;
   onResetAiRecommendations: () => void;
   restaurantSectionRef: React.RefObject<HTMLDivElement | null>;
   aiSectionRef: React.RefObject<HTMLDivElement | null>;
@@ -147,9 +148,10 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
     if (isAiResultChanged && currentMenuAiRecommendations && !aiLoadingMenu && !isSearching) {
       // AI 추천을 선택한 경우 AI 탭 유지
       userSelectedTabRef.current = 'ai';
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab('ai');
     }
-    
+
     previousAiCountRef.current = currentAiCount;
   }, [selectedMenu, aiLoadingMenu, aiRecommendationGroups, isSearching]);
 
@@ -183,10 +185,11 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
       if (!currentMenuAiRecommendations) {
         // 일반 검색을 선택한 경우 일반 검색 탭 유지
         userSelectedTabRef.current = 'search';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setActiveTab('search');
       }
     }
-    
+
     previousSearchCountRef.current = searchCount;
   }, [selectedMenu, searchCount, isSearching, aiLoadingMenu, aiRecommendationGroups]);
 

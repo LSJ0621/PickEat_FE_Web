@@ -23,6 +23,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
   // 사진 인덱스 초기화
   useEffect(() => {
     if (placeDetail?.photos && placeDetail.photos.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentPhotoIndex(0);
     }
   }, [placeDetail?.photos]);
@@ -95,6 +96,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
 
   useEffect(() => {
     if (placeId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       requestAnimationFrame(() => {
         setIsAnimating(true);

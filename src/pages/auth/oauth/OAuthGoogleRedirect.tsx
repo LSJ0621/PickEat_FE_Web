@@ -100,7 +100,7 @@ export const OAuthGoogleRedirect = () => {
     return () => {
       // 필요시 요청 취소 로직 추가 가능
     };
-  }, [navigate, dispatch]);
+  }, [navigate, dispatch, handleError]);
 
   // 재가입 처리
   const handleReRegister = async () => {

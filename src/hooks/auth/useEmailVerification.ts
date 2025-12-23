@@ -161,7 +161,7 @@ export const useEmailVerification = (
     } finally {
       setSendCodeLoading(false);
     }
-  }, [email, emailChecked, emailAvailable, verificationType, isReRegister]);
+  }, [email, emailChecked, emailAvailable, verificationType, isReRegister, verificationTimer]);
 
   // 인증 코드 검증
   const handleVerifyCode = useCallback(async () => {
@@ -200,7 +200,7 @@ export const useEmailVerification = (
     } finally {
       setVerifyCodeLoading(false);
     }
-  }, [email, verificationCode, isCodeSent, verificationType]);
+  }, [email, verificationCode, isCodeSent, verificationType, verificationTimer]);
 
   // 이메일 액션 버튼 라벨
   const getEmailActionLabel = useCallback(() => {
@@ -266,7 +266,7 @@ export const useEmailVerification = (
     setVerificationMessage(null);
     setVerificationMessageVariant(null);
     setEmailError(undefined);
-  }, []);
+  }, [verificationTimer]);
 
   // 이메일 액션 처리 (중복 확인 또는 인증번호 발송)
   const handleEmailAction = useCallback(async () => {
@@ -311,7 +311,7 @@ export const useEmailVerification = (
     setVerificationMessage(null);
     setVerificationMessageVariant(null);
     setEmailError(undefined);
-  }, []);
+  }, [verificationTimer]);
 
   return {
     // 상태

@@ -184,7 +184,7 @@ export const logoutAsync = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       await authService.logout();
-    } catch (error) {
+    } catch {
       // 로그아웃 API 호출 실패는 무시 (로컬 상태는 정리됨)
     } finally {
       dispatch(logout());

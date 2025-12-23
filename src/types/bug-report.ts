@@ -46,13 +46,19 @@ export interface GetBugReportListResponse {
   };
 }
 
-export interface GetBugReportDetailResponse extends BugReport {
-  // 현재 백엔드는 유저 정보를 포함하지 않음 (userId만 포함)
-  // 향후 확장 가능성을 위해 optional로 정의
+export interface GetBugReportDetailResponse {
+  id: number;
   user?: {
     id: number;
     nickname?: string;
     email: string;
   };
+  category: BugReportCategory;
+  title: string;
+  description: string;
+  images: string[] | null;
+  status: BugReportStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 

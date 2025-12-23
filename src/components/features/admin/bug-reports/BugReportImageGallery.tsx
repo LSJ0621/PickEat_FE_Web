@@ -16,9 +16,10 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageTransition, setImageTransition] = useState<'fade' | 'none'>('none');
 
-  // 이미지 인덱스 초기화
+  // 이미지가 변경되면 인덱스 초기화 (derived state pattern)
   useEffect(() => {
     if (images && images.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentImageIndex(0);
     }
   }, [images]);

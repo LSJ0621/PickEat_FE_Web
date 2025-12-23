@@ -60,7 +60,7 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       setLikes(result.preferences.likes || []);
       setDislikes(result.preferences.dislikes || []);
       setAnalysis(result.preferences.analysis ?? null);
-    } catch (error: unknown) {
+    } catch {
       // 취향 정보 조회 실패는 무시
     } finally {
       setIsLoadingPreferences(false);

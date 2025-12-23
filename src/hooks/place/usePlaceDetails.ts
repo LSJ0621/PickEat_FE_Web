@@ -68,7 +68,7 @@ export const usePlaceDetails = (placeId: string | null): UsePlaceDetailsReturn =
     return () => {
       cancelled = true;
     };
-  }, [placeId]);
+  }, [placeId, prevPlaceId]);
 
   return {
     status,

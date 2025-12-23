@@ -24,6 +24,7 @@ export const useModalAnimation = (isOpen: boolean): UseModalAnimationReturn => {
     let timeoutId: number | null = null;
 
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       animationFrameId = requestAnimationFrame(() => {
         setIsAnimating(true);
