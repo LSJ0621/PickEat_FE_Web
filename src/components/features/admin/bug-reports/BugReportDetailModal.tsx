@@ -7,7 +7,7 @@ import { BugReportImageGallery } from './BugReportImageGallery';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { BUG_REPORT } from '@/utils/constants';
-import type { BugReport } from '@/types/bug-report';
+import type { GetBugReportDetailResponse } from '@/types/bug-report';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -25,7 +25,7 @@ export const BugReportDetailModal = ({
   onStatusChange,
 }: BugReportDetailModalProps) => {
   const { handleError, handleSuccess } = useErrorHandler();
-  const [bugReport, setBugReport] = useState<BugReport | null>(null);
+  const [bugReport, setBugReport] = useState<GetBugReportDetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -213,7 +213,7 @@ export const BugReportDetailModal = ({
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">유저 ID</span>
-                <span className="text-slate-300">{bugReport.user.id}</span>
+                <span className="text-slate-300">{bugReport.user?.id ?? 'N/A'}</span>
               </div>
             </div>
 

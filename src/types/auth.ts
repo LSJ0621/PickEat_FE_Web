@@ -11,8 +11,10 @@ export interface User {
   preferences?: {
     likes: string[];
     dislikes: string[];
+    analysis?: string | null;
   } | null;
   role?: string;
+  createdAt?: string;
 }
 
 export interface LoginRequest {
@@ -44,6 +46,7 @@ export interface KakaoLoginResponse {
   preferences?: {
     likes: string[];
     dislikes: string[];
+    analysis?: string | null;
   } | null;
 }
 
@@ -57,6 +60,7 @@ export interface LoginResponse {
   preferences?: {
     likes: string[];
     dislikes: string[];
+    analysis?: string | null;
   } | null;
 }
 

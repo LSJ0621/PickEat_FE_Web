@@ -33,6 +33,7 @@ export const AiPlaceRecommendations = ({
   // activeMenuName이 변경되면 해당 메뉴를 자동으로 펼침
   useEffect(() => {
     if (activeMenuName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExpandedMenus((prev) => new Set([...prev, activeMenuName]));
     }
   }, [activeMenuName]);

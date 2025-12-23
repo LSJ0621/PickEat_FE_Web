@@ -31,7 +31,7 @@ export const ReRegisterPage = () => {
     if (emailParam) {
       emailVerification.setEmail(emailParam);
     }
-  }, [emailParam, emailVerification.setEmail]);
+  }, [emailParam, emailVerification]);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

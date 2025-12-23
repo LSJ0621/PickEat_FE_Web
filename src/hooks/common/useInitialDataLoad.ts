@@ -43,7 +43,6 @@ export const useInitialDataLoad = (options: UseInitialDataLoadOptions): void => 
         void loadFnRef.current();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, enabled]);
 
   // 데이터 로드 (StrictMode 대응)

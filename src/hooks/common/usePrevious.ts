@@ -3,7 +3,7 @@
  * 이전 렌더링의 값을 추적하는 Hook입니다.
  */
 
-import { useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 /**
  * 이전 값을 추적하는 Hook
@@ -11,11 +11,14 @@ import { useEffect, useRef } from 'react';
  * @returns 이전 값 (첫 렌더링 시에는 undefined)
  */
 export const usePrevious = <T>(value: T): T | undefined => {
-  const ref = useRef<T | undefined>(undefined);
+  const [state, setState] = useState<{ current: T; prev?: T }>({
+    current: value,
+    prev: undefined,
+  });
 
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
+  if (state.current !== value) {
+    setState({ current: value, prev: state.current });
+  }
 
-  return ref.current;
+  return state.prev;
 };

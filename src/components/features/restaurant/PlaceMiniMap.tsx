@@ -118,7 +118,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
             naverMaps.Event.trigger(map, 'resize');
           }
         }, 200);
-      } catch (error) {
+      } catch {
         // 에러 발생 시 무시
       }
     };

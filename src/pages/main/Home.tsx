@@ -1,9 +1,11 @@
-import { AddressRegistrationModal } from '@/components/common/AddressRegistrationModal';
-import { InitialSetupModal } from '@/components/common/InitialSetupModal';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { HomeCTA, HomeFeatures, HomeHero, HomeHighlights, HomeHowItWorks } from '@/components/features/home';
 import { useAppSelector } from '@/store/hooks';
 import { checkUserSetupStatus } from '@/utils/userSetup';
-import { useEffect, useState } from 'react';
+
+// Lazy load modals
+const InitialSetupModal = lazy(() => import('@/components/features/user/setup/InitialSetupModal').then(m => ({ default: m.InitialSetupModal })));
+const AddressRegistrationModal = lazy(() => import('@/components/features/user/setup/AddressRegistrationModal').then(m => ({ default: m.AddressRegistrationModal })));
 
 export const HomePage = () => {
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
@@ -16,9 +18,10 @@ export const HomePage = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       const status = checkUserSetupStatus(user);
-      
+
       // 주소만 없으면 주소 등록 모달 표시
       if (status.needsAddress && !status.needsName && !status.needsPreferences) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowAddressModal(true);
       } else if (status.hasAnyMissing) {
         // 이름이나 취향도 필요한 경우 초기 설정 모달 표시
@@ -55,21 +58,25 @@ export const HomePage = () => {
 
       {/* 모달들 */}
       {setupStatus && (
-        <InitialSetupModal
-          open={showSetupModal}
-          setupStatus={setupStatus}
+        <Suspense fallback={null}>
+          <InitialSetupModal
+            open={showSetupModal}
+            setupStatus={setupStatus}
+            onComplete={() => {
+              setShowSetupModal(false);
+              setSetupStatus(null);
+            }}
+          />
+        </Suspense>
+      )}
+      <Suspense fallback={null}>
+        <AddressRegistrationModal
+          open={showAddressModal}
           onComplete={() => {
-            setShowSetupModal(false);
-            setSetupStatus(null);
+            setShowAddressModal(false);
           }}
         />
-      )}
-      <AddressRegistrationModal
-        open={showAddressModal}
-        onComplete={() => {
-          setShowAddressModal(false);
-        }}
-      />
+      </Suspense>
     </div>
   );
 };

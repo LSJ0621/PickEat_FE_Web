@@ -59,7 +59,7 @@ export const MenuSelectionEditModal = ({
       }
       // 현재 선택된 메뉴들을 초기 선택으로 설정
       setSelectedMenus(new Set(currentMenuNames));
-    } catch (error) {
+    } catch {
       // 실패 시 현재 선택된 메뉴들을 기본 목록으로 사용
       setAvailableMenus(currentMenuNames);
       setSelectedMenus(new Set(currentMenuNames));

@@ -15,6 +15,7 @@ export const AuthPromptModal = ({ open, onConfirm, onClose, message }: AuthPromp
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       // 다음 프레임에서 애니메이션 시작
       requestAnimationFrame(() => {

@@ -132,7 +132,7 @@ export const MapPage = () => {
               </div>
             </div>
           )}
-          <div ref={mapRef} className="h-[calc(100vh-73px)] w-full" style={{ minHeight: '600px' }} />
+          <div ref={mapRef} className="h-[calc(100vh-73px)] min-h-[600px] w-full" />
         </main>
       </div>
     </div>

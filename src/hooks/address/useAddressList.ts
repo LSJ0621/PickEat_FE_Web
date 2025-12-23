@@ -32,7 +32,7 @@ export const useAddressList = () => {
       ]);
       setAddresses(addressesResponse.addresses);
       setDefaultAddress(defaultResponse.address);
-    } catch (error: unknown) {
+    } catch {
       // 주소 리스트 조회 실패는 무시
     } finally {
       setIsLoadingAddresses(false);
@@ -82,7 +82,7 @@ export const useAddressList = () => {
     try {
       await handleSetDefaultAddress(confirmDefaultAddress.id);
       setConfirmDefaultAddress(null);
-    } catch (error) {
+    } catch {
       // handleSetDefaultAddress에서 이미 에러 처리
     }
   }, [confirmDefaultAddress, handleSetDefaultAddress]);

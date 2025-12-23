@@ -1,4 +1,4 @@
-import { AddressSearchInput } from '@/components/common/AddressSearchInput';
+import { AddressSearchInput } from '@/components/features/user/setup/AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
@@ -48,6 +48,7 @@ export const AddressAddModal = ({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       requestAnimationFrame(() => {
         setIsAnimating(true);

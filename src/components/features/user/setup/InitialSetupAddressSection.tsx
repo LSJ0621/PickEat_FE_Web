@@ -3,7 +3,7 @@
  * 주소 검색 및 선택 UI를 제공합니다.
  */
 
-import { AddressSearchInput } from '@/components/common/AddressSearchInput';
+import { AddressSearchInput } from './AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { useAddressSearch } from '@/hooks/address/useAddressSearch';
 import type { SelectedAddress } from '@/types/user';

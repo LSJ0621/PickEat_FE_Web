@@ -57,7 +57,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
     // 모달을 닫은 후 검색 작업 실행
     try {
       await menuActions.handleSearch();
-    } catch (error) {
+    } catch {
       // 에러는 handleSearch 내부에서 처리되므로 여기서는 무시
     }
   };
@@ -73,7 +73,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
     // 모달을 닫은 후 AI 추천 작업 실행
     try {
       await aiRecommendations.handleAiRecommend(menuActions.selectedMenu);
-    } catch (error) {
+    } catch {
       // 에러는 handleAiRecommend 내부에서 처리되므로 여기서는 무시
     }
   };
@@ -92,7 +92,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [menuActions.showConfirmCard, menuActions.handleCancel]);
+  }, [menuActions]);
 
   const aiRecommendationGroups: MenuPlaceRecommendationGroup[] = useMemo(() => {
     if (!menuActions.selectedMenu || aiRecommendations.aiRecommendations.length === 0) {

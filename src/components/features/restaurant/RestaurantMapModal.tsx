@@ -242,7 +242,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
         });
 
         setError(null);
-      } catch (err) {
+      } catch {
         if (currentExecutionIdRef.current === executionId) {
           setError('지도를 불러오는 중 오류가 발생했습니다.');
         }
@@ -263,6 +263,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
 
   useEffect(() => {
     if (restaurants.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       // 처음 마운트 시에는 이미 isAnimating이 true로 설정되어 있으므로 스킵
       // restaurants가 변경된 경우에만 애니메이션 재시작

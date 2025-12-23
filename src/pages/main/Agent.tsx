@@ -1,35 +1,28 @@
-import { menuService } from '@/api/services/menu';
-import { searchService } from '@/api/services/search';
+import { lazy, Suspense, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/common/Button';
 import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
-import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
 import { ResultsSection } from '@/components/features/agent/ResultsSection';
 import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
 import { useScrollToSection } from '@/hooks/common/useScrollToSection';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useAgentActions } from '@/hooks/agent/useAgentActions';
+import { useConfirmModal } from '@/hooks/agent/useConfirmModal';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   clearSelectedMenu,
   resetAiRecommendations,
-  setAiLoading,
-  setIsSearching,
-  setRestaurants,
-  setSelectedMenu,
   setSelectedPlace,
-  setShowConfirmCard,
-  upsertAiRecommendations,
 } from '@/store/slices/agentSlice';
-import { isAxiosError } from 'axios';
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+// Lazy load modal
+const PlaceDetailsModal = lazy(() => import('@/components/features/restaurant/PlaceDetailsModal').then(m => ({ default: m.PlaceDetailsModal })));
 
 export const AgentPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { latitude, longitude, hasLocation, address } = useUserLocation();
-  const { handleError, handleSuccess } = useErrorHandler();
 
   // 섹션 위치 참조 (검색 결과 / AI 추천 카드로 스크롤 이동용)
   const restaurantSectionRef = useRef<HTMLDivElement>(null);
@@ -38,13 +31,20 @@ export const AgentPage = () => {
 
   // Redux에서 상태 가져오기
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
-  const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
-  const menuRequestAddress = useAppSelector((state) => state.agent.menuRequestAddress);
-  const showConfirmCard = useAppSelector((state) => state.agent.showConfirmCard);
   const isSearching = useAppSelector((state) => state.agent.isSearching);
-  const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
   const isAiLoading = useAppSelector((state) => state.agent.isAiLoading);
   const selectedPlace = useAppSelector((state) => state.agent.selectedPlace);
+
+  // Custom hooks for business logic
+  const { handleMenuClick, handleSearch, handleCancel, handleAiRecommendation } = useAgentActions({
+    latitude,
+    longitude,
+    hasLocation,
+    address,
+    resultsSectionRef,
+  });
+
+  const { showConfirmCard } = useConfirmModal({ handleCancel });
 
   // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤 (모바일에서만)
   // 문제 4 해결: 데스크톱에서는 그리드 레이아웃으로 이미 보이므로 스크롤 불필요
@@ -63,180 +63,9 @@ export const AgentPage = () => {
 
   const hasAiQueryContext =
     Boolean(
-      menuRequestAddress?.trim() ||
-        address?.trim() ||
+      address?.trim() ||
         (latitude !== null && longitude !== null)
     );
-
-  const handleMenuClick = (
-    menu: string,
-    historyId: number,
-    meta: { requestAddress: string | null } = {
-      requestAddress: null,
-    }
-  ) => {
-    dispatch(
-      setSelectedMenu({
-        menu,
-        historyId,
-        requestAddress: meta.requestAddress ?? null,
-      })
-    );
-  };
-
-  const handleSearch = async () => {
-    if (!isAuthenticated) {
-      handleError('로그인이 필요합니다.', 'Agent');
-      return;
-    }
-
-    if (!hasLocation || latitude === null || longitude === null) {
-      handleError('위치 정보가 없습니다. 주소를 등록해주세요.', 'Agent');
-      return;
-    }
-
-    if (!selectedMenu) {
-      return;
-    }
-
-    dispatch(setShowConfirmCard(false));
-    // 일반 검색 탭으로 자동 전환
-    resultsSectionRef.current?.switchToTab('search');
-    dispatch(setIsSearching(true));
-    try {
-      const result = await searchService.restaurants({
-        menuName: selectedMenu,
-        latitude,
-        longitude,
-        includeRoadAddress: false,
-      });
-      dispatch(setRestaurants(result.restaurants));
-    } catch (error) {
-      handleError(error, 'Agent');
-    } finally {
-      dispatch(setIsSearching(false));
-    }
-  };
-
-  const handleCancel = () => {
-    dispatch(setShowConfirmCard(false));
-  };
-
-  // ESC 키로 모달 닫기
-  useEffect(() => {
-    if (!showConfirmCard) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCancel();
-      }
-    };
-
-    window.addEventListener('keydown', handleEscape);
-    return () => {
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [showConfirmCard]);
-
-  const loadStoredAiRecommendations = async (
-    historyId: number,
-    menuName: string,
-    { silent }: { silent?: boolean } = {}
-  ) => {
-    try {
-      const response = await menuService.getPlaceRecommendationsByHistoryId(historyId);
-      const normalized = (response.places || [])
-        .filter((place) => place.menuName === menuName)
-        .map((place) => ({
-          placeId: place.placeId.replace(/^places\//i, ''),
-          name: place.name ?? '이름 없는 가게',
-          reason: place.reason ?? '',
-          menuName: place.menuName,
-        }));
-
-      dispatch(upsertAiRecommendations({ menuName, recommendations: normalized }));
-      dispatch(setSelectedPlace(null));
-
-      if (!silent) {
-        if (normalized.length === 0) {
-          handleError('이미 추천받은 이력이 있지만 저장된 결과를 찾지 못했습니다.', 'Agent');
-        } else {
-          handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
-        }
-      }
-    } catch (historyError) {
-      if (!silent) {
-        handleError(historyError, 'Agent');
-      }
-    }
-  };
-
-  const handleAiRecommendation = async () => {
-    if (!isAuthenticated) {
-      handleError('로그인이 필요합니다.', 'Agent');
-      return;
-    }
-
-    if (!selectedMenu || menuHistoryId === null) {
-      return;
-    }
-
-    const alreadyRecommended = aiRecommendationGroups.find(
-      (group) => group.menuName === selectedMenu && group.recommendations.length > 0
-    );
-    if (alreadyRecommended) {
-      dispatch(setShowConfirmCard(false));
-      // 이미 추천받은 메뉴도 AI 탭으로 전환
-      resultsSectionRef.current?.switchToTab('ai');
-      handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
-      return;
-    }
-
-    // 주소 우선순위: 현재 주소 > 요청에 저장된 주소 > 좌표
-    const normalizedAddress = address?.trim() || menuRequestAddress?.trim();
-    const locationFallback = latitude !== null && longitude !== null
-      ? `${latitude},${longitude}`
-      : null;
-    const queryBase = normalizedAddress || locationFallback;
-
-    if (!queryBase) {
-      handleError('AI 추천을 사용하려면 주소 또는 위치 정보를 등록해주세요.', 'Agent');
-      return;
-    }
-
-    const query = `${queryBase} ${selectedMenu}`.trim();
-
-    dispatch(setShowConfirmCard(false));
-    // AI 추천 탭으로 자동 전환
-    resultsSectionRef.current?.switchToTab('ai');
-    dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
-
-    try {
-      const response = await menuService.recommendPlaces({
-        query,
-        historyId: menuHistoryId,
-        menuName: selectedMenu,
-      });
-      const normalized = (response.recommendations || []).map((item) => ({
-        ...item,
-        placeId: item.placeId.replace(/^places\//i, ''),
-        menuName: selectedMenu,
-      }));
-
-      dispatch(upsertAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
-      if (normalized.length === 0) {
-        handleError('AI 추천 결과가 없습니다.', 'Agent');
-      }
-    } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
-        await loadStoredAiRecommendations(menuHistoryId, selectedMenu);
-      } else {
-        handleError(error, 'Agent');
-      }
-    } finally {
-      dispatch(setAiLoading({ isLoading: false, menuName: null }));
-    }
-  };
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
@@ -360,11 +189,13 @@ export const AgentPage = () => {
       )}
         </main>
       </div>
-      <PlaceDetailsModal
-        placeId={selectedPlace?.placeId ?? null}
-        placeName={selectedPlace?.name ?? null}
-        onClose={() => dispatch(setSelectedPlace(null))}
-      />
+      <Suspense fallback={null}>
+        <PlaceDetailsModal
+          placeId={selectedPlace?.placeId ?? null}
+          placeName={selectedPlace?.name ?? null}
+          onClose={() => dispatch(setSelectedPlace(null))}
+        />
+      </Suspense>
     </div>
   );
 };

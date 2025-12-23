@@ -3,26 +3,9 @@
  * Toast 상태를 관리하고 ToastContainer를 렌더링
  */
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, useMemo, type ReactNode } from 'react';
 import { ToastContainer, type Toast, type ToastType } from './Toast';
-
-interface ToastContextValue {
-  toast: (message: string, type?: ToastType, duration?: number) => void;
-  success: (message: string, duration?: number) => void;
-  error: (message: string, duration?: number) => void;
-  warning: (message: string, duration?: number) => void;
-  info: (message: string, duration?: number) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null);
-
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
-  }
-  return context;
-};
+import { ToastContext, type ToastContextValue } from '@/contexts/ToastContext';
 
 interface ToastProviderProps {
   children: ReactNode;
@@ -46,13 +29,17 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     setToasts((prev) => [...prev, newToast]);
   }, []);
 
-  const value: ToastContextValue = {
-    toast: addToast,
-    success: (message, duration) => addToast(message, 'success', duration),
-    error: (message, duration) => addToast(message, 'error', duration),
-    warning: (message, duration) => addToast(message, 'warning', duration),
-    info: (message, duration) => addToast(message, 'info', duration),
-  };
+  // Memoize the context value to prevent infinite re-renders in consumers
+  const value: ToastContextValue = useMemo(
+    () => ({
+      toast: addToast,
+      success: (message, duration) => addToast(message, 'success', duration),
+      error: (message, duration) => addToast(message, 'error', duration),
+      warning: (message, duration) => addToast(message, 'warning', duration),
+      info: (message, duration) => addToast(message, 'info', duration),
+    }),
+    [addToast]
+  );
 
   return (
     <ToastContext.Provider value={value}>

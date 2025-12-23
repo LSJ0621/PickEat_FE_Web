@@ -4,6 +4,7 @@
 
 import { userService } from '@/api/services/user';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
+import { SkeletonCardList } from '@/components/common/SkeletonCard';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
@@ -171,8 +172,8 @@ export const RecommendationHistory = () => {
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-orange-500"></div>
+            <div className="space-y-4">
+              <SkeletonCardList count={5} />
             </div>
           ) : (() => {
               const menuHistory = history.filter(

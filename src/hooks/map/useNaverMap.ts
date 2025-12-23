@@ -49,7 +49,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
         const lat = mapy / 10000000;
         const lng = mapx / 10000000;
         return new window.naver.maps.LatLng(lat, lng);
-      } catch (error) {
+      } catch {
         return null;
       }
     }
