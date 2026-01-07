@@ -9,7 +9,7 @@ import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 
 // API 기본 URL 설정
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 // Axios 인스턴스 생성
 export const apiClient = axios.create({
@@ -18,7 +18,7 @@ export const apiClient = axios.create({
   // Content-Type은 요청 데이터 타입(FormData / JSON)에 따라 axios가 자동 설정하도록 둔다.
   withCredentials: true,
 });
- 
+
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
