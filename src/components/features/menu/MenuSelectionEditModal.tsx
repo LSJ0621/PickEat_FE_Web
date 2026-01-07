@@ -187,7 +187,10 @@ export const MenuSelectionEditModal = ({
 
           {isLoadingMenus ? (
             <div className="flex items-center justify-center py-8">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
+              <div
+                data-testid="loading-spinner"
+                className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500"
+              />
             </div>
           ) : (
             <>
@@ -209,6 +212,7 @@ export const MenuSelectionEditModal = ({
                       >
                         <div className="flex items-center gap-3">
                           <div
+                            data-testid={isSelected ? 'selected-indicator' : undefined}
                             className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
                               isSelected
                                 ? 'border-orange-400 bg-orange-400'
