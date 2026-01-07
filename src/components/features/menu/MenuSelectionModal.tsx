@@ -163,6 +163,7 @@ export const MenuSelectionModal = ({
                 >
                   <div className="flex items-center gap-3">
                     <div
+                      data-testid={isSelected ? 'selected-indicator' : undefined}
                       className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
                         isSelected
                           ? 'border-orange-400 bg-orange-400'
