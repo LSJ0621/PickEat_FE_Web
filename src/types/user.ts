@@ -40,8 +40,8 @@ export interface SetAddressResponse {
   isDefault: boolean;
   isSearchAddress: boolean;
   alias: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO 8601 string (API 응답에서 Date는 string으로 직렬화됨)
+  updatedAt: string; // ISO 8601 string (API 응답에서 Date는 string으로 직렬화됨)
 }
 
 export interface Preferences {

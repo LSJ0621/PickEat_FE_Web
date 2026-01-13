@@ -144,8 +144,8 @@ export const userHandlers = [
       isDefault: body.isDefault ?? false,
       isSearchAddress: false,
       alias: body.alias ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     return HttpResponse.json(response, { status: 201 });
   }),
@@ -165,8 +165,8 @@ export const userHandlers = [
     const response: SetAddressResponse = {
       ...address,
       isDefault: true,
-      createdAt: new Date(address.createdAt),
-      updatedAt: new Date(),
+      createdAt: new Date(address.createdAt).toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     return HttpResponse.json(response);
   }),
@@ -186,8 +186,8 @@ export const userHandlers = [
     const response: SetAddressResponse = {
       ...address,
       isSearchAddress: true,
-      createdAt: new Date(address.createdAt),
-      updatedAt: new Date(),
+      createdAt: new Date(address.createdAt).toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     return HttpResponse.json(response);
   }),
