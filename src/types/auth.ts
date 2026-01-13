@@ -25,7 +25,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  name?: string; // 선택 필드
+  name: string; // 필수 필드 (백엔드 RegisterDto와 동기화)
 }
 
 export type EmailVerificationPurpose = 'SIGNUP' | 'RESET_PASSWORD' | 'RE_REGISTER';
