@@ -104,12 +104,13 @@ export const MenuSelectionModal = ({
   }
 
   return createPortal(
-    <div 
+    <div
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
     >
-      <div 
+      <div
+        data-testid="menu-selection-modal"
         className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-950/95 p-6 shadow-2xl backdrop-blur ${
           isAnimating ? 'modal-content-enter' : 'modal-content-exit'
         }`}
@@ -176,7 +177,7 @@ export const MenuSelectionModal = ({
                         </svg>
                       )}
                     </div>
-                    <span className="flex-1 font-medium text-white">{menu}</span>
+                    <span className="flex-1 font-medium text-white" data-testid="selected-menu-name">{menu}</span>
                   </div>
                 </button>
               );

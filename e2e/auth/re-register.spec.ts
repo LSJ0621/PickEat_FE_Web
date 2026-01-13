@@ -53,9 +53,10 @@ test.describe('Re-Register Page', () => {
     // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
 
-    // Verify code input is enabled
-    const codeInput = page.getByRole('textbox', { name: '6자리 인증번호 입력' });
-    await expect(codeInput).toBeEnabled({ timeout: TIMEOUTS.MEDIUM });
+    // Wait for success message first, then check input is enabled
+    const codeInput = page.getByPlaceholder('6자리 인증번호 입력');
+    await expect(page.getByText(/인증 코드를 발송했습니다|인증번호가 발송되었습니다/)).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+    await expect(codeInput).toBeEnabled();
 
     // Fill verification code
     await codeInput.fill(TEST_VERIFICATION.CODE);
@@ -99,8 +100,9 @@ test.describe('Re-Register Page', () => {
 
     // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
-    const codeInput = page.getByRole('textbox', { name: '6자리 인증번호 입력' });
-    await expect(codeInput).toBeEnabled({ timeout: TIMEOUTS.MEDIUM });
+    const codeInput = page.getByPlaceholder('6자리 인증번호 입력');
+    await expect(page.getByText(/인증 코드를 발송했습니다|인증번호가 발송되었습니다/)).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+    await expect(codeInput).toBeEnabled();
     await codeInput.fill(TEST_VERIFICATION.CODE);
     await page.getByRole('button', { name: '확인' }).click();
     await expect(page.getByText('이메일 인증이 완료되었습니다')).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
@@ -141,9 +143,10 @@ test.describe('Re-Register Page', () => {
     // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
 
-    // Enter invalid code
-    const codeInput = page.getByRole('textbox', { name: '6자리 인증번호 입력' });
-    await expect(codeInput).toBeEnabled({ timeout: TIMEOUTS.MEDIUM });
+    // Enter invalid code - wait for success message first
+    const codeInput = page.getByPlaceholder('6자리 인증번호 입력');
+    await expect(page.getByText(/인증 코드를 발송했습니다|인증번호가 발송되었습니다/)).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+    await expect(codeInput).toBeEnabled();
     await codeInput.fill(TEST_VERIFICATION.INVALID_CODE);
 
     // Click verify button

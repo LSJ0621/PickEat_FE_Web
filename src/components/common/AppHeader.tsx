@@ -4,6 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { UserMenu } from '@/components/common/UserMenu';
 import { useAppSelector } from '@/store/hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -12,7 +13,6 @@ export const AppHeader = () => {
   const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const userAddress = useAppSelector((state) => state.auth?.user?.address);
-  const userName = useAppSelector((state) => state.auth?.user?.name);
 
   // 인증 관련 페이지에서는 헤더 오른쪽 영역을 숨겨서
   // 로그인 버튼/유저 이름이 보이지 않도록 처리
@@ -54,9 +54,7 @@ export const AppHeader = () => {
                     📍 {userAddress}
                   </span>
                 )}
-                {isAuthenticated && userName && (
-                  <span className="text-sm font-semibold text-white">{userName}님</span>
-                )}
+                {isAuthenticated && <UserMenu />}
                 {!isAuthenticated && (
                   <Button
                     size="sm"

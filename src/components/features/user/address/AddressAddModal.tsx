@@ -110,7 +110,7 @@ export const AddressAddModal = ({
 
           {/* 선택한 주소 */}
           {selectedAddress && (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <div data-testid="selected-address" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <div className="mb-3">
                 <p className="text-xs text-emerald-200">선택한 주소</p>
                 <p className="mt-1 text-white font-medium">
@@ -153,6 +153,7 @@ export const AddressAddModal = ({
               disabled={!selectedAddress || addresses.length >= 4}
               className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
               size="lg"
+              data-testid="address-add-submit"
             >
               주소 추가
             </Button>

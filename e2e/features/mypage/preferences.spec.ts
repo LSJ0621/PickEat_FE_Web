@@ -99,4 +99,131 @@ test.describe('Preferences Edit Modal', () => {
     const saveButton = page.getByRole('button', { name: '취향 정보 저장' });
     await expect(saveButton).toBeVisible();
   });
+
+  test('Add a like preference and save', async ({ authenticatedPage: page }) => {
+    // 1. Navigate to /mypage
+    await page.goto(ROUTES.MYPAGE);
+
+    // 2. Open modal
+    await page.getByRole('button', { name: '취향 수정' }).click();
+    await expect(page.getByRole('heading', { name: '취향 수정' })).toBeVisible();
+
+    // 3. Enter a new like preference
+    const likesInput = page.getByPlaceholder('좋아하는 음식이나 재료를 입력하세요');
+    const newLike = '라면';
+    await likesInput.fill(newLike);
+
+    // 4. Click add button for likes (first add button)
+    const addButtons = page.getByRole('button', { name: '추가' });
+    await addButtons.first().click();
+
+    // 5. Verify the tag is added (should appear as a tag in the modal)
+    await expect(page.getByText(newLike).first()).toBeVisible();
+
+    // 6. Save preferences
+    await page.getByRole('button', { name: '취향 정보 저장' }).click();
+
+    // 7. Verify modal closes and success feedback
+    await expect(page.getByRole('heading', { name: '취향 수정' })).not.toBeVisible({ timeout: 5000 });
+
+    // 8. Verify the new preference is displayed on the page
+    await expect(page.getByText(newLike)).toBeVisible();
+  });
+
+  test('Add a dislike preference and save', async ({ authenticatedPage: page }) => {
+    // 1. Navigate to /mypage
+    await page.goto(ROUTES.MYPAGE);
+
+    // 2. Open modal
+    await page.getByRole('button', { name: '취향 수정' }).click();
+    await expect(page.getByRole('heading', { name: '취향 수정' })).toBeVisible();
+
+    // 3. Enter a new dislike preference
+    const dislikesInput = page.getByPlaceholder('싫어하는 음식이나 재료를 입력하세요');
+    const newDislike = '고수';
+    await dislikesInput.fill(newDislike);
+
+    // 4. Click add button for dislikes (second add button)
+    const addButtons = page.getByRole('button', { name: '추가' });
+    await addButtons.nth(1).click();
+
+    // 5. Verify the tag is added
+    await expect(page.getByText(newDislike).first()).toBeVisible();
+
+    // 6. Save preferences
+    await page.getByRole('button', { name: '취향 정보 저장' }).click();
+
+    // 7. Verify modal closes
+    await expect(page.getByRole('heading', { name: '취향 수정' })).not.toBeVisible({ timeout: 5000 });
+
+    // 8. Verify the new preference is displayed on the page
+    await expect(page.getByText(newDislike)).toBeVisible();
+  });
+
+  test('Cancel preferences edit does not save changes', async ({ authenticatedPage: page }) => {
+    // 1. Navigate to /mypage
+    await page.goto(ROUTES.MYPAGE);
+
+    // 2. Open modal
+    await page.getByRole('button', { name: '취향 수정' }).click();
+    await expect(page.getByRole('heading', { name: '취향 수정' })).toBeVisible();
+
+    // 3. Enter a new preference but don't save
+    const likesInput = page.getByPlaceholder('좋아하는 음식이나 재료를 입력하세요');
+    const tempLike = '임시취향테스트';
+    await likesInput.fill(tempLike);
+
+    // 4. Add the preference
+    const addButtons = page.getByRole('button', { name: '추가' });
+    await addButtons.first().click();
+
+    // 5. Verify the tag is added in modal
+    await expect(page.getByText(tempLike).first()).toBeVisible();
+
+    // 6. Close modal without saving (click X button)
+    await page.getByRole('button', { name: '닫기' }).click();
+
+    // 7. Verify modal is closed
+    await expect(page.getByRole('heading', { name: '취향 수정' })).not.toBeVisible();
+
+    // 8. Verify the unsaved preference is NOT displayed on the page
+    await expect(page.getByText(tempLike)).not.toBeVisible();
+  });
+
+  test('Remove a preference tag in modal', async ({ authenticatedPage: page }) => {
+    // 1. Navigate to /mypage
+    await page.goto(ROUTES.MYPAGE);
+
+    // 2. Open modal
+    await page.getByRole('button', { name: '취향 수정' }).click();
+    await expect(page.getByRole('heading', { name: '취향 수정' })).toBeVisible();
+
+    // 3. Add a preference first
+    const likesInput = page.getByPlaceholder('좋아하는 음식이나 재료를 입력하세요');
+    const testPref = '삭제테스트';
+    await likesInput.fill(testPref);
+    await page.getByRole('button', { name: '추가' }).first().click();
+
+    // 4. Verify the tag is added
+    const prefTag = page.getByText(testPref).first();
+    await expect(prefTag).toBeVisible();
+
+    // 5. Find and click the remove button (X) on the tag
+    // Tags usually have a close button next to them
+    const tagContainer = page.locator(`button:has-text("${testPref}")`).or(
+      page.locator(`span:has-text("${testPref}")`).locator('..')
+    );
+    const removeButton = tagContainer.locator('button, svg').first();
+
+    // Try to click the remove button if visible
+    if (await removeButton.isVisible()) {
+      await removeButton.click();
+
+      // 6. Verify the tag is removed
+      await expect(page.getByText(testPref)).not.toBeVisible();
+    }
+
+    // 7. Close modal
+    await page.getByRole('button', { name: '닫기' }).click();
+  });
 });

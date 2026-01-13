@@ -31,6 +31,7 @@ export const ResultsTabs = ({
       {/* 탭 네비게이션 */}
       <div className="flex gap-1.5 rounded-lg border border-white/10 bg-white/5 p-0.5 sm:gap-2 sm:rounded-xl sm:p-1">
         <button
+          data-testid="results-tab-general-search"
           onClick={() => onTabChange('search')}
           className={`flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-300 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm ${
             activeTab === 'search'
@@ -50,6 +51,7 @@ export const ResultsTabs = ({
           </div>
         </button>
         <button
+          data-testid="results-tab-ai-recommendation"
           onClick={() => onTabChange('ai')}
           className={`flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-300 sm:rounded-lg sm:px-4 sm:py-2 sm:text-sm ${
             activeTab === 'ai'
