@@ -40,7 +40,6 @@ export const test = base.extend<AuthFixtures>({
       TEST_ACCOUNTS.USER.email,
       TEST_ACCOUNTS.USER.password
     );
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
   },
 
@@ -54,7 +53,6 @@ export const test = base.extend<AuthFixtures>({
       TEST_ACCOUNTS.ADMIN.email,
       TEST_ACCOUNTS.ADMIN.password
     );
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
   },
 });

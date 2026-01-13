@@ -29,6 +29,10 @@ export const TEST_ACCOUNTS = {
   DELETED_USER: {
     email: 'deleted@example.com',
   },
+  INVALID_USER: {
+    email: 'invalid@example.com',
+    password: 'wrongpassword',
+  },
 } as const;
 
 // 테스트 인증 코드
@@ -207,6 +211,7 @@ export const TIMEOUTS = {
   MEDIUM: 10000,
   LONG: 30000, // AI 추천 등 오래 걸리는 작업
   COOLDOWN: 35000, // 쿨다운 타이머 대기
+  MODAL_APPEAR: 1000, // 모달이 나타나는 대기 시간
 } as const;
 
 /**

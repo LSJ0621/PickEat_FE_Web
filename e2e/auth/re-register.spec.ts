@@ -35,18 +35,13 @@ test.describe('Re-Register Page', () => {
     await expect(page.getByText('로그인으로 돌아가기')).toBeVisible();
   });
 
-  // 2. 이메일 중복 확인 (탈퇴 계정)
-  test('checks email for deleted account', async ({ page }) => {
+  // 2. 이메일 입력 후 인증번호 발송 버튼 확인 (재가입 모드는 중복 확인 없이 바로 인증번호 발송)
+  test('shows send verification button for deleted account email', async ({ page }) => {
     // Fill deleted user email
     await page.locator('#email').fill(TEST_ACCOUNTS.DELETED_USER.email);
 
-    // Click duplicate check button
-    await page.getByRole('button', { name: '중복 확인' }).click();
-
-    // Verify email is available for re-registration
-    await expect(page.getByText('사용 가능한 이메일입니다')).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
-
-    // Verify send code button appears or becomes enabled
+    // In RE_REGISTER mode, duplicate check is skipped - directly shows '인증번호 발송' button
+    // Verify send code button is enabled
     await expect(page.getByRole('button', { name: '인증번호 발송' })).toBeEnabled();
   });
 
@@ -55,11 +50,7 @@ test.describe('Re-Register Page', () => {
     // Fill deleted user email
     await page.locator('#email').fill(TEST_ACCOUNTS.DELETED_USER.email);
 
-    // Check email duplicate
-    await page.getByRole('button', { name: '중복 확인' }).click();
-    await expect(page.getByText('사용 가능한 이메일입니다')).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
-
-    // Send verification code
+    // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
 
     // Verify code input is enabled
@@ -103,12 +94,10 @@ test.describe('Re-Register Page', () => {
 
   // 5. 재가입 완료 → 로그인 페이지 리다이렉트
   test('completes re-registration and redirects to login', async ({ page }) => {
-    // Fill and verify email
+    // Fill email
     await page.locator('#email').fill(TEST_ACCOUNTS.DELETED_USER.email);
-    await page.getByRole('button', { name: '중복 확인' }).click();
-    await expect(page.getByText('사용 가능한 이메일입니다')).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
-    // Send and verify email code
+    // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
     const codeInput = page.getByRole('textbox', { name: '6자리 인증번호 입력' });
     await expect(codeInput).toBeEnabled({ timeout: TIMEOUTS.MEDIUM });
@@ -146,12 +135,10 @@ test.describe('Re-Register Page', () => {
 
   // 7. 잘못된 인증 코드 입력
   test('shows error for invalid verification code', async ({ page }) => {
-    // Fill and verify email availability
+    // Fill email
     await page.locator('#email').fill(TEST_ACCOUNTS.DELETED_USER.email);
-    await page.getByRole('button', { name: '중복 확인' }).click();
-    await expect(page.getByText('사용 가능한 이메일입니다')).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
 
-    // Send verification code
+    // In RE_REGISTER mode, duplicate check is skipped - directly send verification code
     await page.getByRole('button', { name: '인증번호 발송' }).click();
 
     // Enter invalid code

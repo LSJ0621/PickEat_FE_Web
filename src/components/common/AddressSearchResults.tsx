@@ -24,7 +24,7 @@ export const AddressSearchResults = ({
 }: AddressSearchResultsProps) => {
   if (searchResults.length > 0) {
     return (
-      <div className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4`}>
+      <div data-testid="address-search-results" className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4`}>
         {searchResults.map((address, index) => (
           <button
             key={index}

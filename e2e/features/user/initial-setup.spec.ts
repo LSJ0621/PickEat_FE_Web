@@ -20,8 +20,11 @@ test.describe('Initial Setup Modal', () => {
     // 4. Check if modal is present (should NOT be visible for complete user)
     const modalHeading = page.getByRole('heading', { name: '서비스 이용을 위한 정보 입력' });
 
-    // Give modal time to appear if it's going to
-    await page.waitForTimeout(1000);
+    // Wait for either modal or home content to appear
+    await Promise.race([
+      modalHeading.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+      page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+    ]);
     const isModalVisible = await modalHeading.isVisible().catch(() => false);
 
     if (!isModalVisible) {
@@ -58,8 +61,11 @@ test.describe('Initial Setup Modal', () => {
     // 5. Check if modal appears
     const modalHeading = page.getByRole('heading', { name: '서비스 이용을 위한 정보 입력' });
 
-    // Give modal time to appear if it's going to
-    await page.waitForTimeout(1000);
+    // Wait for either modal or home content to appear
+    await Promise.race([
+      modalHeading.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+      page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+    ]);
     const isModalVisible = await modalHeading.isVisible().catch(() => false);
 
     if (isModalVisible) {
@@ -102,7 +108,10 @@ test.describe('Initial Setup Modal', () => {
 
     // 2. Check for modal
     const modalHeading = page.getByRole('heading', { name: '서비스 이용을 위한 정보 입력' });
-    await page.waitForTimeout(1000);
+    await Promise.race([
+      modalHeading.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+      page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+    ]);
     const isModalVisible = await modalHeading.isVisible().catch(() => false);
 
     if (isModalVisible) {
@@ -114,7 +123,7 @@ test.describe('Initial Setup Modal', () => {
         await page.getByRole('button', { name: '추가' }).first().click();
 
         // 5. Verify tag is added (green tag)
-        await expect(page.locator('.bg-green-500\\/20').getByText('피자')).toBeVisible();
+        await expect(page.locator('[data-testid="like-tag"]').filter({ hasText: '피자' })).toBeVisible();
 
         // 6. Add a dislike preference
         const dislikesInput = page.getByPlaceholder('싫어하는 음식이나 재료를 입력하세요');
@@ -122,7 +131,7 @@ test.describe('Initial Setup Modal', () => {
         await page.getByRole('button', { name: '추가' }).nth(1).click();
 
         // 7. Verify dislike tag is added (red tag)
-        await expect(page.locator('.bg-red-500\\/20').getByText('양파')).toBeVisible();
+        await expect(page.locator('[data-testid="dislike-tag"]').filter({ hasText: '양파' })).toBeVisible();
 
         // 8. Verify save button is enabled after adding preferences
         const saveButton = page.getByRole('button', { name: '저장하기' });
@@ -141,7 +150,10 @@ test.describe('Initial Setup Modal', () => {
 
     // 2. Check for modal
     const modalHeading = page.getByRole('heading', { name: '서비스 이용을 위한 정보 입력' });
-    await page.waitForTimeout(1000);
+    await Promise.race([
+      modalHeading.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+      page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+    ]);
     const isModalVisible = await modalHeading.isVisible().catch(() => false);
 
     if (isModalVisible) {
@@ -168,7 +180,7 @@ test.describe('Initial Setup Modal', () => {
 
         // 7. Verify home page is accessible
         await page.goto(ROUTES.HOME);
-        await page.waitForTimeout(1000);
+        await page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 });
 
         // 8. Modal should not reappear
         await expect(modalHeading).not.toBeVisible();
@@ -186,7 +198,10 @@ test.describe('Initial Setup Modal', () => {
 
     // 2. Check for modal with preferences section
     const modalHeading = page.getByRole('heading', { name: '서비스 이용을 위한 정보 입력' });
-    await page.waitForTimeout(1000);
+    await Promise.race([
+      modalHeading.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+      page.getByRole('heading', { name: '오늘 뭐 먹지? AI 에이전트에게 맡기세요' }).waitFor({ state: 'visible', timeout: 2000 }).catch(() => {}),
+    ]);
     const isModalVisible = await modalHeading.isVisible().catch(() => false);
 
     if (isModalVisible) {

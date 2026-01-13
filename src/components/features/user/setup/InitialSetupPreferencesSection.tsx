@@ -76,6 +76,7 @@ export const InitialSetupPreferencesSection = ({
               {likes.map((like, index) => (
                 <span
                   key={index}
+                  data-testid="like-tag"
                   className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-200"
                 >
                   {like}
@@ -115,6 +116,7 @@ export const InitialSetupPreferencesSection = ({
               {dislikes.map((dislike, index) => (
                 <span
                   key={index}
+                  data-testid="dislike-tag"
                   className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200"
                 >
                   {dislike}

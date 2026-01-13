@@ -58,7 +58,7 @@ export class MyPagePage extends BasePage {
    * 검색 결과에서 첫 번째 주소 선택
    */
   async selectFirstAddress(): Promise<void> {
-    const resultContainer = this.page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = this.page.locator('[data-testid="address-search-results"]');
     await resultContainer.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
 
     const firstResult = resultContainer.locator('button').first();

@@ -72,7 +72,7 @@ test.describe('Address CRUD Operations', () => {
     await searchButton.click();
 
     // 7. Verify that either results are shown or "no results" message appears
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     const emptyMessage = page.getByText('주소를 찾을 수 없습니다');
 
     // Wait for either results or empty message
@@ -114,7 +114,7 @@ test.describe('Address CRUD Operations', () => {
     await searchButton.click();
 
     // 6. Check if search results exist
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     await resultContainer.waitFor({ state: 'visible', timeout: 10000 }).catch(() => null);
     const hasResults = await resultContainer.isVisible().catch(() => false);
 
@@ -168,7 +168,7 @@ test.describe('Address CRUD Operations', () => {
     await searchButton.click();
 
     // 6. Check if search results exist
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     await resultContainer.waitFor({ state: 'visible', timeout: 10000 }).catch(() => null);
     const hasResults = await resultContainer.isVisible().catch(() => false);
 
@@ -220,7 +220,7 @@ test.describe('Address CRUD Operations', () => {
     await searchButton.waitFor({ state: 'visible' });
     await searchButton.click();
 
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     await resultContainer.waitFor({ state: 'visible', timeout: 10000 }).catch(() => null);
     const hasResults = await resultContainer.isVisible().catch(() => false);
 
@@ -325,7 +325,7 @@ test.describe('Address CRUD Operations', () => {
     await searchInput.press('Enter');
 
     // 6. Verify that search was triggered
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     const emptyMessage = page.getByText('주소를 찾을 수 없습니다');
 
     // Wait for either results or empty message
@@ -366,7 +366,7 @@ test.describe('Address CRUD Operations', () => {
     await searchButton.waitFor({ state: 'visible' });
     await searchButton.click();
 
-    const resultContainer = page.locator('.rounded-xl.border.border-white\\/10.bg-slate-800\\/50');
+    const resultContainer = page.locator('[data-testid="address-search-results"]');
     await resultContainer.waitFor({ state: 'visible', timeout: 10000 }).catch(() => null);
     const hasResults = await resultContainer.isVisible().catch(() => false);
 
