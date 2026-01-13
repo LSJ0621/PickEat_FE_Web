@@ -35,7 +35,7 @@ export class MyPagePage extends BasePage {
    * 주소 추가 모달 열기
    */
   async openAddressAddModal(): Promise<void> {
-    const addAddressButton = this.page.getByRole('button', { name: /주소 추가/ }).first();
+    const addAddressButton = this.page.locator('[data-testid="address-list-add-button"]');
     await addAddressButton.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
     await addAddressButton.click();
     await expect(this.page.getByRole('heading', { name: '주소 추가' })).toBeVisible();
@@ -81,7 +81,7 @@ export class MyPagePage extends BasePage {
    * 주소 추가 제출
    */
   async submitNewAddress(): Promise<void> {
-    const submitButton = this.page.getByRole('button', { name: '주소 추가' }).last();
+    const submitButton = this.page.locator('[data-testid="address-add-submit"]');
     await expect(submitButton).toBeEnabled();
     await submitButton.click();
     await expect(this.page.getByRole('heading', { name: '주소 추가' })).not.toBeVisible({ timeout: TIMEOUTS.MEDIUM });
@@ -150,7 +150,7 @@ export class MyPagePage extends BasePage {
     const deleteAccountButton = this.page.getByRole('button', { name: '회원 탈퇴' });
     await expect(deleteAccountButton).toBeVisible();
     await deleteAccountButton.click();
-    await expect(this.page.locator('h2', { hasText: '회원 탈퇴' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: '회원 탈퇴', level: 2 })).toBeVisible();
   }
 
   /**

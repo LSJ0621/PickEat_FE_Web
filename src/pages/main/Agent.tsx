@@ -139,11 +139,13 @@ export const AgentPage = () => {
             }
           }}
         >
-          <div 
+          <div
+            data-testid="menu-selection-modal"
             className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur"
             onClick={(e) => e.stopPropagation()}
           >
             <button
+              data-testid="modal-close-button"
               onClick={handleCancel}
               className="absolute right-6 top-6 text-slate-400 hover:text-white"
             >
@@ -153,7 +155,7 @@ export const AgentPage = () => {
             </button>
             <div className="space-y-4">
               <p className="text-center text-lg text-white">
-                <span className="font-semibold text-orange-300">{selectedMenu}</span>에 대해 어떤 방식으로 탐색할까요?
+                <span data-testid="selected-menu-name" className="font-semibold text-orange-300">{selectedMenu}</span>에 대해 어떤 방식으로 탐색할까요?
             </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button

@@ -126,4 +126,140 @@ export class AgentPage extends BasePage {
     await this.confirmMenuSelectionWithSearch();
     await this.expectMockSearchRestaurantVisible();
   }
+
+  /**
+   * 모달: 확인 모달이 표시되는지 확인
+   */
+  async expectModalVisible(): Promise<void> {
+    const modal = this.page.locator('[data-testid="menu-selection-modal"]');
+    await expect(modal).toBeVisible();
+  }
+
+  /**
+   * 모달: 확인 모달이 닫혔는지 확인
+   */
+  async expectModalClosed(): Promise<void> {
+    const modal = this.page.locator('[data-testid="menu-selection-modal"]');
+    await expect(modal).not.toBeVisible();
+  }
+
+  /**
+   * 모달: X 버튼으로 모달 닫기
+   */
+  async closeModal(): Promise<void> {
+    const modal = this.page.locator('[data-testid="menu-selection-modal"]');
+    const closeButton = modal.locator('[data-testid="modal-close-button"]');
+    await closeButton.click();
+  }
+
+  /**
+   * 모달: Escape 키로 모달 닫기
+   */
+  async closeModalWithEscape(): Promise<void> {
+    await this.page.keyboard.press('Escape');
+  }
+
+  /**
+   * 모달: 모달 내용 확인 (메뉴 이름이 포함된 질문)
+   */
+  async expectModalContent(): Promise<void> {
+    await expect(this.page.getByText(/에 대해 어떤 방식으로 탐색할까요?/)).toBeVisible();
+  }
+
+  /**
+   * 모달: 모달 액션 버튼 확인
+   */
+  async expectModalActionButtons(): Promise<void> {
+    await expect(this.generalSearchButton).toBeVisible();
+    await expect(this.aiRecommendationButton).toBeVisible();
+  }
+
+  /**
+   * 모달: X 버튼 확인
+   */
+  async expectModalCloseButton(): Promise<void> {
+    const modal = this.page.locator('[data-testid="menu-selection-modal"]');
+    const closeButton = modal.locator('[data-testid="modal-close-button"]');
+    await expect(closeButton).toBeVisible();
+  }
+
+  /**
+   * 메뉴 카드: 특정 인덱스의 메뉴 카드가 하이라이트되었는지 확인
+   */
+  async expectMenuHighlighted(index: number): Promise<void> {
+    const menuCard = this.page.getByRole('button').filter({ hasText: new RegExp(`^${index}`) }).first();
+    await expect(menuCard).toHaveClass(/border-orange|bg-orange/);
+  }
+
+  /**
+   * 메뉴 카드: 특정 인덱스의 메뉴 카드가 하이라이트되지 않았는지 확인
+   */
+  async expectMenuNotHighlighted(index: number): Promise<void> {
+    const menuCard = this.page.getByRole('button').filter({ hasText: new RegExp(`^${index}`) }).first();
+    await expect(menuCard).not.toHaveClass(/border-orange|bg-orange/);
+  }
+
+  /**
+   * 메뉴 카드: 메뉴 이름 가져오기
+   */
+  async getMenuName(): Promise<string | null> {
+    return await this.page.locator('[data-testid="selected-menu-name"]').textContent();
+  }
+
+  /**
+   * 결과 확인: AI 추천 섹션 헤딩 확인
+   */
+  async expectAiRecommendationSectionVisible(): Promise<void> {
+    await this.page.getByRole('heading', { name: 'AI 추천 식당', level: 2 })
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
+  }
+
+  /**
+   * 결과 확인: 일반 검색 섹션 헤딩 확인
+   */
+  async expectGeneralSearchSectionVisible(): Promise<void> {
+    await this.page.getByRole('heading', { name: '주변 식당 검색 결과', level: 2 })
+      .waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
+  }
+
+  /**
+   * 탭: AI 추천 탭 클릭
+   */
+  async clickAiRecommendationTab(): Promise<void> {
+    const aiTab = this.page.locator('[data-testid="results-tab-ai-recommendation"]');
+    await aiTab.click();
+  }
+
+  /**
+   * 탭: 일반 검색 탭 클릭
+   */
+  async clickGeneralSearchTab(): Promise<void> {
+    const generalTab = this.page.getByRole('button').filter({ hasText: '일반 검색' }).first();
+    await generalTab.click();
+  }
+
+  /**
+   * 결과 확인: Mock AI 추천 이유 확인
+   */
+  async expectMockAiRecommendationReasonVisible(): Promise<void> {
+    await expect(this.page.getByText(EXPECTED_MOCK_RESPONSES.AI_PLACES.firstRestaurantReason)).toBeVisible();
+  }
+
+  /**
+   * 결과 확인: Mock 검색 주소 확인
+   */
+  async expectMockSearchAddressVisible(): Promise<void> {
+    const searchResultsSection = this.page.locator('main').getByText(new RegExp(EXPECTED_MOCK_RESPONSES.NAVER_SEARCH.firstRestaurantAddress));
+    await expect(searchResultsSection.first()).toBeVisible();
+  }
+
+  /**
+   * 결과 확인: Mock 검색 식당 이름 헤딩 확인
+   */
+  async expectMockSearchRestaurantHeading(): Promise<void> {
+    await expect(this.page.getByRole('heading', {
+      name: EXPECTED_MOCK_RESPONSES.NAVER_SEARCH.firstRestaurantName,
+      level: 4
+    })).toBeVisible();
+  }
 }

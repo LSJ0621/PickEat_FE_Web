@@ -198,6 +198,7 @@ export const AddressListModal = ({
               variant="primary"
               onClick={onAddAddress}
               className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+              data-testid="address-list-add-button"
             >
               + 주소 추가 ({addresses.length}/4)
             </Button>

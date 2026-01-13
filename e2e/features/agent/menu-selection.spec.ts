@@ -2,7 +2,7 @@
 // seed: e2e/seed.spec.ts
 
 import { test, expect } from '../../fixtures/auth.fixture';
-import { ROUTES, TIMEOUTS } from '../../fixtures/test-data';
+import { AgentPage } from '../../fixtures/page-objects/AgentPage';
 
 /**
  * Menu Selection and Confirmation Modal E2E Tests
@@ -11,164 +11,122 @@ import { ROUTES, TIMEOUTS } from '../../fixtures/test-data';
  * 백엔드의 Mock 서비스가 일관된 응답을 반환합니다.
  */
 test.describe('Menu Selection and Confirmation Modal', () => {
+  let agentPage: AgentPage;
+
   test.beforeEach(async ({ authenticatedPage }) => {
-    // Navigate to Agent page
-    await authenticatedPage.goto(ROUTES.AGENT);
-    await authenticatedPage.getByText('메뉴 추천 받기').first().waitFor({ state: 'visible' });
+    agentPage = new AgentPage(authenticatedPage);
+    await agentPage.goto();
   });
 
-  test('should open confirmation modal when clicking a menu card', async ({ authenticatedPage }) => {
-    // Enter menu recommendation prompt
-    await authenticatedPage.getByRole('textbox', { name: '어떤 메뉴를 원하시나요?' }).fill('배가 고픈데 뭐 먹을까?');
-
-    // Click recommendation button
-    await authenticatedPage.getByRole('button', { name: '메뉴 추천 받기' }).click();
-
-    // Wait for recommendations to load (with longer timeout for API)
-    await authenticatedPage.getByRole('heading', { name: '추천 메뉴' }).waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
+  test('should open confirmation modal when clicking a menu card', async () => {
+    // Enter menu recommendation prompt, submit, and wait for results
+    await agentPage.enterQuestion('배가 고픈데 뭐 먹을까?');
+    await agentPage.submitQuestion();
+    await agentPage.waitForRecommendation();
 
     // Click on the first menu card
-    const firstMenuCard = authenticatedPage.getByRole('button').filter({ hasText: /^1/ }).first();
-    await firstMenuCard.click();
+    await agentPage.selectRecommendedMenu(1);
 
     // Verify confirmation modal appears
-    const modal = authenticatedPage.locator('[class*="fixed inset-0"][class*="z-50"]');
-    await expect(modal).toBeVisible();
+    await agentPage.expectModalVisible();
 
     // Verify modal has backdrop blur
-    await expect(modal).toHaveClass(/backdrop-blur/);
+    await expect(agentPage.page.locator('[data-testid="menu-selection-modal"]')).toHaveClass(/backdrop-blur/);
 
     // Verify modal contains menu name and question
-    await expect(authenticatedPage.getByText(/에 대해 어떤 방식으로 탐색할까요?/)).toBeVisible();
+    await agentPage.expectModalContent();
 
     // Verify two action buttons are present
-    await expect(authenticatedPage.getByRole('button', { name: '일반 검색' })).toBeVisible();
-    await expect(authenticatedPage.getByRole('button', { name: 'AI 추천 보기' })).toBeVisible();
+    await agentPage.expectModalActionButtons();
 
     // Verify close button (X) is visible
-    const closeButton = modal.locator('[data-testid="modal-close-button"]');
-    await expect(closeButton).toBeVisible();
+    await agentPage.expectModalCloseButton();
 
     // Verify selected menu card is highlighted (has orange styling)
-    await expect(firstMenuCard).toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectMenuHighlighted(1);
   });
 
-  test('should close modal when clicking X button', async ({ authenticatedPage }) => {
+  test('should close modal when clicking X button', async () => {
     // Enter menu recommendation prompt and get recommendations
-    await authenticatedPage.getByRole('textbox', { name: '어떤 메뉴를 원하시나요?' }).fill('오늘은 매운 음식이 땡겨');
-    await authenticatedPage.getByRole('button', { name: '메뉴 추천 받기' }).click();
-    await authenticatedPage.getByRole('heading', { name: '추천 메뉴' }).waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
-
-    // Click on a menu card to open modal
-    const menuCard = authenticatedPage.getByRole('button').filter({ hasText: /^1/ }).first();
-    await menuCard.click();
+    await agentPage.getRecommendationAndSelectMenu('오늘은 매운 음식이 땡겨', 1);
 
     // Verify modal is displayed
-    const modal = authenticatedPage.locator('[class*="fixed inset-0"][class*="z-50"]');
-    await expect(modal).toBeVisible();
+    await agentPage.expectModalVisible();
 
     // Click the X close button
-    const closeButton = modal.locator('[data-testid="modal-close-button"]');
-    await closeButton.click();
+    await agentPage.closeModal();
 
     // Verify modal disappears
-    await expect(modal).not.toBeVisible();
+    await agentPage.expectModalClosed();
 
     // Note: The menu card selection highlight persists by design
     // The user can click on other menus or get new recommendations to change selection
-    await expect(menuCard).toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectMenuHighlighted(1);
   });
 
-  test('should close modal when clicking backdrop', async ({ authenticatedPage }) => {
+  test('should close modal when clicking backdrop', async () => {
     // Enter menu recommendation prompt and get recommendations
-    await authenticatedPage.getByRole('textbox', { name: '어떤 메뉴를 원하시나요?' }).fill('치킨이 먹고 싶어');
-    await authenticatedPage.getByRole('button', { name: '메뉴 추천 받기' }).click();
-    await authenticatedPage.getByRole('heading', { name: '추천 메뉴' }).waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
-
-    // Click on a menu card to open modal
-    const menuCard = authenticatedPage.getByRole('button').filter({ hasText: /^1/ }).first();
-    await menuCard.click();
+    await agentPage.getRecommendationAndSelectMenu('치킨이 먹고 싶어', 1);
 
     // Verify modal is displayed
-    const modal = authenticatedPage.locator('[class*="fixed inset-0"][class*="z-50"]');
-    await expect(modal).toBeVisible();
+    await agentPage.expectModalVisible();
 
     // Press Escape key to close modal (more reliable than backdrop click)
-    await authenticatedPage.keyboard.press('Escape');
+    await agentPage.closeModalWithEscape();
 
     // Verify modal closes
-    await expect(modal).not.toBeVisible();
+    await agentPage.expectModalClosed();
 
     // Note: The menu card selection highlight persists by design
-    await expect(menuCard).toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectMenuHighlighted(1);
   });
 
-  test('should allow selecting different menus sequentially', async ({ authenticatedPage }) => {
+  test('should allow selecting different menus sequentially', async () => {
     // Enter menu recommendation prompt and get recommendations
-    await authenticatedPage.getByRole('textbox', { name: '어떤 메뉴를 원하시나요?' }).fill('한식이 먹고 싶어');
-    await authenticatedPage.getByRole('button', { name: '메뉴 추천 받기' }).click();
-    await authenticatedPage.getByRole('heading', { name: '추천 메뉴' }).waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
-
-    // Click on first menu card
-    const firstMenuCard = authenticatedPage.getByRole('button').filter({ hasText: /^1/ }).first();
-    await firstMenuCard.click();
+    await agentPage.getRecommendationAndSelectMenu('한식이 먹고 싶어', 1);
 
     // Verify first menu is selected (modal shows)
-    const modal = authenticatedPage.locator('[class*="fixed inset-0"][class*="z-50"]');
-    await expect(modal).toBeVisible();
-    await expect(firstMenuCard).toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectModalVisible();
+    await agentPage.expectMenuHighlighted(1);
 
     // Get first menu name from modal
-    const firstMenuName = await authenticatedPage.locator('.font-semibold.text-orange-300').textContent();
+    const firstMenuName = await agentPage.getMenuName();
 
     // Close modal
-    const closeButton = modal.locator('[data-testid="modal-close-button"]');
-    await closeButton.click();
-    await expect(modal).not.toBeVisible();
+    await agentPage.closeModal();
+    await agentPage.expectModalClosed();
 
     // Click on second menu card
-    const secondMenuCard = authenticatedPage.getByRole('button').filter({ hasText: /^2/ }).first();
-    await secondMenuCard.click();
+    await agentPage.selectRecommendedMenu(2);
 
     // Verify second menu is now selected
-    await expect(modal).toBeVisible();
-    await expect(secondMenuCard).toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectModalVisible();
+    await agentPage.expectMenuHighlighted(2);
 
     // Verify first menu is no longer highlighted
-    await expect(firstMenuCard).not.toHaveClass(/border-orange|bg-orange/);
+    await agentPage.expectMenuNotHighlighted(1);
 
     // Verify modal shows second menu name (different from first)
-    const secondMenuName = await authenticatedPage.locator('.font-semibold.text-orange-300').textContent();
+    const secondMenuName = await agentPage.getMenuName();
     expect(secondMenuName).not.toBe(firstMenuName);
   });
 
-  test('should show location warning when location is unavailable', async ({ authenticatedPage }) => {
-    // NOTE: This test assumes user has no address registered
-    // If your test user has address, you may need to modify test data setup
-    // With backend mock, test user now has an address, so this test may need adjustment
+  test('should allow general search when user has address', async ({ authenticatedPage }) => {
+    // NOTE: With backend mock, test user has an address registered
+    // This test verifies that general search is available when user has location
 
     // Enter menu recommendation prompt and get recommendations
-    await authenticatedPage.getByRole('textbox', { name: '어떤 메뉴를 원하시나요?' }).fill('피자 먹고 싶어');
-    await authenticatedPage.getByRole('button', { name: '메뉴 추천 받기' }).click();
-    await authenticatedPage.getByRole('heading', { name: '추천 메뉴' }).waitFor({ state: 'visible', timeout: TIMEOUTS.LONG });
-
-    // Click on a menu card
-    const menuCard = authenticatedPage.getByRole('button').filter({ hasText: /^1/ }).first();
-    await menuCard.click();
+    await agentPage.getRecommendationAndSelectMenu('피자 먹고 싶어', 1);
 
     // Verify confirmation modal appears
-    const modal = authenticatedPage.locator('[class*="fixed inset-0"][class*="z-50"]');
-    await expect(modal).toBeVisible();
+    await agentPage.expectModalVisible();
 
-    // Check if location warning appears (depends on user's address/location state)
+    // Verify location warning is NOT visible
     const locationWarning = authenticatedPage.getByText('위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.');
-    const generalSearchButton = authenticatedPage.getByRole('button', { name: '일반 검색' });
+    await expect(locationWarning).not.toBeVisible();
 
-    // If warning is visible, verify button is disabled
-    const isWarningVisible = await locationWarning.isVisible().catch(() => false);
-    if (isWarningVisible) {
-      await expect(generalSearchButton).toBeDisabled();
-      await expect(locationWarning).toHaveClass(/border-amber|bg-amber/);
-    }
+    // Verify general search button is enabled
+    const generalSearchButton = authenticatedPage.getByRole('button', { name: '일반 검색' });
+    await expect(generalSearchButton).toBeEnabled();
   });
 });

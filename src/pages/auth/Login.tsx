@@ -12,7 +12,7 @@ import { extractErrorMessage } from '@/utils/error';
 import { isEmpty } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
@@ -22,6 +22,7 @@ const GOOGLE_SCOPE = 'openid email profile'; // 이름, 이메일, 프로필 정
 
 export const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -78,7 +79,7 @@ export const LoginPage = () => {
       localStorage.setItem('token', loginData.token);
       await dispatch(initializeAuth()).unwrap();
 
-      navigate('/');
+      navigate(location.state?.redirectTo || '/');
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
       const serverMessage =

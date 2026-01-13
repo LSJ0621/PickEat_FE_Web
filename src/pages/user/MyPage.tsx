@@ -4,6 +4,7 @@
 
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
+import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import {
     AddressAddModal,
     AddressListModal,
@@ -282,14 +283,7 @@ export const MyPage = () => {
         {showDeleteAccountModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
             <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
-              <button
-                onClick={() => setShowDeleteAccountModal(false)}
-                className="absolute right-6 top-6 text-slate-400 hover:text-white"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <ModalCloseButton onClose={() => setShowDeleteAccountModal(false)} />
               <h2 className="mb-4 text-2xl font-bold text-white">회원 탈퇴</h2>
               <p className="mb-6 text-slate-300">
                 정말 회원 탈퇴를 하시겠습니까?<br />

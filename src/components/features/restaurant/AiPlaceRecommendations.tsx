@@ -130,6 +130,7 @@ export const AiPlaceRecommendations = ({
                           key={itemKey}
                           role="button"
                           tabIndex={0}
+                          aria-label={recommendation.name}
                           onClick={() => onSelect(recommendation)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
