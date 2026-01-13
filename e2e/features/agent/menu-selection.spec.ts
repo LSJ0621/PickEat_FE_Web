@@ -46,7 +46,7 @@ test.describe('Menu Selection and Confirmation Modal', () => {
     await expect(authenticatedPage.getByRole('button', { name: 'AI 추천 보기' })).toBeVisible();
 
     // Verify close button (X) is visible
-    const closeButton = modal.locator('button svg path[d*="M6 18L18 6M6 6l12 12"]').locator('..');
+    const closeButton = modal.locator('[data-testid="modal-close-button"]');
     await expect(closeButton).toBeVisible();
 
     // Verify selected menu card is highlighted (has orange styling)
@@ -68,7 +68,7 @@ test.describe('Menu Selection and Confirmation Modal', () => {
     await expect(modal).toBeVisible();
 
     // Click the X close button
-    const closeButton = modal.locator('button svg path[d*="M6 18L18 6M6 6l12 12"]').locator('..');
+    const closeButton = modal.locator('[data-testid="modal-close-button"]');
     await closeButton.click();
 
     // Verify modal disappears
@@ -122,7 +122,7 @@ test.describe('Menu Selection and Confirmation Modal', () => {
     const firstMenuName = await authenticatedPage.locator('.font-semibold.text-orange-300').textContent();
 
     // Close modal
-    const closeButton = modal.locator('button svg path[d*="M6 18L18 6M6 6l12 12"]').locator('..');
+    const closeButton = modal.locator('[data-testid="modal-close-button"]');
     await closeButton.click();
     await expect(modal).not.toBeVisible();
 

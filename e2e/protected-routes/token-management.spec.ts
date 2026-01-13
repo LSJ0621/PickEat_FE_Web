@@ -94,10 +94,10 @@ test.describe('Protected Routes - Token Management Tests', () => {
     await page.goto(ROUTES.MYPAGE);
     
     // Wait for potential redirect
-    await page.waitForURL('http://localhost:8080/login', { timeout: 5000 });
-    
-    // 3. Verify redirect to http://localhost:8080/login
-    await expect(page).toHaveURL('http://localhost:8080/login');
+    await page.waitForURL(/\/login$/, { timeout: 5000 });
+
+    // 3. Verify redirect to /login
+    await expect(page).toHaveURL(/\/login$/);
   });
 
   test('Token persists across page refreshes', async ({ authenticatedPage: page }) => {
@@ -127,8 +127,8 @@ test.describe('Protected Routes - Token Management Tests', () => {
     expect(tokenAfterRefresh).toBeTruthy();
     expect(tokenAfterRefresh).toBe(tokenBeforeRefresh);
     
-    // 7. Verify URL is still http://localhost:8080/agent
-    await expect(page).toHaveURL('http://localhost:8080/agent');
+    // 7. Verify URL is still /agent
+    await expect(page).toHaveURL(/\/agent$/);
     
     // 8. Verify user remains authenticated
     await expect(page.getByText('테스트유저님')).toBeVisible();

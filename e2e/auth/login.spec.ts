@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ROUTES } from '../fixtures/test-data';
+import { ROUTES, TEST_ACCOUNTS } from '../fixtures/test-data';
 
 test.describe('Phase 1: Auth Tests - Login', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,10 +9,10 @@ test.describe('Phase 1: Auth Tests - Login', () => {
 
   test('Successful Login with Valid Credentials', async ({ page }) => {
     // 1. Enter email: test@example.com
-    await page.locator('#email').fill('test@example.com');
+    await page.locator('#email').fill(TEST_ACCOUNTS.USER.email);
 
     // 2. Enter password: password123
-    await page.locator('#password').fill('password123');
+    await page.locator('#password').fill(TEST_ACCOUNTS.USER.password);
 
     // 3. Click login button
     await page.getByRole('button', { name: '로그인' }).click();
@@ -57,7 +57,7 @@ test.describe('Phase 1: Auth Tests - Login', () => {
     await page.locator('#email').fill('notanemail');
 
     // 2. Enter password
-    await page.locator('#password').fill('password123');
+    await page.locator('#password').fill(TEST_ACCOUNTS.USER.password);
 
     // 3. Click login button
     await page.getByRole('button', { name: '로그인' }).click();

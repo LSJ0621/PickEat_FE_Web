@@ -10,7 +10,7 @@ test.describe('Address Management', () => {
     await page.goto(ROUTES.MYPAGE);
 
     // 2. Verify '주소 관리' section label is visible (the <p> tag)
-    const addressSection = page.locator('.rounded-\\[32px\\]').filter({ hasText: '주소 관리' });
+    const addressSection = page.locator('[data-testid="address-section"]');
     await expect(addressSection).toBeVisible();
 
     // 3. Verify default address is displayed (if present) or empty state message

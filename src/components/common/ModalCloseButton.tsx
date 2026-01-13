@@ -24,6 +24,7 @@ export const ModalCloseButton = ({
 
   return (
     <button
+      data-testid="modal-close-button"
       onClick={onClose}
       className={`absolute right-6 top-6 text-slate-400 transition hover:text-white ${className}`}
       aria-label={ariaLabel}
