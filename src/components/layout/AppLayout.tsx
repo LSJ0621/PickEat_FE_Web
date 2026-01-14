@@ -16,13 +16,13 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children, showHeader = true, showFooter = true }: AppLayoutProps) => {
   const location = useLocation();
-  
+
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       {showHeader && <AppHeader />}
-      <div key={location.pathname}>{children}</div>
+      <div key={location.pathname} className="flex flex-1 flex-col">{children}</div>
       {showFooter && <AppFooter />}
-    </>
+    </div>
   );
 };
 
