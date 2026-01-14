@@ -6,7 +6,7 @@
 export type BugReportCategory = 'BUG' | 'INQUIRY' | 'OTHER';
 // 표시용 라벨: '버그 제보', '문의 사항', '기타'
 
-export type BugReportStatus = 'UNCONFIRMED' | 'CONFIRMED';
+export type BugReportStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'FIXED' | 'CLOSED';
 
 export interface BugReport {
   id: number;
@@ -60,5 +60,67 @@ export interface GetBugReportDetailResponse {
   status: BugReportStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+// 상태 이력
+export interface BugReportStatusHistory {
+  id: string;
+  previousStatus: string;
+  status: string;
+  changedAt: string;
+  changedBy: {
+    id: number;
+    email: string;
+  };
+}
+
+// 관리자 메모
+export interface BugReportAdminNote {
+  id: string;
+  content: string;
+  createdAt: string;
+  createdBy: {
+    id: number;
+    email: string;
+  };
+}
+
+// 상세 응답 (확장)
+export interface AdminBugReportDetail {
+  id: number;
+  category: string;
+  title: string;
+  description: string;
+  images: string[] | null;
+  status: BugReportStatus;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    email: string;
+    name: string | null;
+    createdAt: string;
+  };
+  statusHistory: BugReportStatusHistory[];
+  adminNotes: BugReportAdminNote[];
+}
+
+// 통계 타입
+export interface BugReportStatistics {
+  byStatus: {
+    UNCONFIRMED: number;
+    CONFIRMED: number;
+    FIXED: number;
+    CLOSED: number;
+  };
+  byCategory: {
+    BUG: number;
+    INQUIRY: number;
+    OTHER: number;
+  };
+  processingTime: {
+    averageHours: number;
+    pendingAverageHours: number;
+  };
 }
 

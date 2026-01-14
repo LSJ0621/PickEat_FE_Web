@@ -4,11 +4,13 @@
  */
 
 import { lazy, Suspense, useEffect, useRef } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import AdminRoute from './AdminRoute';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { PageLoadingFallback } from '@/components/common/PageLoadingFallback';
 
 // Lazy imports - 모든 페이지를 동적으로 로드
@@ -24,9 +26,21 @@ const PasswordResetRequestPage = lazy(() => import('@/pages/auth/PasswordResetRe
 const PasswordResetPage = lazy(() => import('@/pages/auth/PasswordReset').then(m => ({ default: m.PasswordResetPage })));
 const ReRegisterPage = lazy(() => import('@/pages/auth/ReRegister').then(m => ({ default: m.ReRegisterPage })));
 const BugReportPage = lazy(() => import('@/pages/bug-report/BugReportPage').then(m => ({ default: m.BugReportPage })));
-const AdminBugReportListPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportListPage').then(m => ({ default: m.AdminBugReportListPage })));
 const OAuthKakaoRedirect = lazy(() => import('@/pages/auth/oauth/OAuthKakaoRedirect').then(m => ({ default: m.OAuthKakaoRedirect })));
 const OAuthGoogleRedirect = lazy(() => import('@/pages/auth/oauth/OAuthGoogleRedirect').then(m => ({ default: m.OAuthGoogleRedirect })));
+
+// Admin pages
+const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const AdminUserListPage = lazy(() => import('@/pages/admin/users/AdminUserListPage').then(m => ({ default: m.AdminUserListPage })));
+const AdminUserDetailPage = lazy(() => import('@/pages/admin/users/AdminUserDetailPage').then(m => ({ default: m.AdminUserDetailPage })));
+const AdminBugReportListPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportListPage').then(m => ({ default: m.AdminBugReportListPage })));
+const AdminBugReportDetailPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportDetailPage').then(m => ({ default: m.AdminBugReportDetailPage })));
+const AdminMenuAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AdminMenuAnalyticsPage').then(m => ({ default: m.AdminMenuAnalyticsPage })));
+const AdminRestaurantAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AdminRestaurantAnalyticsPage').then(m => ({ default: m.AdminRestaurantAnalyticsPage })));
+const AdminMonitoringPage = lazy(() => import('@/pages/admin/monitoring/AdminMonitoringPage').then(m => ({ default: m.AdminMonitoringPage })));
+const AdminNotificationListPage = lazy(() => import('@/pages/admin/notifications/AdminNotificationListPage').then(m => ({ default: m.AdminNotificationListPage })));
+const AdminNotificationFormPage = lazy(() => import('@/pages/admin/notifications/AdminNotificationFormPage').then(m => ({ default: m.AdminNotificationFormPage })));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
 
 // 라우트 정의 - 모든 페이지를 Suspense로 감싸기
 const router = createBrowserRouter([
@@ -182,14 +196,175 @@ const router = createBrowserRouter([
       </AppLayout>
     ),
   },
+  // Admin routes
+  {
+    path: '/admin',
+    element: <Navigate to="/admin/dashboard" replace />,
+  },
+  {
+    path: '/admin/dashboard',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminDashboardPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/users',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminUserListPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/users/:id',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminUserDetailPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
   {
     path: '/admin/bug-reports',
     element: (
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
-          <ProtectedRoute>
-            <AdminBugReportListPage />
-          </ProtectedRoute>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminBugReportListPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/bug-reports/:id',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminBugReportDetailPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/analytics/menu',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminMenuAnalyticsPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/analytics/restaurant',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminRestaurantAnalyticsPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/monitoring',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminMonitoringPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/notifications',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminNotificationListPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/notifications/new',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminNotificationFormPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/notifications/:id',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminNotificationFormPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/settings',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminSettingsPage />
+            </AdminLayout>
+          </AdminRoute>
         </Suspense>
       </AppLayout>
     ),
