@@ -30,3 +30,23 @@ export const extractErrorMessage = (error: unknown, fallbackMessage = '오류가
   return fallbackMessage;
 };
 
+/**
+ * API 에러 처리 통합 함수
+ * 네트워크 오류를 자동으로 감지하고 적절한 메시지를 제공합니다.
+ *
+ * @param error - 발생한 에러 객체
+ * @param context - 에러 발생 컨텍스트 (로깅용)
+ * @param handleError - 에러 핸들러 함수 (useErrorHandler의 handleError)
+ */
+export function handleApiError(
+  error: unknown,
+  context: string,
+  handleError: (error: unknown, context: string) => void
+): void {
+  if (error instanceof Error && error.message.includes('Network')) {
+    handleError(new Error('네트워크 연결을 확인해주세요.'), context);
+  } else {
+    handleError(error, context);
+  }
+}
+

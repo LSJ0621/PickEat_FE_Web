@@ -3,25 +3,29 @@
  */
 
 import { bugReportService } from '@/api/services/bug-report';
-import { BugReportDetailModal } from '@/components/features/admin/bug-reports/BugReportDetailModal';
+import { AdminPageBackground } from '@/components/features/admin/common/AdminPageBackground';
+import { BatchStatusChangeButton } from '@/components/features/admin/bug-reports/BatchStatusChangeButton';
 import { BugReportFilters } from '@/components/features/admin/bug-reports/BugReportFilters';
 import { BugReportList } from '@/components/features/admin/bug-reports/BugReportList';
 import { BugReportListSkeleton } from '@/components/features/admin/bug-reports/BugReportListSkeleton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
-import type { BugReport, BugReportStatus } from '@/types/bug-report';
+import type { BugReport, BugReportCategory, BugReportStatus } from '@/types/bug-report';
+import { handleApiError } from '@/utils/error';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminBugReportListPage = () => {
   const navigate = useNavigate();
-  const { handleError } = useErrorHandler();
+  const { handleError, handleSuccess } = useErrorHandler();
   const userRole = useAppSelector((state) => state.auth?.user?.role);
 
   const [bugReports, setBugReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<BugReportStatus | 'ALL' | undefined>('UNCONFIRMED');
   const [date, setDate] = useState('');
+  const [category, setCategory] = useState<BugReportCategory | 'ALL' | undefined>('ALL');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageInfo, setPageInfo] = useState({
     page: 1,
@@ -29,7 +33,7 @@ export const AdminBugReportListPage = () => {
     totalCount: 0,
     hasNext: false,
   });
-  const [selectedBugReportId, setSelectedBugReportId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // 권한 체크
   useEffect(() => {
@@ -53,13 +57,9 @@ export const AdminBugReportListPage = () => {
       });
       setBugReports(response.items);
       setPageInfo(response.pageInfo);
+      setSelectedIds([]);
     } catch (error: unknown) {
-      // 네트워크 에러 처리
-      if (error instanceof Error && error.message.includes('Network')) {
-        handleError(new Error('네트워크 연결을 확인해주세요.'), 'AdminBugReportListPage');
-      } else {
-        handleError(error, 'AdminBugReportListPage');
-      }
+      handleApiError(error, 'AdminBugReportListPage', handleError);
     } finally {
       setLoading(false);
     }
@@ -81,24 +81,56 @@ export const AdminBugReportListPage = () => {
     setPage(1);
   };
 
+  const handleCategoryChange = (newCategory: BugReportCategory | 'ALL' | undefined) => {
+    setCategory(newCategory);
+    setPage(1);
+  };
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+  };
+
   const handleReset = () => {
     setStatus('UNCONFIRMED');
     setDate('');
+    setCategory('ALL');
+    setSearch('');
     setPage(1);
   };
 
   const handleItemClick = (bugReport: BugReport) => {
-    setSelectedBugReportId(bugReport.id);
+    navigate(`/admin/bug-reports/${bugReport.id}`);
   };
 
-  const handleModalClose = () => {
-    setSelectedBugReportId(null);
+  const handleBatchStatusChange = async (newStatus: BugReportStatus) => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      const result = await bugReportService.batchUpdateBugReportStatus(selectedIds, newStatus);
+      handleSuccess(`${result.updatedCount}개의 항목이 업데이트되었습니다.`);
+      await fetchBugReports();
+    } catch (error: unknown) {
+      handleApiError(error, 'AdminBugReportListPage', handleError);
+    }
   };
 
-  const handleBugReportStatusChange = () => {
-    // 목록 갱신
-    fetchBugReports();
-  };
+  // 클라이언트 측 필터링 (카테고리, 검색)
+  const filteredBugReports = bugReports.filter((report) => {
+    // 카테고리 필터
+    if (category && category !== 'ALL' && report.category !== category) {
+      return false;
+    }
+
+    // 검색 필터
+    if (search) {
+      const searchLower = search.toLowerCase();
+      const titleMatch = report.title.toLowerCase().includes(searchLower);
+      const descriptionMatch = report.description.toLowerCase().includes(searchLower);
+      return titleMatch || descriptionMatch;
+    }
+
+    return true;
+  });
 
   if (userRole !== 'ADMIN') {
     return null;
@@ -106,10 +138,7 @@ export const AdminBugReportListPage = () => {
 
   return (
     <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
-        <div className="absolute -bottom-40 right-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-purple-400/40 via-pink-500/30 to-orange-600/30 blur-3xl animate-gradient" />
-      </div>
+      <AdminPageBackground />
 
       <div className="relative z-10 w-full max-w-6xl">
         <div className="mb-6">
@@ -122,18 +151,37 @@ export const AdminBugReportListPage = () => {
           <BugReportFilters
             status={status}
             date={date}
+            category={category}
+            search={search}
             onStatusChange={handleFilterStatusChange}
             onDateChange={handleDateChange}
+            onCategoryChange={handleCategoryChange}
+            onSearchChange={handleSearchChange}
             onReset={handleReset}
           />
         </div>
+
+        {/* 일괄 상태 변경 버튼 */}
+        {selectedIds.length > 0 && (
+          <div className="mb-4 flex justify-end">
+            <BatchStatusChangeButton
+              selectedIds={selectedIds}
+              onStatusChange={handleBatchStatusChange}
+            />
+          </div>
+        )}
 
         {/* 목록 */}
         {loading ? (
           <BugReportListSkeleton />
         ) : (
           <>
-            <BugReportList bugReports={bugReports} onItemClick={handleItemClick} />
+            <BugReportList
+              bugReports={filteredBugReports}
+              onItemClick={handleItemClick}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+            />
 
             {/* 페이지네이션 */}
             {pageInfo.totalCount > 0 && (
@@ -141,6 +189,11 @@ export const AdminBugReportListPage = () => {
                 <div className="text-sm text-slate-400">
                   총 {pageInfo.totalCount}개 중 {pageInfo.page * pageInfo.limit - pageInfo.limit + 1}-
                   {Math.min(pageInfo.page * pageInfo.limit, pageInfo.totalCount)}개 표시
+                  {category !== 'ALL' || search ? (
+                    <span className="ml-2 text-slate-500">
+                      (필터링됨: {filteredBugReports.length}개)
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -166,15 +219,6 @@ export const AdminBugReportListPage = () => {
           </>
         )}
       </div>
-
-      {/* 상세 모달 */}
-      <BugReportDetailModal
-        bugReportId={selectedBugReportId}
-        isOpen={selectedBugReportId !== null}
-        onClose={handleModalClose}
-        onStatusChange={handleBugReportStatusChange}
-      />
     </div>
   );
 };
-

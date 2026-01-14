@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TypeScript + React + Vite based food recommendation web application. Uses Redux Toolkit for state management, React Router for routing, Axios for API communication with automatic token refresh, and Naver Maps integration.
 
+**Testing Stack**: Vitest (unit tests), Playwright (E2E tests), MSW (Mock Service Worker for API mocking)
+
 ## Development Commands
 
 ```bash
@@ -20,6 +22,17 @@ npm run lint
 
 # Preview production build
 npm run preview
+
+# Unit tests (Vitest)
+npm run test              # Watch mode
+npm run test:run          # Run once
+npm run test:coverage     # With coverage report
+npm run test:ui           # Vitest UI
+
+# E2E tests (Playwright)
+npm run test:e2e          # Run E2E tests
+npm run test:e2e:ui       # Playwright UI mode
+npm run test:e2e:debug    # Debug mode
 ```
 
 ## Project Architecture
@@ -42,17 +55,19 @@ src/
 │   └── ToastContext.tsx   # Global toast notification system
 ├── pages/                 # Route page components (auth/, main/, user/, etc.)
 ├── hooks/                 # Custom React hooks
-│   ├── Common utilities (root level):
+│   ├── Root level utilities:
 │   │   useDebounce, useErrorHandler, useLocalStorage, useUserLocation
 │   └── Domain-organized subdirectories:
-│       ├── address/       # Address management hooks
-│       ├── agent/         # AI agent interaction hooks
-│       ├── auth/          # Authentication hooks (email verification, timer)
-│       ├── common/        # Shared UI behavior hooks (modal, scroll, toast)
-│       ├── history/       # User history hooks
-│       ├── map/           # Map integration hooks
-│       ├── place/         # Place details hooks
-│       └── user/          # User preferences hooks
+│       ├── address/       # Address management (useAddressModal, useAddressSearch, useAddressList)
+│       ├── agent/         # AI agent (useAgentActions, useConfirmModal)
+│       ├── auth/          # Authentication (useEmailVerification, useVerificationTimer)
+│       ├── common/        # Shared UI behavior:
+│       │   useDebounce, useInitialDataLoad, useLocalStorage, useModalAnimation,
+│       │   useModalScrollLock, usePrevious, useScrollAnimation, useScrollToSection, useToast
+│       ├── history/       # User history (useHistoryAiHistory, useHistoryAiRecommendations, useHistoryMenuActions)
+│       ├── map/           # Map integration (useNaverMap, useUserLocation)
+│       ├── place/         # Place details (usePlaceDetails)
+│       └── user/          # User preferences (usePreferences)
 ├── store/
 │   ├── index.ts           # Redux store configuration
 │   ├── hooks.ts           # Typed Redux hooks (useAppSelector, useAppDispatch)
@@ -71,10 +86,14 @@ src/
 ```
 
 **Key Reusable Components in `components/common/`:**
-- **Modals**: AddressRegistrationModal, InitialSetupModal, AuthPromptModal, ConfirmDialog
+- **Modals**: AuthPromptModal, ConfirmDialog
 - **Navigation**: AppHeader, AppFooter, UserMenu
-- **Feedback**: Toast, StatusPopupCard, PageLoadingFallback, SkeletonCard
-- **UI**: Button/, ModalCloseButton, OAuthLoadingScreen
+- **Feedback**: Toast, ToastProvider, StatusPopupCard, PageLoadingFallback, SkeletonCard
+- **UI**: Button/, ModalCloseButton, OAuthLoadingScreen, AddressSearchResults
+
+**Feature-specific Modals (in `components/features/`):**
+- `features/user/setup/`: AddressRegistrationModal, InitialSetupModal
+- `features/admin/bug-reports/`: BugReportImageGallery
 
 ### Contexts
 
@@ -213,47 +232,6 @@ Priority: Server response message > error.message > fallback
 
 - **ONLY** Tailwind CSS - no inline styles, no CSS modules
 - Keep utility classes readable with proper line breaks for long class lists
-
-## Agent Workflow Guidelines
-
-### Local Agents (pickeat_web/.claude/agents/)
-
-Playwright E2E 테스트 관련 에이전트:
-
-| Agent | Purpose |
-|-------|---------|
-| playwright-test-generator | E2E test generation |
-| playwright-test-healer | E2E test debugging |
-| playwright-test-planner | E2E test planning |
-
-### Shared Agents (Root: PickEat/.claude/agents/)
-
-| Agent | Purpose |
-|-------|---------|
-| code-reviewer | Code quality, security review |
-| code-quality-manager | Error diagnosis, log analysis, quality management (integrated) |
-| refactor-executor | Systematic refactoring |
-| api-sync-analyzer | API synchronization analysis |
-
-### Agent Invocation
-
-Agents automatically detect project from file paths:
-- Files containing `pickeat_web/` → Frontend rules applied
-- Files containing `pick-eat_be/` → Backend rules applied
-
-### When to Use Agents vs Plan Mode
-
-**Use Plan Mode (EnterPlanMode):**
-- New feature implementation requiring design decisions
-- Multiple valid approaches exist
-- Architecture changes need user approval
-- Non-trivial tasks affecting 2+ files
-
-**Use Agent Directly:**
-- Error occurred → code-quality-manager
-- Code written → code-reviewer immediately
-- Clear refactoring plan ready → refactor-executor
-- API sync check → api-sync-analyzer
 
 ## Quality Checklist & Workflow
 

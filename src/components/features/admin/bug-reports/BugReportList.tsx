@@ -8,9 +8,37 @@ import { BugReportListItem } from './BugReportListItem';
 interface BugReportListProps {
   bugReports: BugReport[];
   onItemClick: (bugReport: BugReport) => void;
+  selectedIds?: number[];
+  onSelectionChange?: (ids: number[]) => void;
 }
 
-export const BugReportList = ({ bugReports, onItemClick }: BugReportListProps) => {
+export const BugReportList = ({
+  bugReports,
+  onItemClick,
+  selectedIds = [],
+  onSelectionChange,
+}: BugReportListProps) => {
+  const handleSelectAll = (checked: boolean) => {
+    if (!onSelectionChange) return;
+    if (checked) {
+      onSelectionChange(bugReports.map((report) => report.id));
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectItem = (id: number, checked: boolean) => {
+    if (!onSelectionChange) return;
+    if (checked) {
+      onSelectionChange([...selectedIds, id]);
+    } else {
+      onSelectionChange(selectedIds.filter((selectedId) => selectedId !== id));
+    }
+  };
+
+  const isAllSelected = bugReports.length > 0 && selectedIds.length === bugReports.length;
+  const isSomeSelected = selectedIds.length > 0 && selectedIds.length < bugReports.length;
+
   if (bugReports.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-slate-700 bg-slate-900/50 py-12">
@@ -34,11 +62,38 @@ export const BugReportList = ({ bugReports, onItemClick }: BugReportListProps) =
 
   return (
     <div className="space-y-3">
+      {/* 전체 선택 */}
+      {onSelectionChange && (
+        <div className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
+          <label className="flex cursor-pointer items-center gap-3">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              ref={(input) => {
+                if (input) {
+                  input.indeterminate = isSomeSelected;
+                }
+              }}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              className="h-5 w-5 cursor-pointer rounded border-slate-600 bg-slate-800 text-pink-500 focus:ring-2 focus:ring-pink-500/20"
+            />
+            <span className="text-sm text-slate-300">
+              전체 선택 {selectedIds.length > 0 && `(${selectedIds.length})`}
+            </span>
+          </label>
+        </div>
+      )}
+
+      {/* 목록 */}
       {bugReports.map((bugReport) => (
         <BugReportListItem
           key={bugReport.id}
           bugReport={bugReport}
           onClick={() => onItemClick(bugReport)}
+          selected={selectedIds.includes(bugReport.id)}
+          onSelectionChange={
+            onSelectionChange ? (checked) => handleSelectItem(bugReport.id, checked) : undefined
+          }
         />
       ))}
     </div>
