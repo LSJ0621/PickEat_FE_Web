@@ -2,74 +2,157 @@
  * 버그 제보 필터 컴포넌트
  */
 
-import type { BugReportStatus } from '@/types/bug-report';
+import { useDebounce } from '@/hooks/common/useDebounce';
+import type { BugReportStatus, BugReportCategory } from '@/types/bug-report';
+import { BUG_REPORT } from '@/utils/constants';
+import { useEffect, useState } from 'react';
 
 interface BugReportFiltersProps {
   status: BugReportStatus | 'ALL' | undefined;
   date: string;
+  category: BugReportCategory | 'ALL' | undefined;
+  search: string;
   onStatusChange: (status: BugReportStatus | 'ALL' | undefined) => void;
   onDateChange: (date: string) => void;
+  onCategoryChange: (category: BugReportCategory | 'ALL' | undefined) => void;
+  onSearchChange: (search: string) => void;
   onReset: () => void;
 }
 
 export const BugReportFilters = ({
   status,
   date,
+  category,
+  search,
   onStatusChange,
   onDateChange,
+  onCategoryChange,
+  onSearchChange,
   onReset,
 }: BugReportFiltersProps) => {
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  useEffect(() => {
+    onSearchChange(debouncedSearch);
+  }, [debouncedSearch, onSearchChange]);
+
+  // Reset local search when parent search changes (e.g., on reset)
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
   return (
-    <div className="flex flex-wrap gap-4 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
-      {/* 상태 필터 */}
-      <div className="flex-1 min-w-[200px]">
-        <label className="mb-2 block text-sm font-medium text-slate-300">상태</label>
-        <div className="relative">
-          <select
-            value={status || 'UNCONFIRMED'}
-            onChange={(e) => {
-              const value = e.target.value;
-              onStatusChange(value as BugReportStatus | 'ALL');
-            }}
-            className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
-          >
-            <option value="UNCONFIRMED">미확인</option>
-            <option value="CONFIRMED">확인</option>
-            <option value="ALL">전체</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-            <svg
-              className="h-4 w-4 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-4 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
+        {/* 상태 필터 */}
+        <div className="flex-1 min-w-[150px]">
+          <label className="mb-2 block text-sm font-medium text-slate-300">상태</label>
+          <div className="relative">
+            <select
+              value={status || 'UNCONFIRMED'}
+              onChange={(e) => {
+                const value = e.target.value;
+                onStatusChange(value as BugReportStatus | 'ALL');
+              }}
+              className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+              <option value="UNCONFIRMED">미확인</option>
+              <option value="CONFIRMED">확인</option>
+              <option value="FIXED">수정완료</option>
+              <option value="CLOSED">종료</option>
+              <option value="ALL">전체</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+              <svg
+                className="h-4 w-4 text-slate-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
+        </div>
+
+        {/* 카테고리 필터 */}
+        <div className="flex-1 min-w-[150px]">
+          <label className="mb-2 block text-sm font-medium text-slate-300">카테고리</label>
+          <div className="relative">
+            <select
+              value={category || 'ALL'}
+              onChange={(e) => {
+                const value = e.target.value;
+                onCategoryChange(value === 'ALL' ? 'ALL' : (value as BugReportCategory));
+              }}
+              className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+            >
+              <option value="BUG">{BUG_REPORT.CATEGORIES.BUG}</option>
+              <option value="INQUIRY">{BUG_REPORT.CATEGORIES.INQUIRY}</option>
+              <option value="OTHER">{BUG_REPORT.CATEGORIES.OTHER}</option>
+              <option value="ALL">전체</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+              <svg
+                className="h-4 w-4 text-slate-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* 날짜 필터 */}
+        <div className="flex-1 min-w-[180px]">
+          <label className="mb-2 block text-sm font-medium text-slate-300">날짜</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => onDateChange(e.target.value)}
+            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+          />
+        </div>
+
+        {/* 필터 초기화 */}
+        <div className="flex items-end">
+          <button
+            onClick={onReset}
+            className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
+          >
+            초기화
+          </button>
         </div>
       </div>
 
-      {/* 날짜 필터 */}
-      <div className="flex-1 min-w-[200px]">
-        <label className="mb-2 block text-sm font-medium text-slate-300">날짜</label>
+      {/* 검색 */}
+      <div className="relative">
         <input
-          type="date"
-          value={date}
-          onChange={(e) => onDateChange(e.target.value)}
-          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+          type="text"
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+          placeholder="제목, 내용, 작성자 이메일로 검색..."
+          className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 pl-10 py-3 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
         />
-      </div>
-
-      {/* 필터 초기화 */}
-      <div className="flex items-end">
-        <button
-          onClick={onReset}
-          className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
-        >
-          초기화
-        </button>
+        <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+          <svg
+            className="h-5 w-5 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,10 @@ import type {
   CreateBugReportResponse,
   GetBugReportDetailResponse,
   GetBugReportListResponse,
+  AdminBugReportDetail,
+  BugReportAdminNote,
+  BugReportStatistics,
+  BugReportStatus,
 } from '@/types/bug-report';
 
 export const bugReportService = {
@@ -49,7 +53,7 @@ export const bugReportService = {
   getBugReportList: async (params: {
     page?: number;
     limit?: number;
-    status?: 'UNCONFIRMED' | 'CONFIRMED';
+    status?: BugReportStatus;
     date?: string;
   }): Promise<GetBugReportListResponse> => {
     const response = await apiClient.get<GetBugReportListResponse>(
@@ -81,11 +85,70 @@ export const bugReportService = {
    */
   updateBugReportStatus: async (
     id: number | string,
-    status: 'UNCONFIRMED' | 'CONFIRMED'
+    status: BugReportStatus
   ): Promise<BugReport> => {
     const response = await apiClient.patch<BugReport>(
       ENDPOINTS.ADMIN.BUG_REPORT_UPDATE_STATUS(id),
       { status }
+    );
+    return response.data;
+  },
+
+  /**
+   * 버그 제보 상세 조회 (관리자용 - 확장된 정보)
+   * @param id - 버그 제보 ID
+   * @returns 버그 제보 상세 정보 (상태 이력, 관리자 메모 포함)
+   */
+  getAdminBugReportDetail: async (
+    id: number | string
+  ): Promise<AdminBugReportDetail> => {
+    const response = await apiClient.get<AdminBugReportDetail>(
+      ENDPOINTS.ADMIN.BUG_REPORT_DETAIL(id)
+    );
+    return response.data;
+  },
+
+  /**
+   * 버그 제보 일괄 상태 변경 (관리자용)
+   * @param ids - 버그 제보 ID 배열
+   * @param status - 변경할 상태
+   * @returns 업데이트된 개수
+   */
+  batchUpdateBugReportStatus: async (
+    ids: number[],
+    status: BugReportStatus
+  ): Promise<{ updatedCount: number }> => {
+    const response = await apiClient.patch<{ updatedCount: number }>(
+      ENDPOINTS.ADMIN.BUG_REPORT_BATCH_STATUS,
+      { ids, status }
+    );
+    return response.data;
+  },
+
+  /**
+   * 버그 제보에 관리자 메모 추가
+   * @param id - 버그 제보 ID
+   * @param content - 메모 내용
+   * @returns 생성된 메모
+   */
+  addBugReportNote: async (
+    id: number,
+    content: string
+  ): Promise<BugReportAdminNote> => {
+    const response = await apiClient.post<BugReportAdminNote>(
+      ENDPOINTS.ADMIN.BUG_REPORT_ADD_NOTE(id),
+      { content }
+    );
+    return response.data;
+  },
+
+  /**
+   * 버그 제보 통계 조회
+   * @returns 통계 데이터
+   */
+  getBugReportStatistics: async (): Promise<BugReportStatistics> => {
+    const response = await apiClient.get<BugReportStatistics>(
+      ENDPOINTS.ADMIN.BUG_REPORT_STATISTICS
     );
     return response.data;
   },
