@@ -14,6 +14,7 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { AdminUserDetail } from '@/types/admin';
 import { extractErrorMessage } from '@/utils/error';
+import { isAdminRole } from '@/utils/role';
 import { ArrowLeft } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -31,7 +32,7 @@ export const AdminUserDetailPage = () => {
 
   // 권한 체크
   useEffect(() => {
-    if (userRole !== 'ADMIN') {
+    if (!isAdminRole(userRole)) {
       handleError(new Error('접근 권한이 없습니다.'), 'AdminUserDetailPage');
       navigate('/');
     }
@@ -39,7 +40,7 @@ export const AdminUserDetailPage = () => {
 
   // 사용자 상세 조회
   const fetchUserDetail = useCallback(async () => {
-    if (!id || userRole !== 'ADMIN') return;
+    if (!id || !isAdminRole(userRole)) return;
 
     setLoading(true);
     try {
@@ -56,7 +57,7 @@ export const AdminUserDetailPage = () => {
   }, [id, userRole, handleError]);
 
   useEffect(() => {
-    if (userRole === 'ADMIN') {
+    if (isAdminRole(userRole)) {
       fetchUserDetail();
     }
   }, [userRole, fetchUserDetail]);
@@ -111,7 +112,7 @@ export const AdminUserDetailPage = () => {
     navigate('/admin/users');
   };
 
-  if (userRole !== 'ADMIN') {
+  if (!isAdminRole(userRole)) {
     return null;
   }
 

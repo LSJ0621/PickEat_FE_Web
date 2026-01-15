@@ -1,17 +1,16 @@
 /**
- * 관리자 버그 리포트 상세 페이지
+ * 관리자 버그 리포트 상세 페이지 (MVP - 기본 기능만)
+ * 기능: 상세 조회, 상태 변경
  */
 
 import { bugReportService } from '@/api/services/bug-report';
 import { AdminPageBackground } from '@/components/features/admin/common/AdminPageBackground';
-import { AddNoteModal } from '@/components/features/admin/bug-reports/AddNoteModal';
-import { AdminNoteSection } from '@/components/features/admin/bug-reports/AdminNoteSection';
 import { BugReportImageGallery } from '@/components/features/admin/bug-reports/BugReportImageGallery';
-import { StatusHistoryTimeline } from '@/components/features/admin/bug-reports/StatusHistoryTimeline';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { AdminBugReportDetail, BugReportStatus } from '@/types/bug-report';
 import { BUG_REPORT } from '@/utils/constants';
+import { isAdminRole } from '@/utils/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -24,11 +23,10 @@ export function AdminBugReportDetailPage() {
   const [bugReport, setBugReport] = useState<AdminBugReportDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
   // 권한 체크
   useEffect(() => {
-    if (userRole !== 'ADMIN') {
+    if (!isAdminRole(userRole)) {
       handleError(new Error('접근 권한이 없습니다.'), 'AdminBugReportDetailPage');
       navigate('/');
     }
@@ -36,7 +34,7 @@ export function AdminBugReportDetailPage() {
 
   // 상세 정보 조회
   const fetchBugReportDetail = useCallback(async () => {
-    if (!id || userRole !== 'ADMIN') return;
+    if (!id || !isAdminRole(userRole)) return;
 
     setLoading(true);
     try {
@@ -55,7 +53,7 @@ export function AdminBugReportDetailPage() {
   }, [id, userRole, handleError, navigate]);
 
   useEffect(() => {
-    if (userRole === 'ADMIN') {
+    if (isAdminRole(userRole)) {
       fetchBugReportDetail();
     }
   }, [userRole, fetchBugReportDetail]);
@@ -77,24 +75,6 @@ export function AdminBugReportDetailPage() {
       }
     } finally {
       setUpdating(false);
-    }
-  };
-
-  // 메모 추가
-  const handleAddNote = async (content: string) => {
-    if (!bugReport) return;
-
-    try {
-      await bugReportService.addBugReportNote(bugReport.id, content);
-      handleSuccess('메모가 추가되었습니다.');
-      await fetchBugReportDetail();
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes('Network')) {
-        handleError(new Error('네트워크 연결을 확인해주세요.'), 'AdminBugReportDetailPage');
-      } else {
-        handleError(error, 'AdminBugReportDetailPage');
-      }
-      throw error;
     }
   };
 
@@ -129,7 +109,7 @@ export function AdminBugReportDetailPage() {
     return labels[status];
   };
 
-  if (userRole !== 'ADMIN') {
+  if (!isAdminRole(userRole)) {
     return null;
   }
 
@@ -236,20 +216,6 @@ export function AdminBugReportDetailPage() {
               </div>
             </div>
 
-            {/* 상태 이력 타임라인 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">상태 변경 이력</h3>
-              <StatusHistoryTimeline history={bugReport.statusHistory} />
-            </div>
-
-            {/* 관리자 메모 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
-              <AdminNoteSection
-                notes={bugReport.adminNotes}
-                onAddNote={() => setIsNoteModalOpen(true)}
-              />
-            </div>
-
             {/* 메타 정보 */}
             <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
               <h3 className="mb-4 text-sm font-semibold text-slate-100">메타 정보</h3>
@@ -267,13 +233,6 @@ export function AdminBugReportDetailPage() {
           </div>
         )}
       </div>
-
-      {/* 메모 추가 모달 */}
-      <AddNoteModal
-        isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
-        onSubmit={handleAddNote}
-      />
     </div>
   );
 }
