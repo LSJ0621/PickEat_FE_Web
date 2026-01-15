@@ -1,5 +1,6 @@
 import { AuthPromptModal } from '@/components/common/AuthPromptModal';
 import { useAppSelector } from '@/store/hooks';
+import { isAdminRole } from '@/utils/role';
 import type { ReactElement } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -56,7 +57,7 @@ export const AppFooter = () => {
     ];
 
     // Admin은 "관리" 탭, 일반 사용자는 "버그 제보" 탭
-    if (userRole === 'ADMIN') {
+    if (isAdminRole(userRole)) {
       baseItems.push({
         label: '관리',
         path: '/admin/dashboard',

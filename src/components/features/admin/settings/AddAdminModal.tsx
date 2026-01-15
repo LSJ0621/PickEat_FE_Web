@@ -17,29 +17,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { AdminRole } from '@/types/admin-settings';
 import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
+import { isValidEmail } from '@/utils/validation';
+import { useToast } from '@/hooks/common/useToast';
 
 interface AddAdminModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (userId: number, role: AdminRole) => void;
+  onConfirm: (email: string, role: AdminRole) => void;
   isLoading: boolean;
 }
 
 export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdminModalProps) {
-  const [userId, setUserId] = useState('');
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState<AdminRole>('ADMIN');
+  const { error } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const id = parseInt(userId, 10);
-    if (isNaN(id) || id <= 0) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       return;
     }
-    onConfirm(id, role);
+
+    if (!isValidEmail(trimmedEmail)) {
+      error('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
+    onConfirm(trimmedEmail, role);
   };
 
   const handleClose = () => {
-    setUserId('');
+    setEmail('');
     setRole('ADMIN');
     onClose();
   };
@@ -53,29 +62,28 @@ export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdmi
             <DialogTitle className="text-white">관리자 추가</DialogTitle>
           </div>
           <DialogDescription className="text-slate-300">
-            사용자 ID를 입력하여 관리자 권한을 부여하세요.
+            사용자 이메일을 입력하여 관리자 권한을 부여하세요.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="userId" className="text-white">
-                사용자 ID
+              <Label htmlFor="email" className="text-white">
+                이메일
               </Label>
               <Input
-                id="userId"
-                type="number"
-                placeholder="사용자 ID를 입력하세요"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="user@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                 required
-                min="1"
                 disabled={isLoading}
               />
               <p className="text-xs text-slate-400">
-                관리자 권한을 부여할 사용자의 ID를 입력해주세요.
+                관리자 권한을 부여할 사용자의 이메일을 입력해주세요.
               </p>
             </div>
 
@@ -114,7 +122,7 @@ export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdmi
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !userId}
+              disabled={isLoading || !email}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isLoading ? '처리 중...' : '추가'}

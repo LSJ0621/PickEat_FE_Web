@@ -69,11 +69,6 @@ export const ENDPOINTS = {
     BUG_REPORTS: `${API_BASE}/admin/bug-reports`,
     BUG_REPORT_DETAIL: (id: number | string) => `${API_BASE}/admin/bug-reports/${id}`,
     BUG_REPORT_UPDATE_STATUS: (id: number | string) => `${API_BASE}/admin/bug-reports/${id}/status`,
-    BUG_REPORT_BATCH_STATUS: `${API_BASE}/admin/bug-reports/batch-status`,
-    BUG_REPORT_ADD_NOTE: (id: number) => `${API_BASE}/admin/bug-reports/${id}/notes`,
-    BUG_REPORT_STATISTICS: `${API_BASE}/admin/bug-reports/statistics`,
-    NOTIFICATIONS: `${API_BASE}/admin/notifications`,
-    NOTIFICATION_DETAIL: (id: number | string) => `${API_BASE}/admin/notifications/${id}`,
     DASHBOARD: {
       SUMMARY: `${API_BASE}/admin/dashboard/summary`,
       RECENT_ACTIVITIES: `${API_BASE}/admin/dashboard/recent-activities`,
@@ -83,33 +78,9 @@ export const ENDPOINTS = {
     USER_DETAIL: (id: number) => `${API_BASE}/admin/users/${id}`,
     USER_DEACTIVATE: (id: number) => `${API_BASE}/admin/users/${id}/deactivate`,
     USER_ACTIVATE: (id: number) => `${API_BASE}/admin/users/${id}/activate`,
-    ANALYTICS: {
-      MENU: {
-        TRENDS: `${API_BASE}/admin/analytics/menu/trends`,
-        HOURLY: `${API_BASE}/admin/analytics/menu/hourly`,
-        SLOTS: `${API_BASE}/admin/analytics/menu/slots`,
-        POPULAR: `${API_BASE}/admin/analytics/menu/popular`,
-        KEYWORDS: `${API_BASE}/admin/analytics/menu/keywords`,
-        REGIONS: `${API_BASE}/admin/analytics/menu/regions`,
-        REGION_POPULAR: (region: string) => `${API_BASE}/admin/analytics/menu/regions/${encodeURIComponent(region)}/popular`,
-      },
-      RESTAURANT: {
-        SEARCH_VOLUME: `${API_BASE}/admin/analytics/restaurant/search-volume`,
-        KEYWORDS: `${API_BASE}/admin/analytics/restaurant/keywords`,
-        REGIONS: `${API_BASE}/admin/analytics/restaurant/regions`,
-      },
-    },
-    MONITORING: {
-      API_USAGE: `${API_BASE}/admin/monitoring/api-usage`,
-      EMAIL: `${API_BASE}/admin/monitoring/email`,
-      STORAGE: `${API_BASE}/admin/monitoring/storage`,
-    },
     SETTINGS: {
       ADMINS: `${API_BASE}/admin/settings/admins`,
       ADMIN_DETAIL: (id: number | string) => `${API_BASE}/admin/settings/admins/${id}`,
-      WEBHOOK: `${API_BASE}/admin/settings/webhook`,
-      WEBHOOK_TEST: `${API_BASE}/admin/settings/webhook/test`,
-      SYSTEM: `${API_BASE}/admin/settings/system`,
     },
   },
 } as const;
