@@ -35,11 +35,6 @@ const AdminUserListPage = lazy(() => import('@/pages/admin/users/AdminUserListPa
 const AdminUserDetailPage = lazy(() => import('@/pages/admin/users/AdminUserDetailPage').then(m => ({ default: m.AdminUserDetailPage })));
 const AdminBugReportListPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportListPage').then(m => ({ default: m.AdminBugReportListPage })));
 const AdminBugReportDetailPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportDetailPage').then(m => ({ default: m.AdminBugReportDetailPage })));
-const AdminMenuAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AdminMenuAnalyticsPage').then(m => ({ default: m.AdminMenuAnalyticsPage })));
-const AdminRestaurantAnalyticsPage = lazy(() => import('@/pages/admin/analytics/AdminRestaurantAnalyticsPage').then(m => ({ default: m.AdminRestaurantAnalyticsPage })));
-const AdminMonitoringPage = lazy(() => import('@/pages/admin/monitoring/AdminMonitoringPage').then(m => ({ default: m.AdminMonitoringPage })));
-const AdminNotificationListPage = lazy(() => import('@/pages/admin/notifications/AdminNotificationListPage').then(m => ({ default: m.AdminNotificationListPage })));
-const AdminNotificationFormPage = lazy(() => import('@/pages/admin/notifications/AdminNotificationFormPage').then(m => ({ default: m.AdminNotificationFormPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
 
 // 라우트 정의 - 모든 페이지를 Suspense로 감싸기
@@ -265,90 +260,6 @@ const router = createBrowserRouter([
           <AdminRoute>
             <AdminLayout>
               <AdminBugReportDetailPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/analytics/menu',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminMenuAnalyticsPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/analytics/restaurant',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminRestaurantAnalyticsPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/monitoring',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminMonitoringPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/notifications',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminNotificationListPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/notifications/new',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminNotificationFormPage />
-            </AdminLayout>
-          </AdminRoute>
-        </Suspense>
-      </AppLayout>
-    ),
-  },
-  {
-    path: '/admin/notifications/:id',
-    element: (
-      <AppLayout>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminRoute>
-            <AdminLayout>
-              <AdminNotificationFormPage />
             </AdminLayout>
           </AdminRoute>
         </Suspense>

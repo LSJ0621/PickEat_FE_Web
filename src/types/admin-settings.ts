@@ -15,56 +15,8 @@ export interface AdminUser {
 }
 
 export interface PromoteAdminRequest {
-  userId: number;
+  email: string;
   role: AdminRole;
-}
-
-export interface WebhookThresholds {
-  newBugReportEnabled: boolean;
-  criticalBugAlertEnabled: boolean;
-  dailySummaryEnabled: boolean;
-}
-
-export interface WebhookSettings {
-  enabled: boolean;
-  webhookUrl: string; // masked
-  thresholds: WebhookThresholds;
-}
-
-export interface UpdateWebhookRequest {
-  enabled?: boolean;
-  webhookUrl?: string;
-  thresholds?: Partial<WebhookThresholds>;
-}
-
-export interface MenuRecommendationSettings {
-  maxRecommendationsPerDay: number;
-  defaultCuisineTypes: string[];
-  aiModelVersion: string;
-}
-
-export interface SecuritySettings {
-  sessionTimeoutMinutes: number;
-  maxLoginAttempts: number;
-  lockoutDurationMinutes: number;
-}
-
-export interface DataRetentionSettings {
-  userDataRetentionDays: number;
-  auditLogRetentionDays: number;
-  deletedAccountRetentionDays: number;
-}
-
-export interface SystemSettings {
-  menuRecommendation: MenuRecommendationSettings;
-  security: SecuritySettings;
-  dataRetention: DataRetentionSettings;
-}
-
-export interface UpdateSystemSettingsRequest {
-  menuRecommendation?: Partial<MenuRecommendationSettings>;
-  security?: Partial<SecuritySettings>;
-  dataRetention?: Partial<DataRetentionSettings>;
 }
 
 // API Response types
@@ -76,10 +28,5 @@ export interface PromoteAdminResponse {
 }
 
 export interface DemoteAdminResponse {
-  message: string;
-}
-
-export interface TestWebhookResponse {
-  success: boolean;
   message: string;
 }

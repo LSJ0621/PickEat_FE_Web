@@ -74,17 +74,6 @@ export interface BugReportStatusHistory {
   };
 }
 
-// 관리자 메모
-export interface BugReportAdminNote {
-  id: string;
-  content: string;
-  createdAt: string;
-  createdBy: {
-    id: number;
-    email: string;
-  };
-}
-
 // 상세 응답 (확장)
 export interface AdminBugReportDetail {
   id: number;
@@ -102,7 +91,6 @@ export interface AdminBugReportDetail {
     createdAt: string;
   };
   statusHistory: BugReportStatusHistory[];
-  adminNotes: BugReportAdminNote[];
 }
 
 // 통계 타입

@@ -11,6 +11,7 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { AdminUserListItem } from '@/types/admin';
 import { handleApiError } from '@/utils/error';
+import { isAdminRole } from '@/utils/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,7 +37,7 @@ export const AdminUserListPage = () => {
 
   // 권한 체크
   useEffect(() => {
-    if (userRole !== 'ADMIN') {
+    if (!isAdminRole(userRole)) {
       handleError(new Error('접근 권한이 없습니다.'), 'AdminUserListPage');
       navigate('/');
     }
@@ -44,7 +45,7 @@ export const AdminUserListPage = () => {
 
   // 목록 조회
   const fetchUsers = useCallback(async () => {
-    if (userRole !== 'ADMIN') return;
+    if (!isAdminRole(userRole)) return;
 
     setLoading(true);
     try {
@@ -69,7 +70,7 @@ export const AdminUserListPage = () => {
   }, [userRole, page, search, socialType, status, startDate, endDate, handleError]);
 
   useEffect(() => {
-    if (userRole === 'ADMIN') {
+    if (isAdminRole(userRole)) {
       fetchUsers();
     }
   }, [userRole, fetchUsers]);
@@ -112,7 +113,7 @@ export const AdminUserListPage = () => {
     navigate(`/admin/users/${user.id}`);
   };
 
-  if (userRole !== 'ADMIN') {
+  if (!isAdminRole(userRole)) {
     return null;
   }
 

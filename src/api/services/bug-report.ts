@@ -11,8 +11,6 @@ import type {
   GetBugReportDetailResponse,
   GetBugReportListResponse,
   AdminBugReportDetail,
-  BugReportAdminNote,
-  BugReportStatistics,
   BugReportStatus,
 } from '@/types/bug-report';
 
@@ -108,49 +106,5 @@ export const bugReportService = {
     return response.data;
   },
 
-  /**
-   * 버그 제보 일괄 상태 변경 (관리자용)
-   * @param ids - 버그 제보 ID 배열
-   * @param status - 변경할 상태
-   * @returns 업데이트된 개수
-   */
-  batchUpdateBugReportStatus: async (
-    ids: number[],
-    status: BugReportStatus
-  ): Promise<{ updatedCount: number }> => {
-    const response = await apiClient.patch<{ updatedCount: number }>(
-      ENDPOINTS.ADMIN.BUG_REPORT_BATCH_STATUS,
-      { ids, status }
-    );
-    return response.data;
-  },
-
-  /**
-   * 버그 제보에 관리자 메모 추가
-   * @param id - 버그 제보 ID
-   * @param content - 메모 내용
-   * @returns 생성된 메모
-   */
-  addBugReportNote: async (
-    id: number,
-    content: string
-  ): Promise<BugReportAdminNote> => {
-    const response = await apiClient.post<BugReportAdminNote>(
-      ENDPOINTS.ADMIN.BUG_REPORT_ADD_NOTE(id),
-      { content }
-    );
-    return response.data;
-  },
-
-  /**
-   * 버그 제보 통계 조회
-   * @returns 통계 데이터
-   */
-  getBugReportStatistics: async (): Promise<BugReportStatistics> => {
-    const response = await apiClient.get<BugReportStatistics>(
-      ENDPOINTS.ADMIN.BUG_REPORT_STATISTICS
-    );
-    return response.data;
-  },
 };
 
