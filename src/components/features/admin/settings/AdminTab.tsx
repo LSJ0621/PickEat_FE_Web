@@ -10,7 +10,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { AddAdminModal } from './AddAdminModal';
 import { AdminList } from './AdminList';
 import { RemoveAdminConfirmModal } from './RemoveAdminConfirmModal';
-import { SettingsSection } from './SettingsSection';
 import { SettingsSkeleton } from './SettingsSkeleton';
 import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,10 +44,10 @@ export function AdminTab({ currentUserId }: AdminTabProps) {
     fetchAdmins();
   }, [fetchAdmins]);
 
-  const handleAddAdmin = async (userId: number, role: AdminRole) => {
+  const handleAddAdmin = async (email: string, role: AdminRole) => {
     try {
       setActionLoading(true);
-      const response = await adminSettingsService.promoteAdmin({ userId, role });
+      const response = await adminSettingsService.promoteAdmin({ email, role });
       success(response.message || '관리자 권한이 부여되었습니다.');
       setShowAddModal(false);
       fetchAdmins();
@@ -87,10 +86,7 @@ export function AdminTab({ currentUserId }: AdminTabProps) {
 
   return (
     <div className="space-y-6">
-      <SettingsSection
-        title="관리자 계정 관리"
-        description="시스템 관리자 권한을 가진 사용자를 관리합니다. (슈퍼 관리자만 접근 가능)"
-      >
+      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-slate-400">
@@ -110,9 +106,10 @@ export function AdminTab({ currentUserId }: AdminTabProps) {
             onRemove={handleRemoveClick}
           />
         </div>
-      </SettingsSection>
+      </div>
 
       <AddAdminModal
+        key={showAddModal ? 'open' : 'closed'}
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onConfirm={handleAddAdmin}

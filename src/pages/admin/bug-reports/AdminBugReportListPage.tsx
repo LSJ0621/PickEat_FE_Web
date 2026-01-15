@@ -1,10 +1,10 @@
 /**
- * 관리자용 버그 제보 목록 페이지
+ * 관리자용 버그 제보 목록 페이지 (MVP - 기본 기능만)
+ * 기능: 목록 조회, 필터링, 상세 페이지 이동
  */
 
 import { bugReportService } from '@/api/services/bug-report';
 import { AdminPageBackground } from '@/components/features/admin/common/AdminPageBackground';
-import { BatchStatusChangeButton } from '@/components/features/admin/bug-reports/BatchStatusChangeButton';
 import { BugReportFilters } from '@/components/features/admin/bug-reports/BugReportFilters';
 import { BugReportList } from '@/components/features/admin/bug-reports/BugReportList';
 import { BugReportListSkeleton } from '@/components/features/admin/bug-reports/BugReportListSkeleton';
@@ -12,12 +12,13 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { BugReport, BugReportCategory, BugReportStatus } from '@/types/bug-report';
 import { handleApiError } from '@/utils/error';
+import { isAdminRole } from '@/utils/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminBugReportListPage = () => {
   const navigate = useNavigate();
-  const { handleError, handleSuccess } = useErrorHandler();
+  const { handleError } = useErrorHandler();
   const userRole = useAppSelector((state) => state.auth?.user?.role);
 
   const [bugReports, setBugReports] = useState<BugReport[]>([]);
@@ -33,11 +34,10 @@ export const AdminBugReportListPage = () => {
     totalCount: 0,
     hasNext: false,
   });
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   // 권한 체크
   useEffect(() => {
-    if (userRole !== 'ADMIN') {
+    if (!isAdminRole(userRole)) {
       handleError(new Error('접근 권한이 없습니다.'), 'AdminBugReportListPage');
       navigate('/');
     }
@@ -45,7 +45,7 @@ export const AdminBugReportListPage = () => {
 
   // 목록 조회
   const fetchBugReports = useCallback(async () => {
-    if (userRole !== 'ADMIN') return;
+    if (!isAdminRole(userRole)) return;
 
     setLoading(true);
     try {
@@ -57,7 +57,6 @@ export const AdminBugReportListPage = () => {
       });
       setBugReports(response.items);
       setPageInfo(response.pageInfo);
-      setSelectedIds([]);
     } catch (error: unknown) {
       handleApiError(error, 'AdminBugReportListPage', handleError);
     } finally {
@@ -66,7 +65,7 @@ export const AdminBugReportListPage = () => {
   }, [userRole, page, status, date, handleError]);
 
   useEffect(() => {
-    if (userRole === 'ADMIN') {
+    if (isAdminRole(userRole)) {
       fetchBugReports();
     }
   }, [userRole, fetchBugReports]);
@@ -102,18 +101,6 @@ export const AdminBugReportListPage = () => {
     navigate(`/admin/bug-reports/${bugReport.id}`);
   };
 
-  const handleBatchStatusChange = async (newStatus: BugReportStatus) => {
-    if (selectedIds.length === 0) return;
-
-    try {
-      const result = await bugReportService.batchUpdateBugReportStatus(selectedIds, newStatus);
-      handleSuccess(`${result.updatedCount}개의 항목이 업데이트되었습니다.`);
-      await fetchBugReports();
-    } catch (error: unknown) {
-      handleApiError(error, 'AdminBugReportListPage', handleError);
-    }
-  };
-
   // 클라이언트 측 필터링 (카테고리, 검색)
   const filteredBugReports = bugReports.filter((report) => {
     // 카테고리 필터
@@ -132,7 +119,7 @@ export const AdminBugReportListPage = () => {
     return true;
   });
 
-  if (userRole !== 'ADMIN') {
+  if (!isAdminRole(userRole)) {
     return null;
   }
 
@@ -161,16 +148,6 @@ export const AdminBugReportListPage = () => {
           />
         </div>
 
-        {/* 일괄 상태 변경 버튼 */}
-        {selectedIds.length > 0 && (
-          <div className="mb-4 flex justify-end">
-            <BatchStatusChangeButton
-              selectedIds={selectedIds}
-              onStatusChange={handleBatchStatusChange}
-            />
-          </div>
-        )}
-
         {/* 목록 */}
         {loading ? (
           <BugReportListSkeleton />
@@ -179,8 +156,6 @@ export const AdminBugReportListPage = () => {
             <BugReportList
               bugReports={filteredBugReports}
               onItemClick={handleItemClick}
-              selectedIds={selectedIds}
-              onSelectionChange={setSelectedIds}
             />
 
             {/* 페이지네이션 */}
