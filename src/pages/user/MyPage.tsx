@@ -4,6 +4,7 @@
 
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import {
     AddressAddModal,
@@ -24,9 +25,11 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutAsync } from '@/store/slices/authSlice';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const MyPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const user = useAppSelector((state) => state.auth?.user);
@@ -155,12 +158,12 @@ export const MyPage = () => {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="flex-1 py-10">
           <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-white">마이페이지</h1>
+            <h1 className="text-3xl font-bold text-white">{t('user.mypage')}</h1>
             <button
               onClick={() => setShowDeleteAccountModal(true)}
               className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 shadow-sm shadow-red-500/20 hover:bg-red-500/20 hover:border-red-500/50 transition-all duration-200"
             >
-              회원 탈퇴
+              {t('user.deleteAccount')}
             </button>
           </div>
 
@@ -168,8 +171,8 @@ export const MyPage = () => {
             <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">이름</p>
-                  <p className="mt-1 text-lg font-semibold text-white">{user?.name || '이름 없음'}</p>
+                  <p className="text-sm text-slate-400">{t('user.name')}</p>
+                  <p className="mt-1 text-lg font-semibold text-white">{user?.name || t('user.noName')}</p>
                 </div>
               </div>
             </div>
@@ -177,8 +180,8 @@ export const MyPage = () => {
             <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">이메일</p>
-                  <p className="mt-1 text-lg font-semibold text-white">{user?.email || '이메일 없음'}</p>
+                  <p className="text-sm text-slate-400">{t('user.email')}</p>
+                  <p className="mt-1 text-lg font-semibold text-white">{user?.email || t('user.noEmail')}</p>
                 </div>
               </div>
             </div>
@@ -186,8 +189,8 @@ export const MyPage = () => {
             <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm text-slate-400">메뉴 선택 이력</p>
-                  <p className="mt-1 text-sm text-slate-300">선택한 메뉴들을 확인하고 관리할 수 있습니다.</p>
+                  <p className="text-sm text-slate-400">{t('user.menuSelectionHistory')}</p>
+                  <p className="mt-1 text-sm text-slate-300">{t('user.menuSelectionHistoryDesc')}</p>
                 </div>
                 <Button
                   size="sm"
@@ -195,7 +198,7 @@ export const MyPage = () => {
                   onClick={() => navigate('/menu-selections/history')}
                   className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
                 >
-                  이력 보기
+                  {t('user.viewHistory')}
                 </Button>
               </div>
             </div>
@@ -213,6 +216,17 @@ export const MyPage = () => {
               addresses={addressList.addresses}
               onManageClick={() => setShowAddressListModal(true)}
             />
+
+            {/* Language Settings Section */}
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">{t('user.languageSettings')}</p>
+                  <p className="mt-1 text-sm text-slate-300">{t('user.languageSettingsDesc')}</p>
+                </div>
+                <LanguageSelector />
+              </div>
+            </div>
           </div>
 
           {/* 로그아웃 버튼 - 카드 리스트 아래, footer 위에 배치 */}
@@ -222,7 +236,7 @@ export const MyPage = () => {
               className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30 hover:-translate-y-0.5"
               onClick={handleLogout}
             >
-              로그아웃
+              {t('auth.logout')}
             </Button>
           </div>
         </div>
@@ -284,18 +298,15 @@ export const MyPage = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
             <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
               <ModalCloseButton onClose={() => setShowDeleteAccountModal(false)} />
-              <h2 className="mb-4 text-2xl font-bold text-white">회원 탈퇴</h2>
-              <p className="mb-6 text-slate-300">
-                정말 회원 탈퇴를 하시겠습니까?<br />
-                탈퇴 후 모든 데이터가 삭제되며 복구할 수 없습니다.
-              </p>
+              <h2 className="mb-4 text-2xl font-bold text-white">{t('user.deleteAccountTitle')}</h2>
+              <p className="mb-6 text-slate-300" dangerouslySetInnerHTML={{ __html: t('user.deleteAccountMessage') }} />
               <div className="flex gap-3">
                 <Button
                   onClick={() => setShowDeleteAccountModal(false)}
                   size="md"
                   className="flex-1 border border-white/20 bg-transparent text-white hover:bg-white/10"
                 >
-                  취소
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleDeleteAccount}
@@ -303,7 +314,7 @@ export const MyPage = () => {
                   size="md"
                   className="flex-1 bg-red-600 text-white hover:bg-red-700"
                 >
-                  탈퇴하기
+                  {t('user.withdraw')}
                 </Button>
               </div>
             </div>
@@ -318,7 +329,7 @@ export const MyPage = () => {
             <div className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
               confirmModalAnimation.isAnimating ? 'modal-content-enter' : 'modal-content-exit'
             }`}>
-              <h2 className="mb-4 text-xl font-bold text-white">기본주소 변경</h2>
+              <h2 className="mb-4 text-xl font-bold text-white">{t('user.setDefaultAddress')}</h2>
               <p className="mb-6 text-slate-300">
                 <span className="font-semibold text-orange-200">
                     {addressList.confirmDefaultAddress.alias
@@ -326,7 +337,7 @@ export const MyPage = () => {
                       : ''}
                     {addressList.confirmDefaultAddress.roadAddress}
                 </span>
-                를 기본주소로 사용하시겠습니까?
+                {t('user.setDefaultAddressMessage')}
               </p>
               <div className="flex gap-3">
                 <Button
@@ -335,14 +346,14 @@ export const MyPage = () => {
                     onClick={() => addressList.setConfirmDefaultAddress(null)}
                   className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
                 >
-                  취소
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   size="lg"
                     onClick={addressList.handleConfirmSetDefault}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
                 >
-                  확인
+                  {t('common.confirm')}
                 </Button>
               </div>
             </div>

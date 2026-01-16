@@ -5,6 +5,7 @@
 
 import { Button } from '@/components/common/Button';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface InitialSetupPreferencesSectionProps {
   likes: string[];
@@ -19,6 +20,7 @@ export const InitialSetupPreferencesSection = ({
   onLikesChange,
   onDislikesChange,
 }: InitialSetupPreferencesSectionProps) => {
+  const { t } = useTranslation();
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
 
@@ -48,12 +50,12 @@ export const InitialSetupPreferencesSection = ({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white">취향 정보</h3>
-        <p className="mt-1 text-sm text-slate-400">좋아하는 음식과 싫어하는 음식을 입력해주세요</p>
+        <h3 className="text-lg font-semibold text-white">{t('setup.preferences.title')}</h3>
+        <p className="mt-1 text-sm text-slate-400">{t('setup.preferences.description')}</p>
       </div>
       <div className="space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-200">좋아하는 것</label>
+          <label className="mb-2 block text-sm font-medium text-slate-200">{t('setup.preferences.likes')}</label>
           <div className="mb-2 flex gap-2">
             <input
               type="text"
@@ -64,11 +66,11 @@ export const InitialSetupPreferencesSection = ({
                   handleAddLike();
                 }
               }}
-              placeholder="좋아하는 음식이나 재료를 입력하세요"
+              placeholder={t('setup.preferences.likesPlaceholder')}
               className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
             />
             <Button onClick={handleAddLike} size="md">
-              추가
+              {t('setup.preferences.add')}
             </Button>
           </div>
           {likes.length > 0 && (
@@ -93,7 +95,7 @@ export const InitialSetupPreferencesSection = ({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-200">싫어하는 것</label>
+          <label className="mb-2 block text-sm font-medium text-slate-200">{t('setup.preferences.dislikes')}</label>
           <div className="mb-2 flex gap-2">
             <input
               type="text"
@@ -104,11 +106,11 @@ export const InitialSetupPreferencesSection = ({
                   handleAddDislike();
                 }
               }}
-              placeholder="싫어하는 음식이나 재료를 입력하세요"
+              placeholder={t('setup.preferences.dislikesPlaceholder')}
               className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
             />
             <Button onClick={handleAddDislike} size="md">
-              추가
+              {t('setup.preferences.add')}
             </Button>
           </div>
           {dislikes.length > 0 && (

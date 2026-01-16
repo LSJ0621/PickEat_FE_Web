@@ -11,25 +11,23 @@ import { useHistoryAiRecommendations } from '@/hooks/history/useHistoryAiRecomme
 import { useHistoryMenuActions } from '@/hooks/history/useHistoryMenuActions';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useAppSelector } from '@/store/hooks';
+import type { MenuPlaceRecommendationGroup } from '@/store/slices/agentSlice';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
 import { formatDateTimeKorean } from '@/utils/format';
 import { useEffect, useMemo, useState } from 'react';
-
-interface MenuPlaceRecommendationGroup {
-  menuName: string;
-  recommendations: PlaceRecommendationItem[];
-}
+import { useTranslation } from 'react-i18next';
 
 interface HistoryItemProps {
   item: RecommendationHistoryItem;
 }
 
 export const HistoryItem = ({ item }: HistoryItemProps) => {
+  const { t } = useTranslation();
   const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
   const { latitude, longitude, hasLocation, address } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  
+
   const menuActions = useHistoryMenuActions();
   const aiRecommendations = useHistoryAiRecommendations({ historyItem: item });
   const aiHistory = useHistoryAiHistory({ historyItem: item });
@@ -114,7 +112,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
             <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-200">
               <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-200/80">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-[10px] text-white shadow-sm shadow-orange-500/40">i</span>
-                추천 이유
+                {t('history.recommendationReason')}
               </div>
               <p className="leading-relaxed text-slate-200">{item.reason}</p>
             </div>
@@ -152,7 +150,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               )}
-              <span>{aiHistory.showAiHistory ? '닫기' : 'AI 추천'}</span>
+              <span>{aiHistory.showAiHistory ? t('history.close') : t('history.aiRecommendation')}</span>
             </button>
           )}
         </div>
@@ -163,7 +161,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
             {aiHistory.isAiHistoryLoading ? (
               <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
-                <span>AI 추천 맛집 불러오는 중...</span>
+                <span>{t('history.loadingAiRecommendations')}</span>
               </div>
             ) : aiHistory.aiHistoryRecommendations.length > 0 ? (
               <div className="space-y-4">
@@ -174,7 +172,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/70">메뉴</p>
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/70">{t('history.menuLabel')}</p>
                         <h4 className="text-lg font-semibold text-white">{group.menuName}</h4>
                       </div>
                     </div>
@@ -235,7 +233,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
             </button>
             <div className="space-y-4">
               <p className="text-center text-lg text-white">
-                <span className="font-semibold text-orange-300">{menuActions.selectedMenu}</span>에 대해 어떤 방식으로 탐색할까요?
+                {t('history.exploreOptions', { menuName: menuActions.selectedMenu })}
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Button
@@ -244,7 +242,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
                   variant="primary"
                   size="lg"
                 >
-                  일반 검색 (네이버)
+                  {t('history.normalSearch')}
                 </Button>
                 <Button
                   onClick={handleAiRecommendWithClose}
@@ -252,18 +250,18 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
                   size="lg"
                   disabled={!hasAiQueryContext}
                 >
-                  AI 추천 받기
+                  {t('history.aiRecommendGet')}
                 </Button>
               </div>
             </div>
             {!hasLocation && (
               <div className="mt-4 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
-                위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.
+                {t('history.noLocationWarning')}
               </div>
             )}
             {!hasAiQueryContext && (
               <div className="mt-2 rounded-xl border border-amber-300/30 bg-amber-500/10 p-3 text-center text-sm text-amber-200">
-                주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.
+                {t('history.needsAddressForAi')}
               </div>
             )}
           </div>

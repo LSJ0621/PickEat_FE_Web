@@ -6,6 +6,7 @@ import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MAP_CONFIG } from '@/utils/constants';
+import { useTranslation } from 'react-i18next';
 
 interface PlaceDetailsModalProps {
   placeId: string | null;
@@ -14,6 +15,7 @@ interface PlaceDetailsModalProps {
 }
 
 export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsModalProps) => {
+  const { t } = useTranslation();
   const { status, errorMessage, placeDetail } = usePlaceDetails(placeId);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [photoTransition, setPhotoTransition] = useState<'fade' | 'none'>('none');
@@ -152,11 +154,11 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
             {/* 가게 이름 (제목) */}
             <div>
               <h3 className="text-2xl font-bold text-white">
-                {placeName ?? placeDetail?.name ?? '선택된 가게'}
+                {placeName ?? placeDetail?.name ?? t('place.selectedStore')}
               </h3>
               {placeDetail?.rating != null && (
                 <p className="mt-1 text-sm text-slate-300">
-                  평점 {placeDetail.rating.toFixed(1)} · 리뷰 {placeDetail.userRatingCount ?? 0}개
+                  {t('place.rating')} {placeDetail.rating.toFixed(1)} · {t('place.reviews')} {placeDetail.userRatingCount ?? 0}{t('place.reviewCount')}
                 </p>
               )}
               {placeDetail?.openNow !== null && placeDetail?.openNow !== undefined && (
@@ -167,7 +169,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                       : 'border border-rose-400/40 bg-rose-500/15 text-rose-200'
                   }`}
                 >
-                  {placeDetail.openNow ? '현재 영업 중' : '현재 영업 종료'}
+                  {placeDetail.openNow ? t('place.openNow') : t('place.closedNow')}
                 </span>
               )}
             </div>
@@ -175,12 +177,12 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
             {/* 사진 슬라이드 */}
             {placeDetail?.photos && placeDetail.photos.length > 0 && (
               <div>
-                <h4 className="mb-3 text-sm font-semibold text-slate-100">사진</h4>
+                <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.photos')}</h4>
                 <div className="relative">
                   <div className="relative h-64 w-full overflow-hidden rounded-xl bg-slate-800">
                     <img
                       src={placeDetail.photos[currentPhotoIndex]}
-                      alt={`${placeDetail?.name ?? placeName ?? '가게 사진'} ${currentPhotoIndex + 1}`}
+                      alt={`${placeDetail?.name ?? placeName ?? t('place.storePhoto')} ${currentPhotoIndex + 1}`}
                       className={`h-full w-full object-cover transition-opacity duration-300 ${
                         photoTransition === 'fade' ? 'opacity-0' : 'opacity-100'
                       }`}
@@ -195,7 +197,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                       <button
                         onClick={handlePreviousPhoto}
                         className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
-                        aria-label="이전 사진"
+                        aria-label={t('place.previousPhoto')}
                       >
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -207,7 +209,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                       <button
                         onClick={handleNextPhoto}
                         className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
-                        aria-label="다음 사진"
+                        aria-label={t('place.nextPhoto')}
                       >
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -217,7 +219,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                   </div>
                   {placeDetail.photos.length > 1 && (
                     <p className="mt-1 text-[11px] text-slate-500">
-                      좌우 버튼을 눌러 다른 사진을 확인할 수 있습니다.
+                      {t('place.photoNavTip')}
                     </p>
                   )}
                 </div>

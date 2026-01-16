@@ -54,6 +54,7 @@ export const ENDPOINTS = {
     ADDRESS_SET_DEFAULT: (id: number) => `${API_BASE}/user/addresses/${id}/default`,
     ADDRESS_SET_SEARCH: (id: number) => `${API_BASE}/user/addresses/${id}/search`,
     PREFERENCES: `${API_BASE}/user/preferences`,
+    LANGUAGE: `${API_BASE}/user/language`,
   },
   
   // 추천 이력 관련

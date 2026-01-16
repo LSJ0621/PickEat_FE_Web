@@ -133,3 +133,7 @@ export interface BatchDeleteAddressRequest {
   ids: number[];
 }
 
+export interface DeleteAccountResponse {
+  message: string;
+}
+

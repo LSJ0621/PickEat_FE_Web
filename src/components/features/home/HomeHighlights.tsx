@@ -3,30 +3,36 @@
  */
 
 import { useScrollAnimation } from '@/hooks/common/useScrollAnimation';
+import { useTranslation } from 'react-i18next';
 
-const highlights = [
+const HIGHLIGHT_CONFIGS = [
   {
-    title: 'AI 추천 기능',
-    description: '개인화된 메뉴 추천으로 매일 새로운 선택을 경험하세요.',
+    key: 'aiRecommendation',
     icon: '✨',
     color: 'from-orange-400 to-rose-400',
   },
   {
-    title: '지도 기반 검색',
-    description: '지도와 연동하여 실제 위치 기반 식당을 찾아드립니다.',
+    key: 'mapSearch',
     icon: '🗺️',
     color: 'from-blue-400 to-cyan-400',
   },
   {
-    title: '개인화된 추천',
-    description: '당신의 취향과 이력을 학습하여 더 정확한 추천을 제공합니다.',
+    key: 'personalized',
     icon: '🎯',
     color: 'from-purple-400 to-fuchsia-400',
   },
-];
+] as const;
 
 export const HomeHighlights = () => {
+  const { t } = useTranslation();
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.2, delay: 100 });
+
+  const highlights = HIGHLIGHT_CONFIGS.map((config) => ({
+    title: t(`home.highlights.${config.key}.title`),
+    description: t(`home.highlights.${config.key}.description`),
+    icon: config.icon,
+    color: config.color,
+  }));
 
   return (
     <section ref={ref} className="py-20 px-4">
@@ -36,12 +42,12 @@ export const HomeHighlights = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Highlights</p>
+          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('home.highlights.badge')}</p>
           <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
-            주요 기능 하이라이트
+            {t('home.highlights.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
-            PickEat의 핵심 기능을 통해 더 스마트한 식사 선택을 경험하세요.
+            {t('home.highlights.description')}
           </p>
         </div>
 
@@ -56,7 +62,12 @@ export const HomeHighlights = () => {
 };
 
 interface HighlightCardProps {
-  highlight: typeof highlights[0];
+  highlight: {
+    title: string;
+    description: string;
+    icon: string;
+    color: string;
+  };
   index: number;
 }
 

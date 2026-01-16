@@ -3,6 +3,8 @@
  * 하드코딩된 값들을 상수로 관리하여 유지보수성을 높입니다.
  */
 
+import i18n from '@/i18n/config';
+
 // 로컬 스토리지 키
 export const STORAGE_KEYS = {
   TOKEN: 'token',
@@ -31,32 +33,68 @@ export const VALIDATION = {
   PHONE_REGEX: /^[0-9]{10,11}$/,
 } as const;
 
-// 에러 메시지
+// 에러 메시지 (i18n 키 기반)
 export const ERROR_MESSAGES = {
-  REQUIRED: '필수 입력 항목입니다.',
-  INVALID_EMAIL: '올바른 이메일 형식이 아닙니다.',
-  PASSWORD_TOO_SHORT: `비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`,
-  PASSWORD_MISMATCH: '비밀번호가 일치하지 않습니다.',
-  NETWORK_ERROR: '네트워크 오류가 발생했습니다.',
-  UNAUTHORIZED: '인증이 필요합니다.',
+  get REQUIRED() {
+    return i18n.t('validation.required');
+  },
+  get INVALID_EMAIL() {
+    return i18n.t('validation.email.invalid');
+  },
+  get PASSWORD_TOO_SHORT() {
+    return i18n.t('validation.password.tooShort', { minLength: VALIDATION.PASSWORD_MIN_LENGTH });
+  },
+  get PASSWORD_MISMATCH() {
+    return i18n.t('validation.password.mismatch');
+  },
+  get NETWORK_ERROR() {
+    return i18n.t('errors.NETWORK_ERROR');
+  },
+  get UNAUTHORIZED() {
+    return i18n.t('errors.AUTH_INVALID_CREDENTIALS');
+  },
   // 입력 필수 메시지
-  NAME_REQUIRED: '이름을 입력해주세요.',
-  EMAIL_REQUIRED: '이메일을 입력해주세요.',
-  PASSWORD_REQUIRED: '비밀번호를 입력해주세요.',
-  CONFIRM_PASSWORD_REQUIRED: '비밀번호 확인을 입력해주세요.',
-  EMAIL_AND_PASSWORD_REQUIRED: '이메일과 비밀번호를 입력해주세요.',
-  VERIFICATION_CODE_REQUIRED: '인증 코드를 입력해주세요.',
+  get NAME_REQUIRED() {
+    return i18n.t('validation.name.required');
+  },
+  get EMAIL_REQUIRED() {
+    return i18n.t('validation.email.required');
+  },
+  get PASSWORD_REQUIRED() {
+    return i18n.t('validation.password.required');
+  },
+  get CONFIRM_PASSWORD_REQUIRED() {
+    return i18n.t('validation.password.confirmRequired');
+  },
+  get EMAIL_AND_PASSWORD_REQUIRED() {
+    return i18n.t('validation.password.emailAndPasswordRequired');
+  },
+  get VERIFICATION_CODE_REQUIRED() {
+    return i18n.t('validation.verificationCode.required');
+  },
   // 이메일 인증 관련 메시지
-  EMAIL_DUPLICATE_CHECK_REQUIRED: '이메일 중복 확인을 해주세요.',
-  EMAIL_VERIFICATION_REQUIRED: '이메일 인증을 완료해주세요.',
+  get EMAIL_DUPLICATE_CHECK_REQUIRED() {
+    return i18n.t('validation.email.duplicateCheckRequired');
+  },
+  get EMAIL_VERIFICATION_REQUIRED() {
+    return i18n.t('validation.email.verificationRequired');
+  },
 } as const;
 
-// 성공 메시지
+// 성공 메시지 (i18n 키 기반)
 export const SUCCESS_MESSAGES = {
-  LOGIN: '로그인되었습니다.',
-  LOGOUT: '로그아웃되었습니다.',
-  REGISTER: '회원가입이 완료되었습니다.',
-  ORDER_CREATED: '주문이 완료되었습니다.',
+  get LOGIN() {
+    return i18n.t('success.login');
+  },
+  get LOGOUT() {
+    return i18n.t('success.logout');
+  },
+  get REGISTER() {
+    return i18n.t('success.register');
+  },
+  get ORDER_CREATED() {
+    return i18n.t('success.orderCreated');
+  },
 } as const;
 
 // 지도 관련 상수
@@ -85,10 +123,6 @@ export const BUG_REPORT = {
   ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
   TITLE_MAX_LENGTH: 30,
   DESCRIPTION_MAX_LENGTH: 500,
-  CATEGORIES: {
-    BUG: '버그 제보',
-    INQUIRY: '문의 사항',
-    OTHER: '기타',
-  } as const,
+  CATEGORY_KEYS: ['bug', 'inquiry', 'other'] as const,
 } as const;
 

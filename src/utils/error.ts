@@ -1,18 +1,62 @@
+import axios from 'axios';
+import i18n from '@/i18n/config';
+import type { BackendErrorResponse } from '@/types/api';
+
 interface ApiErrorResponse {
   response?: {
     data?: {
       message?: string;
+      errorCode?: string;
+      metadata?: Record<string, unknown>;
     };
   };
   message?: string;
 }
 
-export const extractErrorMessage = (error: unknown, fallbackMessage = '오류가 발생했습니다.') => {
+/**
+ * Translate backend errorCode to localized message
+ */
+export const translateErrorCode = (
+  errorCode: string,
+  metadata?: Record<string, unknown>
+): string => {
+  const key = `errors.${errorCode}`;
+
+  if (i18n.exists(key)) {
+    return i18n.t(key, metadata);
+  }
+
+  // fallback: unknown error
+  return i18n.t('errors.UNKNOWN_ERROR');
+};
+
+export const extractErrorMessage = (error: unknown, fallbackMessage?: string) => {
+  // Fallback message를 i18n으로 처리
+  const defaultFallback = fallbackMessage ?? i18n.t('common.error');
+
   if (typeof error === 'string') {
     return error;
   }
 
-  // 우선순위: 서버 응답 message > 기본 message
+  // 우선순위: errorCode 번역 > 서버 응답 message > 기본 message
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data as BackendErrorResponse | undefined;
+
+    // errorCode가 있으면 번역 사용
+    if (responseData?.errorCode) {
+      return translateErrorCode(responseData.errorCode, responseData.metadata);
+    }
+
+    // fallback: 기존 메시지 사용
+    if (responseData?.message) {
+      return responseData.message;
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+  }
+
   if (error && typeof error === 'object') {
     const apiError = error as ApiErrorResponse;
     if (apiError.response?.data?.message) {
@@ -27,7 +71,7 @@ export const extractErrorMessage = (error: unknown, fallbackMessage = '오류가
     return error.message;
   }
 
-  return fallbackMessage;
+  return defaultFallback;
 };
 
 /**
@@ -44,7 +88,7 @@ export function handleApiError(
   handleError: (error: unknown, context: string) => void
 ): void {
   if (error instanceof Error && error.message.includes('Network')) {
-    handleError(new Error('네트워크 연결을 확인해주세요.'), context);
+    handleError(new Error(i18n.t('common.networkError')), context);
   } else {
     handleError(error, context);
   }

@@ -9,8 +9,10 @@ import type { BugReportCategory, CreateBugReportRequest } from '@/types/bug-repo
 import { validateBugReport } from '@/utils/validation';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const BugReportPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { handleError, handleSuccess } = useErrorHandler();
   const [formData, setFormData] = useState<CreateBugReportRequest>({
@@ -35,14 +37,14 @@ export const BugReportPage = () => {
 
     try {
       await bugReportService.createBugReport(formData);
-      handleSuccess('버그 제보가 성공적으로 등록되었습니다.');
+      handleSuccess(t('bugReport.success'));
       navigate('/');
     } catch (error: unknown) {
       // 네트워크 에러 처리
       if (error instanceof Error && error.message.includes('Network')) {
-        handleError(new Error('네트워크 연결을 확인해주세요.'), 'BugReport');
+        handleError(new Error(t('common.networkError')), 'BugReport');
       } else if (error instanceof Error && error.message.includes('413')) {
-        handleError(new Error('이미지 크기가 너무 큽니다. 각 이미지는 5MB 이하여야 합니다.'), 'BugReport');
+        handleError(new Error(t('bugReport.imageSizeError')), 'BugReport');
       } else {
         handleError(error, 'BugReport');
       }
@@ -60,8 +62,8 @@ export const BugReportPage = () => {
 
       <div className="relative z-10 w-full max-w-2xl">
         <div className="rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-xl p-8 shadow-2xl">
-          <h1 className="mb-2 text-3xl font-bold text-white">버그 제보</h1>
-          <p className="mb-8 text-slate-400">발견하신 버그나 문의사항을 알려주세요.</p>
+          <h1 className="mb-2 text-3xl font-bold text-white">{t('bugReport.pageTitle')}</h1>
+          <p className="mb-8 text-slate-400">{t('bugReport.pageDescription')}</p>
 
           <BugReportForm
             data={formData}

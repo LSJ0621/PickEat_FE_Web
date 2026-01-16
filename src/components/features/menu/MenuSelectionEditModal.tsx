@@ -10,6 +10,7 @@ import type { MenuSlot, UpdateMenuSelectionRequest } from '@/types/menu';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 interface MenuSelectionEditModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ export const MenuSelectionEditModal = ({
   onClose,
   onComplete,
 }: MenuSelectionEditModalProps) => {
+  const { t } = useTranslation();
   const [availableMenus, setAvailableMenus] = useState<string[]>([]);
   const [selectedMenus, setSelectedMenus] = useState<Set<string>>(new Set());
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
@@ -110,7 +112,7 @@ export const MenuSelectionEditModal = ({
 
   const handleSave = async () => {
     if (selectedMenus.size === 0) {
-      handleError('최소 하나의 메뉴를 선택해주세요.', 'MenuSelectionEdit');
+      handleError(t('menu.selectAtLeastOne'), 'MenuSelectionEdit');
       return;
     }
 
@@ -132,7 +134,7 @@ export const MenuSelectionEditModal = ({
         requestData.etc = selectedMenuArray;
       }
       await menuService.updateMenuSelection(selectionId, requestData);
-      handleSuccess('메뉴 선택이 수정되었습니다.');
+      handleSuccess(t('menu.menuSelectionUpdated'));
       onComplete();
       onClose();
       // 모달 닫을 때 선택 상태 초기화
@@ -181,8 +183,8 @@ export const MenuSelectionEditModal = ({
 
         <div className="space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-white">메뉴 수정하기</h3>
-            <p className="mt-1 text-sm text-slate-400">원하는 메뉴를 선택해주세요 (중복 선택 가능)</p>
+            <h3 className="text-xl font-semibold text-white">{t('menu.editMenu')}</h3>
+            <p className="mt-1 text-sm text-slate-400">{t('menu.selectMenusPlural')}</p>
           </div>
 
           {isLoadingMenus ? (
@@ -196,7 +198,7 @@ export const MenuSelectionEditModal = ({
             <>
               <div className="max-h-96 space-y-2 overflow-y-auto custom-scroll">
                 {availableMenus.length === 0 ? (
-                  <p className="py-8 text-center text-slate-400">선택 가능한 메뉴가 없습니다.</p>
+                  <p className="py-8 text-center text-slate-400">{t('menu.noAvailableMenus')}</p>
                 ) : (
                   availableMenus.map((menu, index) => {
                     const isSelected = selectedMenus.has(menu);
@@ -235,7 +237,7 @@ export const MenuSelectionEditModal = ({
 
               <div className="flex gap-3">
                 <Button variant="ghost" size="lg" onClick={onClose} className="flex-1">
-                  취소
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -245,7 +247,7 @@ export const MenuSelectionEditModal = ({
                   disabled={selectedMenus.size === 0}
                   className="flex-1"
                 >
-                  수정 완료 ({selectedMenus.size}개)
+                  {t('menu.editCompleteWithCount', { count: selectedMenus.size })}
                 </Button>
               </div>
             </>

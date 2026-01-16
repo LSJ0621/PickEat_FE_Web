@@ -10,6 +10,7 @@ import { extractErrorMessage } from '@/utils/error';
 import { formatSeconds } from '@/utils/format';
 import { isEmpty, isValidEmail } from '@/utils/validation';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type VerificationType = 'SIGNUP' | 'RE_REGISTER';
 
@@ -55,6 +56,7 @@ export interface UseEmailVerificationReturn {
 export const useEmailVerification = (
   options?: UseEmailVerificationOptions
 ): UseEmailVerificationReturn => {
+  const { t } = useTranslation();
   const verificationType = options?.verificationType || 'SIGNUP';
   const isReRegister = verificationType === 'RE_REGISTER';
   const [email, setEmail] = useState('');
@@ -100,7 +102,7 @@ export const useEmailVerification = (
 
       // 재가입 가능한 경우 재가입 안내 모달 표시
       if (!result.available && result.canReRegister && options?.onReRegister) {
-        options.onReRegister(email, result.message || '기존에 탈퇴 이력이 있습니다. 재가입하시겠습니까?');
+        options.onReRegister(email, result.message || t('emailVerification.reRegisterPrompt'));
         return;
       }
 
@@ -108,14 +110,14 @@ export const useEmailVerification = (
         setEmailError(result.message);
       }
     } catch (error: unknown) {
-      const errorMessage = extractErrorMessage(error, '이메일 확인에 실패했습니다.');
+      const errorMessage = extractErrorMessage(error, t('emailVerification.checkEmailFailed'));
       setEmailError(errorMessage);
       setEmailAvailable(null);
       setEmailChecked(false);
     } finally {
       setEmailCheckLoading(false);
     }
-  }, [email, options]);
+  }, [email, options, t]);
 
   // 인증 코드 발송
   const handleSendVerificationCode = useCallback(async () => {
@@ -142,7 +144,7 @@ export const useEmailVerification = (
     try {
       const response = await authService.sendEmailVerificationCode(email, verificationType);
       const serverMessage =
-        response?.message || '인증 코드를 발송했습니다. 3분 이내에 입력해주세요.';
+        response?.message || t('emailVerification.codeSent');
       setIsCodeSent(true);
       setIsEmailVerified(false);
       setVerificationCode('');
@@ -152,7 +154,7 @@ export const useEmailVerification = (
     } catch (error: unknown) {
       const errorMessage = extractErrorMessage(
         error,
-        '인증 코드를 발송하지 못했습니다. 잠시 후 다시 시도해주세요.'
+        t('emailVerification.sendFailed')
       );
 
       setVerificationMessage(errorMessage);
@@ -161,12 +163,12 @@ export const useEmailVerification = (
     } finally {
       setSendCodeLoading(false);
     }
-  }, [email, emailChecked, emailAvailable, verificationType, isReRegister, verificationTimer]);
+  }, [email, emailChecked, emailAvailable, verificationType, isReRegister, verificationTimer, t]);
 
   // 인증 코드 검증
   const handleVerifyCode = useCallback(async () => {
     if (!isCodeSent) {
-      setVerificationMessage('인증 코드를 먼저 발송해주세요.');
+      setVerificationMessage(t('emailVerification.sendCodeFirst'));
       setVerificationMessageVariant('error');
       return;
     }
@@ -183,7 +185,7 @@ export const useEmailVerification = (
     setEmailError(undefined);
     try {
       const response = await authService.verifyEmailCode(email, verificationCode.trim(), verificationType);
-      const serverMessage = response?.message || '이메일 인증이 완료되었습니다.';
+      const serverMessage = response?.message || t('emailVerification.verifySuccess');
       setIsEmailVerified(true);
       verificationTimer.stop();
       setVerificationMessage(serverMessage);
@@ -191,7 +193,7 @@ export const useEmailVerification = (
     } catch (error: unknown) {
       const errorMessage = extractErrorMessage(
         error,
-        '인증에 실패했습니다. 코드를 확인해주세요.'
+        t('emailVerification.verifyFailed')
       );
 
       setVerificationMessage(errorMessage);
@@ -200,33 +202,33 @@ export const useEmailVerification = (
     } finally {
       setVerifyCodeLoading(false);
     }
-  }, [email, verificationCode, isCodeSent, verificationType, verificationTimer]);
+  }, [email, verificationCode, isCodeSent, verificationType, verificationTimer, t]);
 
   // 이메일 액션 버튼 라벨
   const getEmailActionLabel = useCallback(() => {
     // 재가입의 경우 중복 확인 없이 바로 인증번호 발송
     if (isReRegister) {
       if (isEmailVerified) {
-        return '인증 완료';
+        return t('emailVerification.verified');
       }
       if (isCodeSent && verificationTimer.remaining > 0) {
-        return `유효시간 ${formatSeconds(verificationTimer.remaining)}`;
+        return `${t('emailVerification.timeRemaining')} ${formatSeconds(verificationTimer.remaining)}`;
       }
-      return sendCodeLoading ? '발송 중...' : '인증번호 발송';
+      return sendCodeLoading ? t('emailVerification.sending') : t('emailVerification.sendCode');
     }
-    
+
     // 회원가입의 경우 중복 확인 필요
     if (!emailChecked || emailAvailable !== true) {
-      return emailCheckLoading ? '확인 중...' : '중복 확인';
+      return emailCheckLoading ? t('emailVerification.checking') : t('emailVerification.checkDuplicate');
     }
     if (isEmailVerified) {
-      return '인증 완료';
+      return t('emailVerification.verified');
     }
     if (isCodeSent && verificationTimer.remaining > 0) {
-      return `유효시간 ${formatSeconds(verificationTimer.remaining)}`;
+      return `${t('emailVerification.timeRemaining')} ${formatSeconds(verificationTimer.remaining)}`;
     }
-    return sendCodeLoading ? '발송 중...' : '인증번호 발송';
-  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, isEmailVerified, isCodeSent, verificationTimer.remaining, sendCodeLoading]);
+    return sendCodeLoading ? t('emailVerification.sending') : t('emailVerification.sendCode');
+  }, [isReRegister, emailChecked, emailAvailable, emailCheckLoading, isEmailVerified, isCodeSent, verificationTimer.remaining, sendCodeLoading, t]);
 
   // 이메일 액션 버튼 비활성화 여부
   const isEmailActionDisabled = useCallback(() => {

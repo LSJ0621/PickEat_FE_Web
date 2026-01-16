@@ -4,6 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { useTranslation } from 'react-i18next';
 
 interface AddressSearchInputProps {
   addressQuery: string;
@@ -18,8 +19,10 @@ export const AddressSearchInput = ({
   isSearching,
   onAddressQueryChange,
   onSearch,
-  placeholder = '주소를 검색하세요',
+  placeholder,
 }: AddressSearchInputProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex gap-2">
       <input
@@ -31,11 +34,11 @@ export const AddressSearchInput = ({
             onSearch();
           }
         }}
-        placeholder={placeholder}
+        placeholder={placeholder || t('setup.address.searchPlaceholder')}
         className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
       />
       <Button onClick={onSearch} isLoading={isSearching} size="md">
-        검색
+        {t('setup.search')}
       </Button>
     </div>
   );

@@ -7,10 +7,12 @@ import { ERROR_MESSAGES } from '@/utils/constants';
 import { isAxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RESET_EMAIL_STORAGE_KEY = 'resetPasswordEmail';
 
 export const PasswordResetRequestPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState(() => sessionStorage.getItem(RESET_EMAIL_STORAGE_KEY) ?? '');
   const [code, setCode] = useState('');
@@ -73,7 +75,7 @@ export const PasswordResetRequestPage = () => {
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         const status = error.response.status;
-        const message = error.response.data?.message ?? '인증 메일 발송에 실패했습니다.';
+        const message = error.response.data?.message ?? t('passwordReset.request.error.sendFailed');
         if (status === 400) {
           setErrors((prev) => ({ ...prev, email: message }));
         } else if (status === 429) {
@@ -89,7 +91,7 @@ export const PasswordResetRequestPage = () => {
         } else {
           setPopup({
             open: true,
-            title: '재설정 코드 발송 실패',
+            title: t('passwordReset.request.sendCodeFailed'),
             message,
             variant: 'error',
           });
@@ -97,8 +99,8 @@ export const PasswordResetRequestPage = () => {
       } else {
         setPopup({
           open: true,
-          title: '재설정 코드 발송 실패',
-          message: extractErrorMessage(error, '인증 메일 발송에 실패했습니다.'),
+          title: t('passwordReset.request.sendCodeFailed'),
+          message: extractErrorMessage(error, t('passwordReset.request.error.sendFailed')),
           variant: 'error',
         });
       }
@@ -125,18 +127,18 @@ export const PasswordResetRequestPage = () => {
         sessionStorage.setItem(RESET_EMAIL_STORAGE_KEY, email.trim());
         navigate(`/password/reset?email=${encodeURIComponent(email.trim())}`);
       } else {
-        setErrors((prev) => ({ ...prev, code: response.message ?? '인증에 실패했습니다.' }));
+        setErrors((prev) => ({ ...prev, code: response.message ?? t('passwordReset.request.error.verifyFailed') }));
       }
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         const status = error.response.status;
-        const message = error.response.data?.message ?? '인증에 실패했습니다.';
+        const message = error.response.data?.message ?? t('passwordReset.request.error.verifyFailed');
         if (status === 400) {
           setErrors((prev) => ({ ...prev, code: message }));
         } else {
           setPopup({
             open: true,
-            title: '인증 실패',
+            title: t('passwordReset.request.verifyFailed'),
             message,
             variant: 'error',
           });
@@ -144,8 +146,8 @@ export const PasswordResetRequestPage = () => {
       } else {
         setPopup({
           open: true,
-          title: '인증 실패',
-          message: extractErrorMessage(error, '인증에 실패했습니다.'),
+          title: t('passwordReset.request.verifyFailed'),
+          message: extractErrorMessage(error, t('passwordReset.request.error.verifyFailed')),
           variant: 'error',
         });
       }
@@ -180,16 +182,16 @@ export const PasswordResetRequestPage = () => {
               P
             </div>
             <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Password Reset</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">비밀번호 재설정</h1>
+            <h1 className="mt-3 text-3xl font-semibold text-white">{t('passwordReset.request.title')}</h1>
             <p className="mt-2 text-sm text-slate-300">
-              가입 이메일로 인증번호를 보내드려요. 인증 후 새 비밀번호를 설정하세요.
+              {t('passwordReset.request.description')}
             </p>
           </div>
 
           <div className="space-y-5">
             <div>
               <label htmlFor="reset-email" className="mb-2 block text-sm font-medium text-slate-200">
-                이메일
+                {t('passwordReset.request.email.label')}
               </label>
               <div className="flex gap-2">
                 <input
@@ -200,7 +202,7 @@ export const PasswordResetRequestPage = () => {
                     setEmail(e.target.value);
                     setErrors((prev) => ({ ...prev, email: undefined }));
                   }}
-                  placeholder="가입한 이메일을 입력하세요"
+                  placeholder={t('passwordReset.request.email.placeholder')}
                   className={`flex-1 rounded-2xl border ${
                     errors.email ? 'border-red-500/60' : 'border-white/15'
                   } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
@@ -213,24 +215,24 @@ export const PasswordResetRequestPage = () => {
                   className="shrink-0"
                 >
                   {cooldownRemaining > 0
-                    ? `대기 ${formattedCooldown}`
+                    ? t('passwordReset.request.button.waiting', { time: formattedCooldown })
                     : remainCount !== null
-                    ? `재발송 (${remainCount}회)`
+                    ? t('passwordReset.request.button.resendWithCount', { count: remainCount })
                     : isCodeSent
-                    ? '재발송'
-                    : '인증번호 발송'}
+                    ? t('passwordReset.request.button.resend')
+                    : t('passwordReset.request.button.sendCode')}
                 </Button>
               </div>
               {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
               {infoMessage && <p className="mt-2 text-sm text-emerald-200">{infoMessage}</p>}
               {remainCount !== null && remainCount <= 0 && (
-                <p className="mt-1 text-sm text-red-400">오늘의 발송 가능 횟수를 모두 사용했어요.</p>
+                <p className="mt-1 text-sm text-red-400">{t('passwordReset.request.error.limitReached')}</p>
               )}
             </div>
 
             <div>
               <label htmlFor="reset-code" className="mb-2 block text-sm font-medium text-slate-200">
-                인증번호
+                {t('passwordReset.request.code.label')}
               </label>
               <div className="flex gap-2">
                 <input
@@ -243,7 +245,7 @@ export const PasswordResetRequestPage = () => {
                     setCode(e.target.value);
                     setErrors((prev) => ({ ...prev, code: undefined }));
                   }}
-                  placeholder="6자리 인증번호 입력"
+                  placeholder={t('passwordReset.request.code.placeholder')}
                   className={`flex-1 rounded-2xl border ${
                     errors.code ? 'border-red-500/60' : 'border-white/15'
                   } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
@@ -255,23 +257,22 @@ export const PasswordResetRequestPage = () => {
                   size="sm"
                   className="shrink-0"
                 >
-                  인증하기
+                  {t('passwordReset.request.button.verify')}
                 </Button>
               </div>
               <p className="mt-2 text-xs text-slate-400">
-                가입 시 사용한 이메일로 받은 인증번호를 입력해주세요. 입력값은 초기화되지 않으니 바로 다시 시도할 수
-                있습니다.
+                {t('passwordReset.request.code.hint')}
               </p>
               {errors.code && <p className="mt-1 text-sm text-red-400">{errors.code}</p>}
             </div>
 
             <div className="text-center text-sm text-slate-300">
-              이미 로그인 정보를 기억하신다면{' '}
+              {t('passwordReset.request.loginHint')}{' '}
               <button
                 onClick={() => navigate('/login')}
                 className="font-semibold text-white transition hover:text-orange-200"
               >
-                로그인 화면으로 돌아가기
+                {t('passwordReset.request.backToLogin')}
               </button>
             </div>
           </div>

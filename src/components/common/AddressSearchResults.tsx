@@ -4,6 +4,7 @@
  */
 
 import type { AddressSearchResult } from '@/types/user';
+import { useTranslation } from 'react-i18next';
 
 interface AddressSearchResultsProps {
   searchResults: AddressSearchResult[];
@@ -20,8 +21,9 @@ export const AddressSearchResults = ({
   hasSearchedAddress,
   onSelectAddress,
   maxHeight = 'max-h-48',
-  emptyMessage = '주소를 찾을 수 없습니다.',
+  emptyMessage,
 }: AddressSearchResultsProps) => {
+  const { t } = useTranslation();
   if (searchResults.length > 0) {
     return (
       <div data-testid="address-search-results" className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4`}>
@@ -42,7 +44,7 @@ export const AddressSearchResults = ({
   }
 
   if (!isSearching && hasSearchedAddress && searchResults.length === 0) {
-    return <p className="text-sm text-slate-400">{emptyMessage}</p>;
+    return <p className="text-sm text-slate-400">{emptyMessage || t('setup.address.notFound')}</p>;
   }
 
   return null;

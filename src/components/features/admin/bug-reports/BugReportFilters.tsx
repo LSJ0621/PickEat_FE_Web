@@ -6,6 +6,7 @@ import { useDebounce } from '@/hooks/common/useDebounce';
 import type { BugReportStatus, BugReportCategory } from '@/types/bug-report';
 import { BUG_REPORT } from '@/utils/constants';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BugReportFiltersProps {
   status: BugReportStatus | 'ALL' | undefined;
@@ -30,6 +31,7 @@ export const BugReportFilters = ({
   onSearchChange,
   onReset,
 }: BugReportFiltersProps) => {
+  const { t } = useTranslation();
   const [localSearch, setLocalSearch] = useState(search);
   const debouncedSearch = useDebounce(localSearch, 300);
 
@@ -46,7 +48,7 @@ export const BugReportFilters = ({
       <div className="flex flex-wrap gap-4 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
         {/* 상태 필터 */}
         <div className="flex-1 min-w-[150px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">상태</label>
+          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.status')}</label>
           <div className="relative">
             <select
               value={status || 'UNCONFIRMED'}
@@ -56,11 +58,11 @@ export const BugReportFilters = ({
               }}
               className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
             >
-              <option value="UNCONFIRMED">미확인</option>
-              <option value="CONFIRMED">확인</option>
-              <option value="FIXED">수정완료</option>
-              <option value="CLOSED">종료</option>
-              <option value="ALL">전체</option>
+              <option value="UNCONFIRMED">{t('bugReport.status.unconfirmed')}</option>
+              <option value="CONFIRMED">{t('bugReport.status.confirmed')}</option>
+              <option value="FIXED">{t('bugReport.status.fixed')}</option>
+              <option value="CLOSED">{t('bugReport.status.closed')}</option>
+              <option value="ALL">{t('common.all')}</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
               <svg
@@ -78,7 +80,7 @@ export const BugReportFilters = ({
 
         {/* 카테고리 필터 */}
         <div className="flex-1 min-w-[150px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">카테고리</label>
+          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.category')}</label>
           <div className="relative">
             <select
               value={category || 'ALL'}
@@ -88,10 +90,10 @@ export const BugReportFilters = ({
               }}
               className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
             >
-              <option value="BUG">{BUG_REPORT.CATEGORIES.BUG}</option>
-              <option value="INQUIRY">{BUG_REPORT.CATEGORIES.INQUIRY}</option>
-              <option value="OTHER">{BUG_REPORT.CATEGORIES.OTHER}</option>
-              <option value="ALL">전체</option>
+              {BUG_REPORT.CATEGORY_KEYS.map((key) => (
+                <option key={key} value={key.toUpperCase()}>{t(`bugReport.categories.${key}`)}</option>
+              ))}
+              <option value="ALL">{t('common.all')}</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
               <svg
@@ -109,7 +111,7 @@ export const BugReportFilters = ({
 
         {/* 날짜 필터 */}
         <div className="flex-1 min-w-[180px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">날짜</label>
+          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.date')}</label>
           <input
             type="date"
             value={date}
@@ -124,7 +126,7 @@ export const BugReportFilters = ({
             onClick={onReset}
             className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
           >
-            초기화
+            {t('common.reset')}
           </button>
         </div>
       </div>
@@ -135,7 +137,7 @@ export const BugReportFilters = ({
           type="text"
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
-          placeholder="제목, 내용, 작성자 이메일로 검색..."
+          placeholder={t('bugReport.filter.searchPlaceholder')}
           className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 pl-10 py-3 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
         />
         <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">

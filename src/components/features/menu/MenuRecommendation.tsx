@@ -17,6 +17,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuSelectionModal } from './MenuSelectionModal';
+import { useTranslation } from 'react-i18next';
 
 interface MenuRecommendationProps {
   onMenuSelect?: (
@@ -30,6 +31,7 @@ interface MenuRecommendationProps {
 }
 
 export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommendationProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
@@ -74,13 +76,13 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
 
   const handleRecommend = async () => {
     if (!isAuthenticated) {
-      handleError('로그인이 필요합니다.', 'MenuRecommendation');
+      handleError(t('menu.loginRequired'), 'MenuRecommendation');
       navigate('/login');
       return;
     }
 
     if (!prompt.trim()) {
-      handleError('메뉴 추천 요청을 입력해주세요.', 'MenuRecommendation');
+      handleError(t('menu.promptRequired'), 'MenuRecommendation');
       return;
     }
 
@@ -112,7 +114,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-orange-200/80 sm:text-xs sm:tracking-[0.4em]">Recommendation</p>
-          <h2 className="mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">메뉴 추천 받기</h2>
+          <h2 className="mt-1.5 text-xl font-semibold text-white sm:mt-2 sm:text-2xl">{t('menu.recommendation.title')}</h2>
         </div>
         <span className="hidden rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-slate-300 sm:inline-flex sm:px-3 sm:text-xs">
           AI curated
@@ -122,7 +124,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
       <div className="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
         <div>
           <label htmlFor="prompt" className="mb-1.5 block text-xs font-medium text-slate-200 sm:mb-2 sm:text-sm">
-            어떤 메뉴를 원하시나요?
+            {t('menu.recommendation.prompt')}
           </label>
           <input
             id="prompt"
@@ -134,20 +136,20 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
                 handleRecommend();
               }
             }}
-            placeholder="예: 오늘 기분이 안좋은데 메뉴 추천해줘"
+            placeholder={t('menu.recommendation.placeholder')}
             className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-base"
             disabled={loading}
           />
         </div>
-        
-        <Button 
-          onClick={handleRecommend} 
+
+        <Button
+          onClick={handleRecommend}
           isLoading={loading}
           variant="primary"
           size="md"
           className="w-full sm:size-lg"
         >
-          메뉴 추천 받기
+          {t('menu.recommendation.submit')}
         </Button>
       </div>
 
@@ -158,8 +160,8 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
             <div className="flex items-center gap-2.5 text-slate-200 sm:gap-3">
               <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500 sm:h-10 sm:w-10" />
               <div>
-                <p className="text-xs font-medium text-white sm:text-sm">AI가 메뉴를 추천하고 있어요...</p>
-                <p className="mt-0.5 text-[10px] text-slate-400 sm:mt-1 sm:text-xs">잠시만 기다려주세요</p>
+                <p className="text-xs font-medium text-white sm:text-sm">{t('menu.recommendation.loading')}</p>
+                <p className="mt-0.5 text-[10px] text-slate-400 sm:mt-1 sm:text-xs">{t('menu.recommendation.loadingHint')}</p>
               </div>
             </div>
           </div>
@@ -168,7 +170,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
         {!loading && recommendations.length > 0 && (
           <div>
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-white sm:text-lg">추천 메뉴</h3>
+              <h3 className="text-base font-semibold text-white sm:text-lg">{t('menu.recommendation.result')}</h3>
               {!hasMenuSelectionCompleted && (
                 <Button
                   variant="primary"
@@ -176,7 +178,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
                   onClick={() => setShowSelectionModal(true)}
                   className="bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/40 text-xs sm:text-sm"
                 >
-                  메뉴 선택하기
+                  {t('menu.recommendation.select')}
                 </Button>
               )}
             </div>
@@ -185,7 +187,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
                 <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-transparent p-4 text-sm text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.45)] sm:p-5 sm:text-base">
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80 sm:text-[13px]">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500/80 to-rose-500/80 text-[11px] text-white shadow-sm shadow-orange-500/30">i</span>
-                    추천 이유
+                    {t('menu.recommendation.reason')}
                   </div>
                   <p className="leading-relaxed text-slate-200">{reason}</p>
                 </div>
@@ -239,14 +241,14 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-slate-400 sm:text-xs">AI 추천 메뉴</span>
+                        <span className="text-[11px] text-slate-400 sm:text-xs">{t('menu.recommendation.aiLabel')}</span>
                       </div>
                     </button>
                   );
                 })}
               </div>
               <p className="text-center text-xs text-slate-400 sm:text-sm">
-                메뉴를 클릭하면 식당을 검색할 수 있습니다
+                {t('menu.recommendation.clickHint')}
               </p>
             </div>
           </div>
