@@ -4,6 +4,7 @@
 
 import { MAP_CONFIG } from '@/utils/constants';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BugReportImageGalleryProps {
   /**
@@ -13,6 +14,7 @@ interface BugReportImageGalleryProps {
 }
 
 export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) => {
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageTransition, setImageTransition] = useState<'fade' | 'none'>('none');
 
@@ -50,12 +52,12 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-slate-100">이미지</h4>
+      <h4 className="text-sm font-semibold text-slate-100">{t('bugReport.gallery.title')}</h4>
       <div className="relative">
         <div className="relative h-64 w-full overflow-hidden rounded-xl bg-slate-800">
           <img
             src={images[currentImageIndex]}
-            alt={`이미지 ${currentImageIndex + 1}`}
+            alt={t('bugReport.gallery.imageAlt', { index: currentImageIndex + 1 })}
             className={`h-full w-full object-contain transition-opacity duration-300 ${
               imageTransition === 'fade' ? 'opacity-0' : 'opacity-100'
             }`}
@@ -71,7 +73,7 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
             <button
               onClick={handlePreviousImage}
               className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
-              aria-label="이전 이미지"
+              aria-label={t('bugReport.gallery.previous')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -83,7 +85,7 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
             <button
               onClick={handleNextImage}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
-              aria-label="다음 이미지"
+              aria-label={t('bugReport.gallery.next')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -112,7 +114,7 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
               >
                 <img
                   src={imageUrl}
-                  alt={`썸네일 ${index + 1}`}
+                  alt={t('bugReport.gallery.thumbnailAlt', { index: index + 1 })}
                   className="h-full w-full object-cover"
                   loading="lazy"
                   decoding="async"

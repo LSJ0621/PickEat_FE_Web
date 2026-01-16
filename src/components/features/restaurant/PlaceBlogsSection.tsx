@@ -8,12 +8,14 @@ import { useUserLocation } from '@/hooks/map/useUserLocation';
 import type { RestaurantBlog } from '@/types/menu';
 import { extractErrorMessage } from '@/utils/error';
 import { startTransition, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PlaceBlogsSectionProps {
   placeName: string | null | undefined;
 }
 
 export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
+  const { t } = useTranslation();
   const [blogs, setBlogs] = useState<RestaurantBlog[]>([]);
   const [blogsLoading, setBlogsLoading] = useState(false);
   const [blogsError, setBlogsError] = useState<string | null>(null);
@@ -67,9 +69,9 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
         if (currentExecutionIdRef.current !== executionId) {
           return;
         }
-        
+
         startTransition(() => {
-          setBlogsError(extractErrorMessage(error, '블로그 검색에 실패했습니다.'));
+          setBlogsError(extractErrorMessage(error, t('place.blogSearchFailed')));
           setBlogsLoading(false);
         });
       }
@@ -88,9 +90,9 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
 
   return (
     <div>
-      <h4 className="mb-3 text-sm font-semibold text-slate-100">추가 탐색 · 블로그/웹 리뷰</h4>
+      <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.blogsTitle')}</h4>
       <p className="mb-4 text-xs text-slate-400">
-        {placeName}에 대한 다른 사람들의 후기와 리뷰를 확인해 보세요.
+        {t('place.blogsDescription', { placeName })}
       </p>
 
       {blogsLoading && (
@@ -104,7 +106,7 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
       )}
 
       {!blogsLoading && !blogsError && blogs.length === 0 && (
-        <p className="text-xs text-slate-400">아직 연관 블로그/웹 문서를 찾지 못했습니다.</p>
+        <p className="text-xs text-slate-400">{t('place.noBlogsFound')}</p>
       )}
 
       {!blogsLoading && !blogsError && blogs.length > 0 && (
@@ -129,10 +131,10 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
               )}
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-1 text-xs font-medium text-slate-300">
-                  {blog.source ?? '블로그/웹 문서'}
+                  {blog.source ?? t('place.blogWebDoc')}
                 </p>
                 <p className="mt-0.5 line-clamp-2 text-sm font-semibold text-slate-50">
-                  {blog.title ?? '제목 없는 문서'}
+                  {blog.title ?? t('place.noTitle')}
                 </p>
                 {blog.snippet && (
                   <p className="mt-1 line-clamp-2 text-xs text-slate-400">{blog.snippet}</p>

@@ -10,9 +10,11 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { RecommendationHistoryItem } from '@/types/user';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const RecommendationHistory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError } = useErrorHandler();
@@ -114,8 +116,8 @@ export const RecommendationHistory = () => {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="flex-1 py-10 pb-24">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white">추천 이력</h1>
-            <p className="mt-2 text-slate-300">과거에 받은 메뉴 추천을 확인할 수 있습니다.</p>
+            <h1 className="text-3xl font-bold text-white">{t('menu.history')}</h1>
+            <p className="mt-2 text-slate-300">{t('menu.historyDesc')}</p>
           </div>
 
           {/* 날짜 필터 */}
@@ -134,7 +136,7 @@ export const RecommendationHistory = () => {
                 <button
                   onClick={handleClearDate}
                   className="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
-                  title="필터 초기화"
+                  title={t('menu.filterReset')}
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -150,7 +152,7 @@ export const RecommendationHistory = () => {
                   <span className="text-orange-400 font-medium">
                     {new Date(selectedDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
-                  의 추천만 표시
+                  {t('menu.showingDateOnly')}
                 </span>
               </div>
             </div>
@@ -188,14 +190,14 @@ export const RecommendationHistory = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                       <p className="text-slate-400">
-                        {selectedDate ? '선택한 날짜에 받은 추천이 없습니다.' : '추천 이력이 없습니다.'}
+                        {selectedDate ? t('menu.noRecommendationsForDate') : t('menu.noHistory')}
                       </p>
                       {selectedDate && (
                         <button
                           onClick={handleClearDate}
                           className="mt-2 text-sm text-orange-400 hover:text-orange-300 transition"
                         >
-                          전체 이력 보기 →
+                          {t('menu.viewAllHistory')} →
                         </button>
                       )}
                     </div>
@@ -221,18 +223,18 @@ export const RecommendationHistory = () => {
                         {loadingMore ? (
                           <div className="flex items-center gap-2">
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
-                            <span>불러오는 중...</span>
+                            <span>{t('menu.loadingMore')}</span>
                           </div>
                         ) : (
-                          '더 보기'
+                          t('menu.loadMore')
                         )}
                       </button>
                     </div>
                   )}
-                  
+
                   {totalCount > 0 && !hasNext && (
                     <div className="mt-4 text-center text-sm text-slate-400">
-                      총 {totalCount}개의 추천 이력 (모두 불러왔습니다)
+                      {t('menu.totalCount', { count: totalCount })}
                     </div>
                   )}
                 </>

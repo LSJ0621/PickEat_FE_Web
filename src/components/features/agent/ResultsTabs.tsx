@@ -3,6 +3,8 @@
  * 일반 검색과 AI 추천을 탭으로 전환합니다.
  */
 
+import { useTranslation } from 'react-i18next';
+
 type TabType = 'search' | 'ai';
 
 interface ResultsTabsProps {
@@ -26,6 +28,8 @@ export const ResultsTabs = ({
   searchContent,
   aiContent,
 }: ResultsTabsProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* 탭 네비게이션 */}
@@ -40,7 +44,7 @@ export const ResultsTabs = ({
           }`}
         >
           <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-            <span className="truncate">일반 검색</span>
+            <span className="truncate">{t('agent.tabs.generalSearch')}</span>
             {searchLoading ? (
               <div className="h-2.5 w-2.5 flex-shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent sm:h-3 sm:w-3" />
             ) : (
@@ -60,7 +64,7 @@ export const ResultsTabs = ({
           }`}
         >
           <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-            <span className="truncate">AI 추천</span>
+            <span className="truncate">{t('agent.tabs.aiRecommendation')}</span>
             {aiLoading ? (
               <div className="h-2.5 w-2.5 flex-shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent sm:h-3 sm:w-3" />
             ) : (

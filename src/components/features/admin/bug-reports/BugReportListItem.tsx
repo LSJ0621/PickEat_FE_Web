@@ -3,8 +3,8 @@
  */
 
 import type { BugReport } from '@/types/bug-report';
-import { BUG_REPORT } from '@/utils/constants';
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BugReportListItemProps {
   bugReport: BugReport;
@@ -15,6 +15,7 @@ interface BugReportListItemProps {
 
 export const BugReportListItem = memo(
   ({ bugReport, onClick, selected = false, onSelectionChange }: BugReportListItemProps) => {
+    const { t } = useTranslation();
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       return date.toLocaleDateString('ko-KR', {
@@ -30,22 +31,22 @@ export const BugReportListItem = memo(
       const badges: Record<BugReport['status'], React.ReactElement> = {
         UNCONFIRMED: (
           <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-400">
-            미확인
+            {t('bugReport.status.unconfirmed')}
           </span>
         ),
         CONFIRMED: (
           <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-400">
-            확인
+            {t('bugReport.status.confirmed')}
           </span>
         ),
         FIXED: (
           <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400">
-            수정완료
+            {t('bugReport.status.fixed')}
           </span>
         ),
         CLOSED: (
           <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
-            종료
+            {t('bugReport.status.closed')}
           </span>
         ),
       };
@@ -81,7 +82,7 @@ export const BugReportListItem = memo(
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-xs text-slate-400">
-                  {BUG_REPORT.CATEGORIES[bugReport.category]}
+                  {t(`bugReport.categories.${bugReport.category.toLowerCase()}`)}
                 </span>
                 {getStatusBadge(bugReport.status)}
               </div>

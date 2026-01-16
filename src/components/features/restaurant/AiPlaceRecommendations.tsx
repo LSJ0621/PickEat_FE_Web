@@ -1,11 +1,8 @@
 import { Button } from '@/components/common/Button';
+import type { MenuPlaceRecommendationGroup } from '@/store/slices/agentSlice';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import { useEffect, useState } from 'react';
-
-interface MenuPlaceRecommendationGroup {
-  menuName: string;
-  recommendations: PlaceRecommendationItem[];
-}
+import { useTranslation } from 'react-i18next';
 
 interface AiPlaceRecommendationsProps {
   activeMenuName: string | null;
@@ -22,11 +19,12 @@ export const AiPlaceRecommendations = ({
   onSelect,
   onReset,
 }: AiPlaceRecommendationsProps) => {
+  const { t } = useTranslation();
   const visibleGroups = recommendations.filter((group) => group.recommendations.length > 0);
   const hasRecommendations = visibleGroups.length > 0;
   // loadingMenuName이 있으면 로딩 UI 표시 (isLoading 상태와 무관)
   const pendingMenuName = loadingMenuName;
-  
+
   // 아코디언 상태 관리: 각 메뉴별로 펼침/접힘 상태
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   
@@ -56,23 +54,23 @@ export const AiPlaceRecommendations = ({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-orange-200/80">AI Places</p>
-          <h2 className="mt-1.5 text-xl font-semibold text-white">AI 추천 식당</h2>
+          <h2 className="mt-1.5 text-xl font-semibold text-white">{t('restaurant.aiRecommendedStores')}</h2>
         </div>
         {hasRecommendations && (
           <Button variant="ghost" size="sm" onClick={onReset} className="text-slate-400 hover:text-white">
-            초기화
+            {t('restaurant.reset')}
           </Button>
         )}
       </div>
 
       {!hasRecommendations && !pendingMenuName ? (
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 text-center text-slate-300">
-          아직 추천 결과가 없습니다. AI 추천을 실행해보세요.
+          {t('restaurant.noRecommendations')}
         </div>
       ) : (
         <div className="mt-6 space-y-3">
           <p className="text-xs text-slate-400">
-            가게 카드를 누르면 상세 정보를 확인할 수 있습니다.
+            {t('restaurant.tapCardForDetails')}
           </p>
           {visibleGroups.map((group) => {
             const isExpanded = expandedMenus.has(group.menuName);
@@ -162,7 +160,7 @@ export const AiPlaceRecommendations = ({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-semibold text-white truncate">{pendingMenuName}</h3>
-                  <p className="mt-1 text-sm text-slate-400">AI가 가게를 찾는 중입니다...</p>
+                  <p className="mt-1 text-sm text-slate-400">{t('restaurant.aiSearching')}</p>
                 </div>
                 <div className="h-8 w-8 flex-shrink-0 animate-spin rounded-full border-b-2 border-orange-500" />
               </div>

@@ -125,7 +125,3 @@ export interface ReRegisterSocialRequest {
 export interface ReRegisterSocialResponse {
   message: string;
 }
-
-export interface DeleteAccountResponse {
-  message: string;
-}

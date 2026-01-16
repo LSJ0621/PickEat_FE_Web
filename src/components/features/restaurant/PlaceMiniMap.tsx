@@ -6,6 +6,7 @@
 import type { PlaceDetail } from '@/types/menu';
 import { useEffect, useRef } from 'react';
 import { MAP_CONFIG } from '@/utils/constants';
+import { useTranslation } from 'react-i18next';
 
 interface PlaceMiniMapProps {
   placeDetail: PlaceDetail | null;
@@ -14,6 +15,7 @@ interface PlaceMiniMapProps {
 }
 
 export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMiniMapProps) => {
+  const { t } = useTranslation();
   const miniMapRef = useRef<HTMLDivElement | null>(null);
   const prevPlaceDetailRef = useRef<PlaceDetail | null | undefined>(null);
   const prevNaverClientIdRef = useRef<string | undefined>(undefined);
@@ -61,10 +63,10 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
             if (checkCount < maxChecks) {
               setTimeout(checkLoaded, 100);
             } else {
-              reject(new Error('네이버 지도 스크립트 로드 타임아웃'));
+              reject(new Error(t('map.scriptLoadTimeout')));
             }
           };
-          
+
           checkLoaded();
           return;
         }
@@ -77,7 +79,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
           resolve();
         });
         script.addEventListener('error', () => {
-          reject(new Error('네이버 지도 스크립트 로드 실패'));
+          reject(new Error(t('map.scriptLoadFailed')));
         });
         document.head.appendChild(script);
       });
@@ -110,7 +112,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
         new naverMaps.Marker({
           map,
           position: center,
-          title: placeDetail.name ?? placeName ?? '가게 위치',
+          title: placeDetail.name ?? placeName ?? t('place.storeLocation'),
         });
         
         setTimeout(() => {
@@ -136,7 +138,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
 
   return (
     <div>
-      <h4 className="mb-3 text-sm font-semibold text-slate-100">위치 정보</h4>
+      <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.locationInfo')}</h4>
       <div className="rounded-xl border border-white/10 bg-slate-900/80 p-3">
         <div
           ref={(el) => {
@@ -145,7 +147,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName, naverClientId }: PlaceMin
           className="h-40 w-full overflow-hidden rounded-lg bg-slate-800"
         />
         <p className="mt-2 text-[11px] text-slate-500">
-          지도를 드래그해 주변 위치를 살펴볼 수 있습니다.
+          {t('place.mapDragTip')}
         </p>
       </div>
     </div>

@@ -3,6 +3,8 @@
  * 카카오/구글 로그인 진행 중 표시되는 로딩 화면
  */
 
+import { useTranslation } from 'react-i18next';
+
 type OAuthProvider = 'kakao' | 'google';
 
 interface OAuthLoadingScreenProps {
@@ -10,14 +12,16 @@ interface OAuthLoadingScreenProps {
 }
 
 export const OAuthLoadingScreen = ({ provider }: OAuthLoadingScreenProps) => {
+  const { t } = useTranslation();
+
   const providerConfig = {
     kakao: {
       colorClass: 'border-yellow-500',
-      text: '카카오 로그인 진행 중...',
+      text: t('auth.oauth.kakaoLoading'),
     },
     google: {
       colorClass: 'border-blue-500',
-      text: '구글 로그인 진행 중...',
+      text: t('auth.oauth.googleLoading'),
     },
   };
 

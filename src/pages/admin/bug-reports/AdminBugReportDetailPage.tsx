@@ -9,12 +9,13 @@ import { BugReportImageGallery } from '@/components/features/admin/bug-reports/B
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { AdminBugReportDetail, BugReportStatus } from '@/types/bug-report';
-import { BUG_REPORT } from '@/utils/constants';
 import { isAdminRole } from '@/utils/role';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function AdminBugReportDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { handleError, handleSuccess } = useErrorHandler();
@@ -101,10 +102,10 @@ export function AdminBugReportDetailPage() {
 
   const getStatusLabel = (status: BugReportStatus): string => {
     const labels: Record<BugReportStatus, string> = {
-      UNCONFIRMED: '미확인',
-      CONFIRMED: '확인',
-      FIXED: '수정완료',
-      CLOSED: '종료',
+      UNCONFIRMED: t('bugReport.status.unconfirmed'),
+      CONFIRMED: t('bugReport.status.confirmed'),
+      FIXED: t('bugReport.status.fixed'),
+      CLOSED: t('bugReport.status.closed'),
     };
     return labels[status];
   };
@@ -145,7 +146,7 @@ export function AdminBugReportDetailPage() {
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
-                    {BUG_REPORT.CATEGORIES[bugReport.category as keyof typeof BUG_REPORT.CATEGORIES] || bugReport.category}
+                    {t(`bugReport.categories.${bugReport.category.toLowerCase()}`)}
                   </span>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(bugReport.status)}`}>
                     {getStatusLabel(bugReport.status)}

@@ -8,6 +8,7 @@ import { RestaurantList } from '@/components/features/restaurant/RestaurantList'
 import { useAppSelector } from '@/store/hooks';
 import type { PlaceRecommendationItem } from '@/types/menu';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ResultsTabs } from './ResultsTabs';
 
 interface ResultsSectionProps {
@@ -31,6 +32,8 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   restaurantSectionRef,
   aiSectionRef,
 }, ref) => {
+  const { t } = useTranslation();
+
   // Redux에서 상태 가져오기 (기존 selector 패턴 유지)
   const restaurants = useAppSelector((state) => state.agent.restaurants);
   const isSearching = useAppSelector((state) => state.agent.isSearching);
@@ -208,9 +211,9 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
           <div>
-            <h3 className="text-base font-semibold text-white sm:text-lg">메뉴를 선택해주세요</h3>
+            <h3 className="text-base font-semibold text-white sm:text-lg">{t('agent.results.selectMenu')}</h3>
             <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">
-              <span className="sm:hidden">메뉴 추천을 받고 선택해주세요.</span>
+              <span className="sm:hidden">{t('agent.results.selectMenuHint')}</span>
             </p>
           </div>
         </div>
@@ -244,8 +247,8 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
               </div>
             ) : (
               <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-slate-300 sm:rounded-2xl sm:p-8">
-                <p className="text-sm sm:text-base">일반 검색 결과가 없습니다.</p>
-                <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">일반 검색을 실행해보세요.</p>
+                <p className="text-sm sm:text-base">{t('agent.results.noSearchResults')}</p>
+                <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">{t('agent.results.trySearch')}</p>
               </div>
             )
           }
@@ -262,8 +265,8 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
               </div>
             ) : (
               <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-slate-300 sm:rounded-2xl sm:p-8">
-                <p className="text-sm sm:text-base">AI 추천 결과가 없습니다.</p>
-                <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">AI 추천을 실행해보세요.</p>
+                <p className="text-sm sm:text-base">{t('agent.results.noAiResults')}</p>
+                <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">{t('agent.results.tryAiRecommendation')}</p>
               </div>
             )
           }
@@ -272,8 +275,8 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
         // 결과가 없지만 선택된 메뉴가 있을 때
         selectedMenu && (
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-slate-300 sm:rounded-2xl sm:p-8">
-            <p className="text-sm sm:text-base">아직 결과가 없습니다.</p>
-            <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">일반 검색 또는 AI 추천을 실행해보세요.</p>
+            <p className="text-sm sm:text-base">{t('agent.results.noResultsYet')}</p>
+            <p className="mt-1.5 text-xs text-slate-400 sm:mt-2 sm:text-sm">{t('agent.results.tryBothOptions')}</p>
           </div>
         )
       )}

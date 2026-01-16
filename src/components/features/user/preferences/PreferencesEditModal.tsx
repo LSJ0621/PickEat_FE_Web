@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { createPortal } from 'react-dom';
@@ -36,6 +37,7 @@ export const PreferencesEditModal = ({
   onRemoveDislike,
   onSave,
 }: PreferencesEditModalProps) => {
+  const { t } = useTranslation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(open);
 
@@ -78,11 +80,11 @@ export const PreferencesEditModal = ({
         }`}
       >
         <ModalCloseButton onClose={onClose} />
-        <h2 className="mb-6 text-2xl font-bold text-white">취향 수정</h2>
+        <h2 className="mb-6 text-2xl font-bold text-white">{t('user.preferences.edit')}</h2>
 
         <div className="space-y-6">
           <div>
-            <label className="mb-3 block text-sm font-medium text-slate-200">좋아하는 것</label>
+            <label className="mb-3 block text-sm font-medium text-slate-200">{t('setup.preferences.likes')}</label>
             <div className="mb-3 flex gap-2">
               <input
                 type="text"
@@ -93,11 +95,11 @@ export const PreferencesEditModal = ({
                     onAddLike();
                   }
                 }}
-                placeholder="좋아하는 음식이나 재료를 입력하세요"
+                placeholder={t('setup.preferences.likesPlaceholder')}
                 className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
               />
               <Button onClick={onAddLike} size="md">
-                추가
+                {t('setup.preferences.add')}
               </Button>
             </div>
             {likes.length > 0 && (
@@ -122,7 +124,7 @@ export const PreferencesEditModal = ({
           </div>
 
           <div>
-            <label className="mb-3 block text-sm font-medium text-slate-200">싫어하는 것</label>
+            <label className="mb-3 block text-sm font-medium text-slate-200">{t('setup.preferences.dislikes')}</label>
             <div className="mb-3 flex gap-2">
               <input
                 type="text"
@@ -133,11 +135,11 @@ export const PreferencesEditModal = ({
                     onAddDislike();
                   }
                 }}
-                placeholder="싫어하는 음식이나 재료를 입력하세요"
+                placeholder={t('setup.preferences.dislikesPlaceholder')}
                 className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
               />
               <Button onClick={onAddDislike} size="md">
-                추가
+                {t('setup.preferences.add')}
               </Button>
             </div>
             {dislikes.length > 0 && (
@@ -167,7 +169,7 @@ export const PreferencesEditModal = ({
             size="lg"
             className="w-full"
           >
-            취향 정보 저장
+            {t('user.preferences.save')}
           </Button>
         </div>
       </div>

@@ -10,6 +10,7 @@ import type { MenuSlot } from '@/types/menu';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 interface MenuSelectionModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ export const MenuSelectionModal = ({
   onClose,
   onComplete,
 }: MenuSelectionModalProps) => {
+  const { t } = useTranslation();
   const [selectedMenus, setSelectedMenus] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [slot, setSlot] = useState<MenuSlot>('lunch');
@@ -45,12 +47,12 @@ export const MenuSelectionModal = ({
 
   const handleSave = async () => {
     if (selectedMenus.size === 0) {
-      handleError('최소 하나의 메뉴를 선택해주세요.', 'MenuSelection');
+      handleError(t('menu.selectAtLeastOne'), 'MenuSelection');
       return;
     }
 
     if (!slot) {
-      handleError('식사 시간을 선택해주세요.', 'MenuSelection');
+      handleError(t('menu.selectMealTime'), 'MenuSelection');
       return;
     }
 
@@ -66,9 +68,9 @@ export const MenuSelectionModal = ({
 
       // 모달 닫을 때 선택 상태 초기화
       setSelectedMenus(new Set());
-      
-      handleSuccess('메뉴 선택이 완료되었습니다.');
-      
+
+      handleSuccess(t('menu.selectionComplete'));
+
       // Toast가 표시될 시간을 주기 위해 약간의 지연 후 모달 닫기
       setTimeout(() => {
         onComplete();
@@ -119,19 +121,19 @@ export const MenuSelectionModal = ({
 
         <div className="space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-white">메뉴 선택하기</h3>
-            <p className="mt-1 text-sm text-slate-400">원하는 메뉴를 선택해주세요 (중복 선택 가능)</p>
+            <h3 className="text-xl font-semibold text-white">{t('menu.selectMenu')}</h3>
+            <p className="mt-1 text-sm text-slate-400">{t('menu.selectMenusPlural')}</p>
           </div>
 
           {/* 식사 시간(slot) 선택 */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-300">언제 먹을 메뉴인가요?</p>
+            <p className="text-xs font-medium text-slate-300">{t('menu.whenToEat')}</p>
             <div className="grid grid-cols-4 gap-2 text-xs">
               {[
-                { key: 'breakfast', label: '아침' },
-                { key: 'lunch', label: '점심' },
-                { key: 'dinner', label: '저녁' },
-                { key: 'etc', label: '기타' },
+                { key: 'breakfast', label: t('menu.breakfast') },
+                { key: 'lunch', label: t('menu.lunch') },
+                { key: 'dinner', label: t('menu.dinner') },
+                { key: 'etc', label: t('menu.etc') },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -186,7 +188,7 @@ export const MenuSelectionModal = ({
 
           <div className="flex gap-3">
             <Button variant="ghost" size="lg" onClick={onClose} className="flex-1">
-              취소
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -196,7 +198,7 @@ export const MenuSelectionModal = ({
               disabled={selectedMenus.size === 0}
               className="flex-1"
             >
-              선택 완료 ({selectedMenus.size}개)
+              {t('menu.selectionCompleteWithCount', { count: selectedMenus.size })}
             </Button>
           </div>
         </div>

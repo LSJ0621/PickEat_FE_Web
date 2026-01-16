@@ -4,15 +4,17 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { UserMenu } from '@/components/common/UserMenu';
 import { useAppSelector } from '@/store/hooks';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export const AppHeader = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  const userAddress = useAppSelector((state) => state.auth?.user?.address);
 
   // 인증 관련 페이지에서는 헤더 오른쪽 영역을 숨겨서
   // 로그인 버튼/유저 이름이 보이지 않도록 처리
@@ -49,11 +51,7 @@ export const AppHeader = () => {
             {/* 인증 페이지에서는 오른쪽 영역을 렌더링하지 않음 */}
             {!isAuthPage && (
               <div className="flex items-center gap-3 text-sm text-slate-300">
-                {isAuthenticated && userAddress && (
-                  <span className="hidden rounded-full border border-white/10 px-3 py-1 text-xs sm:inline-flex">
-                    📍 {userAddress}
-                  </span>
-                )}
+                <LanguageSelector className="hidden sm:flex" />
                 {isAuthenticated && <UserMenu />}
                 {!isAuthenticated && (
                   <Button
@@ -61,7 +59,7 @@ export const AppHeader = () => {
                     className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
                     onClick={() => navigate('/login')}
                   >
-                    로그인
+                    {t('auth.login')}
                   </Button>
                 )}
               </div>

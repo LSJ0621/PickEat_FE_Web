@@ -18,6 +18,7 @@ import { ERROR_MESSAGES } from '@/utils/constants';
 import type { UserSetupStatus } from '@/utils/userSetup';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 interface InitialSetupModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ export const InitialSetupModal = ({
 }: InitialSetupModalProps) => {
   const dispatch = useAppDispatch();
   const { handleError } = useErrorHandler();
+  const { t } = useTranslation();
 
   // 이름 관련
   const [name, setName] = useState('');
@@ -71,7 +73,7 @@ export const InitialSetupModal = ({
     }
 
     if (setupStatus.needsAddress && !selectedAddress) {
-      handleError('주소를 선택해주세요.', 'InitialSetupModal');
+      handleError(t('validation.address.required'), 'InitialSetupModal');
       return;
     }
 
@@ -186,9 +188,9 @@ export const InitialSetupModal = ({
       >
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">서비스 이용을 위한 정보 입력</h2>
+            <h2 className="text-2xl font-bold text-white">{t('setup.title')}</h2>
             <p className="mt-2 text-sm text-slate-400">
-              더 나은 추천을 위해 아래 정보를 입력해주세요
+              {t('setup.subtitle')}
             </p>
           </div>
 
@@ -196,14 +198,14 @@ export const InitialSetupModal = ({
           {setupStatus.needsName && (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white">이름</h3>
-                <p className="mt-1 text-sm text-slate-400">서비스에서 사용할 이름을 입력해주세요</p>
+                <h3 className="text-lg font-semibold text-white">{t('setup.name.title')}</h3>
+                <p className="mt-1 text-sm text-slate-400">{t('setup.name.description')}</p>
               </div>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="이름을 입력하세요"
+                placeholder={t('setup.name.placeholder')}
                 className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
               />
             </div>
@@ -238,7 +240,7 @@ export const InitialSetupModal = ({
               size="lg"
               className="w-full"
             >
-              저장하기
+              {t('setup.save')}
             </Button>
           </div>
         </div>

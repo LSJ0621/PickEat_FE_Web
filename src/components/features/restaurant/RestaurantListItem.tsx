@@ -4,6 +4,7 @@
  */
 
 import type { Restaurant } from '@/types/search';
+import { useTranslation } from 'react-i18next';
 
 interface RestaurantListItemProps {
   restaurant: Restaurant;
@@ -11,6 +12,8 @@ interface RestaurantListItemProps {
 }
 
 export const RestaurantListItem = ({ restaurant, index }: RestaurantListItemProps) => {
+  const { t } = useTranslation();
+
   return (
     <div
       key={index}
@@ -27,7 +30,7 @@ export const RestaurantListItem = ({ restaurant, index }: RestaurantListItemProp
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-200">
         {restaurant.distance && (
           <span className="rounded-full border border-white/15 px-3 py-1">
-            거리 {restaurant.distance.toFixed(1)}km
+            {t('restaurant.distanceKm', { distance: restaurant.distance.toFixed(1) })}
           </span>
         )}
         {restaurant.phone && (

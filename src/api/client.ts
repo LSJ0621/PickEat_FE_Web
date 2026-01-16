@@ -56,7 +56,29 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // AI 관련 엔드포인트에 lang 파라미터 자동 추가
+    const currentLang = localStorage.getItem('i18nextLng') || 'ko';
+
+    // AI 관련 엔드포인트 목록
+    const aiEndpoints = [
+      '/menu/recommendations',
+      '/menu/preferences/update',
+      '/google-places/recommendations',
+    ];
+
+    // AI 엔드포인트인지 확인
+    const isAiEndpoint = aiEndpoints.some((endpoint) =>
+      config.url?.includes(endpoint)
+    );
+
+    // POST 요청이고 AI 엔드포인트인 경우 lang 파라미터 추가
+    if (isAiEndpoint && config.method === 'post' && config.data) {
+      if (typeof config.data === 'object') {
+        config.data.lang = currentLang;
+      }
+    }
+
     return config;
   },
   (error) => {
