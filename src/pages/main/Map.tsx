@@ -8,6 +8,7 @@ import { useNaverMap } from '@/hooks/map/useNaverMap';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import type { Restaurant } from '@/types/search';
 import { useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface MapPageState {
@@ -17,6 +18,7 @@ interface MapPageState {
 }
 
 export const MapPage = () => {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const { latitude, longitude, address, hasLocation } = useUserLocation();
   const navigate = useNavigate();
@@ -28,13 +30,13 @@ export const MapPage = () => {
   const hasAnyLocation = hasRestaurantData || hasLocation;
   const blockingError = useMemo(() => {
     if (!naverClientId) {
-      return '네이버 지도 API 키가 설정되지 않았습니다. .env에 VITE_NAVER_MAP_CLIENT_ID를 추가해주세요.';
+      return t('map.apiKeyMissing');
     }
     if (!hasAnyLocation) {
-      return '표시할 위치 정보가 없습니다. 주소를 등록하거나 가게 목록에서 지도를 열어주세요.';
+      return t('map.noLocationError');
     }
     return null;
-  }, [naverClientId, hasAnyLocation]);
+  }, [naverClientId, hasAnyLocation, t]);
 
   const userLatLng = hasLocation && latitude !== null && longitude !== null
     ? { latitude, longitude }
@@ -64,10 +66,10 @@ export const MapPage = () => {
       <div className="relative min-h-screen bg-slate-950 text-slate-100">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur">
-            <h2 className="text-2xl font-semibold text-white">표시할 위치 정보가 없습니다</h2>
-            <p className="mt-3 text-slate-300">먼저 주변 식당을 검색한 뒤, 지도 보기 버튼을 눌러주세요.</p>
+            <h2 className="text-2xl font-semibold text-white">{t('map.noLocationData')}</h2>
+            <p className="mt-3 text-slate-300">{t('map.noLocationDataDesc')}</p>
             <Button className="mt-6" variant="primary" size="md" onClick={() => navigate('/')}>
-              홈으로 돌아가기
+              {t('navigation.backToHome')}
             </Button>
           </div>
         </div>
@@ -87,17 +89,17 @@ export const MapPage = () => {
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" onClick={handleBack} className="text-white">
-                ← 뒤로가기
+                ← {t('navigation.back')}
               </Button>
               <div>
-                <p className="text-xl font-semibold">네이버 지도</p>
+                <p className="text-xl font-semibold">{t('map.title')}</p>
                 {menuName && (
                   <p className="text-xs text-slate-400">
-                    {menuName} · {restaurants.length}개 매장
+                    {menuName} · {restaurants.length}{t('map.stores')}
                   </p>
                 )}
                 {!menuName && hasRestaurantData && (
-                  <p className="text-xs text-slate-400">총 {restaurants.length}개 매장</p>
+                  <p className="text-xs text-slate-400">{t('map.totalStores', { count: restaurants.length })}</p>
                 )}
                 {!hasRestaurantData && address && (
                   <p className="text-xs text-slate-400">📍 {address}</p>
@@ -106,7 +108,7 @@ export const MapPage = () => {
             </div>
             {selectedRestaurant && (
               <div className="hidden rounded-full border border-white/15 px-4 py-1 text-xs text-white/80 sm:flex">
-                선택됨: {selectedRestaurant.name}
+                {t('map.selected')}: {selectedRestaurant.name}
               </div>
             )}
           </div>
@@ -117,17 +119,17 @@ export const MapPage = () => {
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/50 backdrop-blur">
               <div className="text-center">
                 <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-orange-500"></div>
-                <p className="text-sm text-slate-300">지도를 불러오는 중...</p>
+                <p className="text-sm text-slate-300">{t('map.loadingMap')}</p>
               </div>
             </div>
           )}
           {error && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur">
               <div className="mx-4 max-w-md rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-center shadow-2xl">
-                <h3 className="mb-2 text-lg font-semibold text-red-400">오류가 발생했습니다</h3>
+                <h3 className="mb-2 text-lg font-semibold text-red-400">{t('map.errorOccurred')}</h3>
                 <p className="mb-4 text-sm text-slate-200">{error}</p>
                 <Button variant="primary" size="sm" onClick={() => window.location.reload()}>
-                  새로고침
+                  {t('map.refresh')}
                 </Button>
               </div>
             </div>

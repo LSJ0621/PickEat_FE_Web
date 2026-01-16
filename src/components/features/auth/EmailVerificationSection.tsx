@@ -3,6 +3,7 @@
  * 이메일 입력, 중복 확인, 인증번호 발송 및 검증 UI를 제공합니다.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import type { UseEmailVerificationReturn } from '@/hooks/auth/useEmailVerification';
 
@@ -21,6 +22,8 @@ export const EmailVerificationSection = ({
   onEmailChange,
   onVerificationCodeChange,
 }: EmailVerificationSectionProps) => {
+  const { t } = useTranslation();
+
   // 이메일 변경 핸들러 (외부 상태와 동기화)
   const handleEmailChange = (newEmail: string) => {
     emailVerification.setEmail(newEmail);
@@ -52,7 +55,7 @@ export const EmailVerificationSection = ({
       {/* 이메일 입력 */}
       <div>
         <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-200">
-          이메일
+          {t('auth.email')}
         </label>
         <div className="flex gap-2">
           <input
@@ -60,7 +63,7 @@ export const EmailVerificationSection = ({
             type="email"
             value={emailVerification.email}
             onChange={(e) => handleEmailChange(e.target.value)}
-            placeholder="이메일을 입력하세요"
+            placeholder={t('auth.emailPlaceholder')}
             className={`flex-1 rounded-2xl border ${
               emailError || emailVerification.emailError
                 ? 'border-red-500/60'
@@ -85,7 +88,7 @@ export const EmailVerificationSection = ({
           <p className="mt-1 text-sm text-red-400">{emailError || emailVerification.emailError}</p>
         )}
         {emailVerification.emailAvailable === true && (
-          <p className="mt-1 text-sm text-green-400">사용 가능한 이메일입니다.</p>
+          <p className="mt-1 text-sm text-green-400">{t('emailVerification.emailAvailable')}</p>
         )}
       </div>
 
@@ -93,17 +96,17 @@ export const EmailVerificationSection = ({
       <div>
         {emailVerification.isCodeSent && !emailVerification.isEmailVerified && (
           <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-            <span>메일을 받지 못하셨나요?</span>
+            <span>{t('emailVerification.didNotReceive')}</span>
             <button
               type="button"
               onClick={emailVerification.handleSendVerificationCode}
               className="font-medium text-pink-300 underline decoration-2 decoration-pink-400/50 underline-offset-4 transition hover:text-pink-100 hover:decoration-pink-300 hover:decoration-2"
             >
-              재발송 받기
+              {t('emailVerification.resendLink')}
             </button>
           </div>
         )}
-        <div className="text-sm font-medium text-slate-200">이메일 인증</div>
+        <div className="text-sm font-medium text-slate-200">{t('emailVerification.title')}</div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <input
             type="text"
@@ -111,7 +114,7 @@ export const EmailVerificationSection = ({
             maxLength={6}
             value={emailVerification.verificationCode}
             onChange={(e) => handleVerificationCodeChange(e.target.value)}
-            placeholder="6자리 인증번호 입력"
+            placeholder={t('emailVerification.codePlaceholder')}
             disabled={!emailVerification.isCodeSent || emailVerification.isEmailVerified}
             className={`flex-1 min-w-0 rounded-2xl border ${
               verificationCodeError || emailVerification.emailError
@@ -128,7 +131,7 @@ export const EmailVerificationSection = ({
             size="sm"
             className={verifyButtonClass}
           >
-            확인
+            {t('common.confirm')}
           </Button>
         </div>
         {emailVerification.verificationMessage && (

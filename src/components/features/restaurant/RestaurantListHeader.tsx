@@ -4,6 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { useTranslation } from 'react-i18next';
 
 interface RestaurantListHeaderProps {
   address?: string;
@@ -18,12 +19,14 @@ export const RestaurantListHeader = ({
   onOpenMapModal,
   onOpenNaverMap,
 }: RestaurantListHeaderProps) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-orange-200/80">Nearby Restaurants</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">주변 식당 검색 결과</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-white">{t('restaurant.nearbyResults')}</h2>
         </div>
         {address && (
           <span className="hidden rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300 sm:inline-flex">
@@ -35,10 +38,10 @@ export const RestaurantListHeader = ({
       {hasRestaurants && (
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={onOpenMapModal}>
-            지도 보기
+            {t('restaurant.viewMap')}
           </Button>
           <Button variant="ghost" size="sm" onClick={onOpenNaverMap}>
-            사이트 보기
+            {t('restaurant.viewSite')}
           </Button>
         </div>
       )}

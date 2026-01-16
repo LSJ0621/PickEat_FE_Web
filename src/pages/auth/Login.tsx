@@ -13,6 +13,7 @@ import { isEmpty } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
@@ -21,6 +22,7 @@ const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
 const GOOGLE_SCOPE = 'openid email profile'; // 이름, 이메일, 프로필 정보 포함
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -73,7 +75,7 @@ export const LoginPage = () => {
       const loginData = await authService.login({ email, password });
 
       if (!loginData.token) {
-        throw new Error('토큰이 발급되지 않았습니다.');
+        throw new Error(t('auth.tokenNotIssued'));
       }
 
       localStorage.setItem('token', loginData.token);
@@ -93,8 +95,8 @@ export const LoginPage = () => {
 
       const message =
         status === 401
-          ? serverMessage || extractErrorMessage(error, '로그인에 실패했습니다.')
-          : extractErrorMessage(error, '로그인에 실패했습니다.');
+          ? serverMessage || extractErrorMessage(error, t('auth.loginError'))
+          : extractErrorMessage(error, t('auth.loginError'));
 
       setErrorPopup({
         open: true,
@@ -110,7 +112,7 @@ export const LoginPage = () => {
     <div className="relative min-h-screen bg-slate-950 text-white">
       <StatusPopupCard
         open={errorPopup.open}
-        title="로그인에 실패했습니다"
+        title={t('auth.loginFailed')}
         message={errorPopup.message}
         variant="error"
         onConfirm={closeErrorPopup}
@@ -127,12 +129,12 @@ export const LoginPage = () => {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-4xl font-bold text-slate-950 shadow-2xl shadow-orange-500/40">
                 P
               </div>
-              <h1 className="text-4xl font-bold text-white">PickEat</h1>
+              <h1 className="text-4xl font-bold text-white">{t('auth.appTitle')}</h1>
               <p className="mt-3 text-lg text-slate-300">
-                AI가 추천하는 오늘의 메뉴
+                {t('auth.appDescription')}
               </p>
               <p className="mt-2 text-sm text-slate-400">
-                맛집 검색부터 메뉴 추천까지
+                {t('auth.appSubDescription')}
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-[1.1fr_0.9fr]">
@@ -141,33 +143,33 @@ export const LoginPage = () => {
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-2xl font-bold text-slate-950 shadow-lg shadow-orange-500/30">
                     P
                   </div>
-                  <p className="text-sm text-slate-300">PickEat 계정으로 로그인</p>
+                  <p className="text-sm text-slate-300">{t('auth.loginTitle')}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-200">
-                      이메일
+                      {t('auth.email')}
                     </label>
                     <input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="이메일을 입력하세요"
+                      placeholder={t('auth.emailPlaceholder')}
                       className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
                     />
                   </div>
                   <div>
                     <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-200">
-                      비밀번호
+                      {t('auth.password')}
                     </label>
                     <input
                       id="password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="비밀번호를 입력하세요"
+                      placeholder={t('auth.passwordPlaceholder')}
                       className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -185,31 +187,31 @@ export const LoginPage = () => {
                     className="w-full"
                     disabled={isSubmitting}
                   >
-                    로그인
+                    {t('auth.login')}
                   </Button>
                 </div>
                 <div className="mt-6 text-center text-sm text-slate-300">
-                  계정이 없으신가요?{' '}
+                  {t('auth.noAccount')}{' '}
                   <button onClick={handleRegister} className="font-semibold text-white hover:text-orange-200">
-                    회원가입
+                    {t('auth.register')}
                   </button>
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-400">
-                    <span>비밀번호를 잊으셨나요?</span>
+                    <span>{t('auth.forgotPassword')}</span>
                     <button
                       onClick={handlePasswordReset}
                       className="font-semibold text-pink-200 underline-offset-4 transition hover:text-white hover:underline"
                       type="button"
                     >
-                      재설정하기
+                      {t('auth.resetPassword')}
                     </button>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-[32px] border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.02] p-8 shadow-2xl shadow-orange-500/10 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Social Login</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">한 번의 클릭으로 입장</h2>
-                <p className="mt-2 text-sm text-slate-300">PickEat 홈, 추천, 식당 화면과 동일한 인터랙션을 제공합니다.</p>
+                <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('auth.socialLoginTitle')}</p>
+                <h2 className="mt-3 text-2xl font-semibold text-white">{t('auth.socialLoginSubtitle')}</h2>
+                <p className="mt-2 text-sm text-slate-300">{t('auth.socialLoginDescription')}</p>
 
                 <div className="mt-6 space-y-4">
                   <button
@@ -234,7 +236,7 @@ export const LoginPage = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    Google로 계속하기
+                    {t('auth.loginWithGoogle')}
                   </button>
                   <button
                     onClick={handleKakaoLogin}
@@ -243,21 +245,21 @@ export const LoginPage = () => {
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z" />
                     </svg>
-                    카카오로 계속하기
+                    {t('auth.loginWithKakao')}
                   </button>
                 </div>
 
                 <div className="mt-10 rounded-2xl border border-white/10 bg-slate-900/40 p-5 text-sm text-slate-200">
-                  <p className="text-xs uppercase tracking-[0.3em] text-orange-100/80">Benefits</p>
-                  <p className="mt-2 text-base font-semibold text-white">로그인 후 더 편리해집니다</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-orange-100/80">{t('auth.benefitsTitle')}</p>
+                  <p className="mt-2 text-base font-semibold text-white">{t('auth.benefitsSubtitle')}</p>
                   <ul className="mt-4 space-y-3 text-sm">
                     <li className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-orange-300" />
-                      AI 맞춤 추천과 실시간 식당 데이터를 하나의 화면에서 확인
+                      {t('auth.benefit1')}
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-pink-300" />
-                      최근 기록 자동 불러오기, 주소 기반 거리 계산 지원
+                      {t('auth.benefit2')}
                     </li>
                   </ul>
                 </div>

@@ -7,27 +7,29 @@ import { isEmpty, isPasswordMatch } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RESET_EMAIL_STORAGE_KEY = 'resetPasswordEmail';
 
-const validatePassword = (password: string) => {
-  if (!password.trim()) {
-    return '새 비밀번호를 입력해주세요.';
-  }
-  if (password.length < 8) {
-    return '비밀번호는 최소 8자 이상이어야 합니다.';
-  }
-  const hasLetter = /[A-Za-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  if (!hasLetter || !hasNumber) {
-    return '영문과 숫자를 조합해서 입력해주세요.';
-  }
-  return '';
-};
-
 export const PasswordResetPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const validatePassword = (password: string) => {
+    if (!password.trim()) {
+      return t('passwordReset.validation.required');
+    }
+    if (password.length < 8) {
+      return t('passwordReset.validation.minLength');
+    }
+    const hasLetter = /[A-Za-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    if (!hasLetter || !hasNumber) {
+      return t('passwordReset.validation.combination');
+    }
+    return '';
+  };
   const queryEmail = useMemo(
     () => new URLSearchParams(location.search).get('email') ?? '',
     [location.search]
@@ -65,8 +67,8 @@ export const PasswordResetPage = () => {
     if (!email) {
       setPopup({
         open: true,
-        title: '이메일을 찾지 못했어요',
-        message: '재설정을 다시 시작해주세요.',
+        title: t('passwordReset.error.emailNotFound'),
+        message: t('passwordReset.error.restartRequired'),
         variant: 'error',
         onConfirm: goToRequest,
       });
@@ -96,7 +98,7 @@ export const PasswordResetPage = () => {
       sessionStorage.removeItem(RESET_EMAIL_STORAGE_KEY);
       setPopup({
         open: true,
-        title: '비밀번호 재설정 완료',
+        title: t('passwordReset.success.title'),
         message: response.message,
         variant: 'info',
         onConfirm: goToLogin,
@@ -104,13 +106,13 @@ export const PasswordResetPage = () => {
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         const status = error.response.status;
-        const message = error.response.data?.message ?? '비밀번호를 변경하지 못했습니다.';
+        const message = error.response.data?.message ?? t('passwordReset.error.changeFailed');
         if (status === 400) {
           setErrors({ password: message });
         } else {
           setPopup({
             open: true,
-            title: '비밀번호 재설정 실패',
+            title: t('passwordReset.error.title'),
             message,
             variant: 'error',
           });
@@ -118,8 +120,8 @@ export const PasswordResetPage = () => {
       } else {
         setPopup({
           open: true,
-          title: '비밀번호 재설정 실패',
-          message: extractErrorMessage(error, '비밀번호를 변경하지 못했습니다.'),
+          title: t('passwordReset.error.title'),
+          message: extractErrorMessage(error, t('passwordReset.error.changeFailed')),
           variant: 'error',
         });
       }
@@ -149,21 +151,21 @@ export const PasswordResetPage = () => {
               P
             </div>
             <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Password Reset</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">새 비밀번호 설정</h1>
+            <h1 className="mt-3 text-3xl font-semibold text-white">{t('passwordReset.title')}</h1>
             <p className="mt-2 text-sm text-slate-300">
-              인증 완료된 이메일에 대해 새 비밀번호를 설정하세요. 입력값은 초기화되지 않습니다.
+              {t('passwordReset.description')}
             </p>
           </div>
 
           <div className="space-y-5">
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
-              <p className="font-semibold text-white">인증된 이메일</p>
-              <p className="mt-1 break-all text-orange-100">{email || '이메일을 찾을 수 없습니다.'}</p>
+              <p className="font-semibold text-white">{t('passwordReset.verifiedEmail.label')}</p>
+              <p className="mt-1 break-all text-orange-100">{email || t('passwordReset.verifiedEmail.notFound')}</p>
             </div>
 
             <div>
               <label htmlFor="new-password" className="mb-2 block text-sm font-medium text-slate-200">
-                새 비밀번호
+                {t('passwordReset.newPassword.label')}
               </label>
               <input
                 id="new-password"
@@ -173,20 +175,20 @@ export const PasswordResetPage = () => {
                   setPassword(e.target.value);
                   setErrors((prev) => ({ ...prev, password: undefined }));
                 }}
-                placeholder="새 비밀번호를 입력하세요"
+                placeholder={t('passwordReset.newPassword.placeholder')}
                 className={`w-full rounded-2xl border ${
                   errors.password ? 'border-red-500/60' : 'border-white/15'
                 } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
               />
               <p className="mt-1 text-xs text-slate-400">
-                최소 8자, 영문과 숫자를 조합해주세요. 서버 규칙과 다르면 응답 메시지가 그대로 표시됩니다.
+                {t('passwordReset.newPassword.hint')}
               </p>
               {errors.password && <p className="mt-1 text-sm text-red-400">{errors.password}</p>}
             </div>
 
             <div>
               <label htmlFor="confirm-password" className="mb-2 block text-sm font-medium text-slate-200">
-                새 비밀번호 확인
+                {t('passwordReset.confirmPassword.label')}
               </label>
               <input
                 id="confirm-password"
@@ -196,7 +198,7 @@ export const PasswordResetPage = () => {
                   setConfirmPassword(e.target.value);
                   setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                 }}
-                placeholder="새 비밀번호를 다시 입력하세요"
+                placeholder={t('passwordReset.confirmPassword.placeholder')}
                 className={`w-full rounded-2xl border ${
                   errors.confirmPassword ? 'border-red-500/60' : 'border-white/15'
                 } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
@@ -218,16 +220,16 @@ export const PasswordResetPage = () => {
               size="lg"
               className="w-full mt-4"
             >
-              비밀번호 변경
+              {t('passwordReset.button.submit')}
             </Button>
 
             <div className="text-center text-sm text-slate-300">
-              인증 단계를 다시 진행하려면{' '}
+              {t('passwordReset.restartHint')}{' '}
               <button
                 onClick={goToRequest}
                 className="font-semibold text-white transition hover:text-orange-200"
               >
-                인증번호 다시 받기
+                {t('passwordReset.button.resendCode')}
               </button>
             </div>
           </div>

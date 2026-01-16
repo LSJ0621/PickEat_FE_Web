@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { RestaurantListItem } from './RestaurantListItem';
 import { RestaurantListHeader } from './RestaurantListHeader';
 import { RestaurantMapModal } from './RestaurantMapModal';
+import { useTranslation } from 'react-i18next';
 
 interface RestaurantListProps {
   menuName: string;
@@ -23,6 +24,7 @@ export const RestaurantList = ({
   loading = false,
   onClose,
 }: RestaurantListProps) => {
+  const { t } = useTranslation();
   const { address } = useUserLocation();
   const hasRestaurants = restaurants.length > 0;
   const [showMapModal, setShowMapModal] = useState(false);
@@ -65,14 +67,14 @@ export const RestaurantList = ({
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">
-                {menuName} 검색 결과 ({restaurants.length}개)
+                {t('restaurant.searchResults', { menuName, count: restaurants.length })}
               </h3>
               {onClose && (
                 <button
                   onClick={onClose}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
-                  닫기
+                  {t('restaurant.close')}
                 </button>
               )}
             </div>
@@ -87,7 +89,7 @@ export const RestaurantList = ({
                   onClick={handleOpenNaverMap}
                   className="text-orange-300 hover:text-orange-200"
                 >
-                  네이버 지도에서 더 많은 결과 확인하기
+                  {t('restaurant.viewMoreOnNaverMap')}
                 </Button>
               </div>
             )}
@@ -105,19 +107,19 @@ export const RestaurantList = ({
         <div className="mt-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">
-              {menuName} 검색 결과
+              {t('restaurant.searchResultsTitle', { menuName })}
             </h3>
             {onClose && (
               <button
                 onClick={onClose}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                닫기
+                {t('restaurant.close')}
               </button>
             )}
           </div>
           <div className="rounded-2xl border border-slate-500/30 bg-slate-800/50 p-6 text-center">
-            <p className="text-slate-300">주변에 해당 메뉴를 판매하는 식당이 없습니다.</p>
+            <p className="text-slate-300">{t('restaurant.noRestaurantsFound')}</p>
           </div>
         </div>
       )}

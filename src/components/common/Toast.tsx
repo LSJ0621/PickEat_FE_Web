@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -20,6 +21,7 @@ interface ToastProps {
 }
 
 const ToastItem = ({ toast, onClose }: ToastProps) => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -82,7 +84,7 @@ const ToastItem = ({ toast, onClose }: ToastProps) => {
       <button
         onClick={handleClose}
         className="flex-shrink-0 rounded p-1 transition hover:bg-white/20"
-        aria-label="닫기"
+        aria-label={t('common.close')}
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AddressSearchInput } from '@/components/features/user/setup/AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
@@ -43,6 +44,7 @@ export const AddressAddModal = ({
   onAddAddress,
   onClearSelection,
 }: AddressAddModalProps) => {
+  const { t } = useTranslation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(open);
 
@@ -85,11 +87,11 @@ export const AddressAddModal = ({
         }`}
       >
         <ModalCloseButton onClose={onClose} />
-        <h2 className="mb-6 text-2xl font-bold text-white">주소 추가</h2>
+        <h2 className="mb-6 text-2xl font-bold text-white">{t('user.address.add')}</h2>
         <p className="mb-4 text-sm text-slate-400">
-          최대 4개까지 주소를 등록할 수 있습니다. (현재: {addresses.length}/4, 추가 가능: {Math.max(0, 4 - addresses.length)}개)
+          {t('user.address.addModalDescription', { current: addresses.length, remaining: Math.max(0, 4 - addresses.length) })}
           <br />
-          <span className="text-xs text-slate-500">주소는 하나씩만 추가할 수 있습니다.</span>
+          <span className="text-xs text-slate-500">{t('user.address.addModalNote')}</span>
         </p>
 
         <div className="space-y-4">
@@ -112,7 +114,7 @@ export const AddressAddModal = ({
           {selectedAddress && (
             <div data-testid="selected-address" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <div className="mb-3">
-                <p className="text-xs text-emerald-200">선택한 주소</p>
+                <p className="text-xs text-emerald-200">{t('user.address.selected')}</p>
                 <p className="mt-1 text-white font-medium">
                   {selectedAddress.roadAddress || selectedAddress.address}
                 </p>
@@ -124,7 +126,7 @@ export const AddressAddModal = ({
                 type="text"
                 value={addressAlias}
                 onChange={(e) => onAddressAliasChange(e.target.value)}
-                placeholder="별칭 입력 (예: 집, 회사) - 선택사항"
+                placeholder={t('user.address.aliasPlaceholder')}
                 maxLength={20}
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
               />
@@ -132,7 +134,7 @@ export const AddressAddModal = ({
                 onClick={onClearSelection}
                 className="mt-2 text-xs text-red-400 hover:text-red-300"
               >
-                선택 취소
+                {t('user.address.clearSelection')}
               </button>
             </div>
           )}
@@ -145,7 +147,7 @@ export const AddressAddModal = ({
               disabled={isSaving}
               className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
             >
-              취소
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleAddAddress}
@@ -155,7 +157,7 @@ export const AddressAddModal = ({
               size="lg"
               data-testid="address-add-submit"
             >
-              주소 추가
+              {t('user.address.addButton')}
             </Button>
           </div>
         </div>

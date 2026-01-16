@@ -14,8 +14,10 @@ import { isEmpty } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const OAuthKakaoRedirect = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [needsName, setNeedsName] = useState(false);
@@ -24,7 +26,7 @@ export const OAuthKakaoRedirect = () => {
   const [loginData, setLoginData] = useState<KakaoLoginResponse | null>(null);
   const [showReRegisterModal, setShowReRegisterModal] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [reRegisterMessage, setReRegisterMessage] = useState('탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
+  const [reRegisterMessage, setReRegisterMessage] = useState(t('oauth.reRegister.message'));
   const [isReRegistering, setIsReRegistering] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -46,7 +48,7 @@ export const OAuthKakaoRedirect = () => {
       const code = urlParams.get('code');
 
       if (!code) {
-        setError('인증 코드를 받지 못했습니다.');
+        setError(t('oauth.error.noCode'));
         setLoading(false);
         return;
       }
@@ -54,9 +56,9 @@ export const OAuthKakaoRedirect = () => {
       try {
         // 서버에 코드 전달하여 로그인
         const data = await authService.kakaoLogin(code);
-        
+
         if (!data.token) {
-          throw new Error('토큰이 발급되지 않았습니다.');
+          throw new Error(t('oauth.error.noToken'));
         }
 
         setLoginData(data);
@@ -95,17 +97,17 @@ export const OAuthKakaoRedirect = () => {
           if (errorData?.error === 'RE_REGISTER_REQUIRED') {
             const emailFromServer = errorData.email ?? errorData.data?.email ?? null;
             setPendingEmail(emailFromServer);
-            setReRegisterMessage(errorData.message || '탈퇴한 이력이 있습니다. 재가입하시겠습니까?');
+            setReRegisterMessage(errorData.message || t('oauth.reRegister.message'));
             setShowReRegisterModal(true);
             setLoading(false);
             return;
           }
         }
-        
+
         // 그 외 에러 처리
         handleError(err, 'OAuthKakaoRedirect');
         const statusCode = isAxiosError(err) ? err.response?.status : undefined;
-        setError(`로그인에 실패했습니다.${statusCode ? ` (상태 코드: ${statusCode})` : ''}`);
+        setError(`${t('oauth.error.loginFailed')}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
         setLoading(false);
       }
     };
@@ -121,7 +123,7 @@ export const OAuthKakaoRedirect = () => {
   // 재가입 처리
   const handleReRegister = async () => {
     if (!pendingEmail) {
-      handleError('이메일 정보가 없습니다.', 'OAuthKakaoRedirect');
+      handleError(t('oauth.reRegister.noEmail'), 'OAuthKakaoRedirect');
       return;
     }
 
@@ -133,7 +135,7 @@ export const OAuthKakaoRedirect = () => {
       });
 
       // 재가입 성공: 로그인 화면으로 이동 (자동 로그인 없음)
-      handleSuccess('재가입이 완료되었습니다. 로그인해주세요.');
+      handleSuccess(t('oauth.reRegister.success'));
       navigate('/login');
     } catch (err: unknown) {
       handleError(err, 'OAuthKakaoRedirect');
@@ -153,7 +155,7 @@ export const OAuthKakaoRedirect = () => {
       const updatedUser = await authService.updateUser({ name: name.trim() });
 
       if (!loginData?.token) {
-        throw new Error('토큰 정보가 없습니다.');
+        throw new Error(t('oauth.error.noToken'));
       }
 
       dispatch(setCredentials({
@@ -190,21 +192,21 @@ export const OAuthKakaoRedirect = () => {
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-2xl font-bold text-slate-950 shadow-lg shadow-orange-500/30">
                 P
               </div>
-              <h1 className="text-2xl font-semibold text-white mb-2">이름을 입력해주세요</h1>
-              <p className="text-sm text-slate-300">카카오 로그인을 완료하기 위해 이름이 필요합니다.</p>
+              <h1 className="text-2xl font-semibold text-white mb-2">{t('oauth.nameInput.title')}</h1>
+              <p className="text-sm text-slate-300">{t('oauth.nameInput.description')}</p>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-200">
-                  이름
+                  {t('auth.name')}
                 </label>
                 <input
                   id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="이름을 입력하세요"
+                  placeholder={t('auth.namePlaceholder')}
                   className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !nameUpdating && name.trim()) {
@@ -220,7 +222,7 @@ export const OAuthKakaoRedirect = () => {
                 size="lg"
                 className="w-full"
               >
-                완료
+                {t('oauth.nameInput.submit')}
               </Button>
             </div>
           </div>
@@ -242,17 +244,17 @@ export const OAuthKakaoRedirect = () => {
         </div>
         <div className="relative z-10 w-full max-w-md">
           <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40 backdrop-blur">
-            <h2 className="mb-4 text-2xl font-bold text-white text-center">재가입 안내</h2>
+            <h2 className="mb-4 text-2xl font-bold text-white text-center">{t('oauth.reRegister.title')}</h2>
             <p className="mb-6 text-slate-300 text-center">
               {reRegisterMessage}
             </p>
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-slate-300">재가입할 이메일</p>
+              <p className="text-sm text-slate-300">{t('oauth.reRegister.emailLabel')}</p>
               <p className="text-lg font-semibold text-white">
-                {pendingEmail ?? '이메일 정보를 불러오지 못했습니다.'}
+                {pendingEmail ?? t('oauth.reRegister.emailNotFound')}
               </p>
               <p className="mt-2 text-xs text-slate-400">
-                확인을 선택하면 위 이메일로 추가 입력 없이 재가입합니다.
+                {t('oauth.reRegister.confirmDescription')}
               </p>
             </div>
             <div className="flex gap-3">
@@ -261,14 +263,14 @@ export const OAuthKakaoRedirect = () => {
                 disabled={isReRegistering}
                 className="flex-1 rounded-2xl border border-white/20 bg-transparent px-4 py-3 text-white hover:bg-white/10 transition disabled:opacity-50"
               >
-                취소
+                {t('oauth.reRegister.cancel')}
               </button>
               <button
                 onClick={handleReRegister}
                 disabled={isReRegistering}
                 className="flex-1 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-600 px-4 py-3 text-white shadow-[0_10px_40px_rgba(249,115,22,0.35)] hover:shadow-[0_15px_45px_rgba(249,115,22,0.45)] hover:-translate-y-0.5 transition disabled:opacity-50"
               >
-                {isReRegistering ? '처리 중...' : '재가입'}
+                {isReRegistering ? t('oauth.reRegister.processing') : t('oauth.reRegister.confirm')}
               </button>
             </div>
           </div>
@@ -286,7 +288,7 @@ export const OAuthKakaoRedirect = () => {
             onClick={() => navigate('/login')}
             className="px-6 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
           >
-            로그인 페이지로 돌아가기
+            {t('oauth.reRegister.backToLogin')}
           </button>
         </div>
       </div>

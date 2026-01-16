@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@/api/endpoints';
 import type {
   AddressSearchResponse,
+  DeleteAccountResponse,
   GetAddressesResponse,
   GetDefaultAddressResponse,
   SetAddressResponse,
@@ -10,7 +11,7 @@ import type {
   DeleteAddressResponse,
   UserAddress,
 } from '@/types/user';
-import type { DeleteAccountResponse, UpdateUserResponse } from '@/types/auth';
+import type { UpdateUserResponse } from '@/types/auth';
 
 const BASE_URL = 'http://localhost:3000';
 

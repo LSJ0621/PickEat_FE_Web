@@ -1,4 +1,5 @@
 import { Button } from '@/components/common/Button';
+import { useTranslation } from 'react-i18next';
 
 interface StatusPopupCardProps {
   open: boolean;
@@ -12,11 +13,12 @@ interface StatusPopupCardProps {
 
 export const StatusPopupCard = ({
   open,
-  title = '알림',
+  title,
   message,
   onConfirm,
-  confirmLabel = '확인',
+  confirmLabel,
 }: StatusPopupCardProps) => {
+  const { t } = useTranslation();
   if (!open) {
     return null;
   }
@@ -27,7 +29,7 @@ export const StatusPopupCard = ({
         <div className="space-y-4">
           {/* 제목과 메시지 */}
           <div className="text-center">
-            <p className="text-xl font-semibold text-white">{title}</p>
+            <p className="text-xl font-semibold text-white">{title || t('common.notification')}</p>
             <p className="mt-3 text-base text-slate-200 leading-relaxed">{message}</p>
           </div>
 
@@ -38,7 +40,7 @@ export const StatusPopupCard = ({
               size="lg"
               className="w-full"
             >
-              {confirmLabel}
+              {confirmLabel || t('common.confirm')}
             </Button>
           </div>
         </div>

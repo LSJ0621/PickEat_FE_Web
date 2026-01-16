@@ -7,6 +7,7 @@ import { userService } from '@/api/services/user';
 import { extractErrorMessage } from '@/utils/error';
 import { decodeJwt } from '@/utils/jwt';
 import type { User } from '@/types/auth';
+import type { Language } from '@/types/common';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { clearAgentState } from './agentSlice';
@@ -16,6 +17,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  language: Language;
 }
 
 const initialState: AuthState = {
@@ -23,6 +25,7 @@ const initialState: AuthState = {
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
+  language: 'ko',
 };
 
 type CoordinateInput = number | string | null | undefined;
@@ -151,6 +154,9 @@ const authSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
+    setLanguage: (state, action: PayloadAction<Language>) => {
+      state.language = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -177,7 +183,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout, setLoading, setError, updateUser } = authSlice.actions;
+export const { setCredentials, logout, setLoading, setError, updateUser, setLanguage } = authSlice.actions;
 
 export const logoutAsync = createAsyncThunk(
   'auth/logoutAsync',

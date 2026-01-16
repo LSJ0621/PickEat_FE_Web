@@ -4,6 +4,7 @@
 
 import { BUG_REPORT } from '@/utils/constants';
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ImageUploaderProps {
   images: File[];
@@ -18,6 +19,7 @@ export const ImageUploader = ({
   onImagesChange,
   onRemove,
 }: ImageUploaderProps) => {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,11 +27,11 @@ export const ImageUploader = ({
   const validateFile = (file: File): string | null => {
     // 파일 크기 검증
     if (file.size > BUG_REPORT.MAX_IMAGE_SIZE) {
-      return `이미지 크기는 최대 ${BUG_REPORT.MAX_IMAGE_SIZE / (1024 * 1024)}MB까지 가능합니다.`;
+      return t('bugReport.image.sizeLimit', { size: BUG_REPORT.MAX_IMAGE_SIZE / (1024 * 1024) });
     }
     // 파일 형식 검증
     if (!(BUG_REPORT.ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
-      return '지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif, webp만 가능)';
+      return t('bugReport.image.formatError');
     }
     return null;
   };
@@ -44,7 +46,7 @@ export const ImageUploader = ({
       const remainingSlots = maxImages - images.length;
 
       if (files.length > remainingSlots) {
-        setError(`최대 ${maxImages}장까지 업로드할 수 있습니다. (현재 ${images.length}장)`);
+        setError(t('bugReport.image.maxCount', { maxImages }));
         return;
       }
 
@@ -64,7 +66,7 @@ export const ImageUploader = ({
         onImagesChange([...images, ...newFiles]);
       }
     },
-    [images, maxImages, onImagesChange]
+    [images, maxImages, onImagesChange, t, validateFile]
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -131,10 +133,10 @@ export const ImageUploader = ({
             />
           </svg>
           <p className="mb-2 text-sm font-medium text-slate-300">
-            이미지를 드래그하거나 클릭하여 업로드
+            {t('bugReport.image.dragPrompt')}
           </p>
           <p className="text-xs text-slate-500">
-            최대 {maxImages}장, 각 {BUG_REPORT.MAX_IMAGE_SIZE / (1024 * 1024)}MB 이하
+            {t('bugReport.image.sizeInfo', { maxImages, size: BUG_REPORT.MAX_IMAGE_SIZE / (1024 * 1024) })}
           </p>
         </div>
 
@@ -149,7 +151,7 @@ export const ImageUploader = ({
                 >
                   <img
                     src={URL.createObjectURL(image)}
-                    alt={`업로드 ${index + 1}`}
+                    alt={t('bugReport.image.uploadAlt', { index: index + 1 })}
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />

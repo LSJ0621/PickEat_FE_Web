@@ -1,4 +1,5 @@
 import { Button } from '@/components/common/Button';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -13,14 +14,15 @@ interface ConfirmDialogProps {
 
 export const ConfirmDialog = ({
   open,
-  title = '확인',
+  title,
   message,
   onConfirm,
   onCancel,
-  confirmLabel = '확인',
-  cancelLabel = '취소',
+  confirmLabel,
+  cancelLabel,
   variant = 'info',
 }: ConfirmDialogProps) => {
+  const { t } = useTranslation();
   if (!open) {
     return null;
   }
@@ -31,7 +33,7 @@ export const ConfirmDialog = ({
         <div className="space-y-4">
           {/* 제목과 메시지 */}
           <div className="text-center">
-            <p className="text-xl font-semibold text-white">{title}</p>
+            <p className="text-xl font-semibold text-white">{title || t('common.confirm')}</p>
             <p className="mt-3 text-base text-slate-200 leading-relaxed">{message}</p>
           </div>
 
@@ -43,7 +45,7 @@ export const ConfirmDialog = ({
               variant="ghost"
               className="flex-1"
             >
-              {cancelLabel}
+              {cancelLabel || t('common.cancel')}
             </Button>
             <Button
               onClick={onConfirm}
@@ -51,7 +53,7 @@ export const ConfirmDialog = ({
               variant={variant === 'danger' ? 'secondary' : 'primary'}
               className={variant === 'danger' ? 'flex-1 bg-red-600 hover:bg-red-700 text-white' : 'flex-1'}
             >
-              {confirmLabel}
+              {confirmLabel || t('common.confirm')}
             </Button>
           </div>
         </div>

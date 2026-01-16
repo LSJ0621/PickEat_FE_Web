@@ -6,10 +6,10 @@ import { bugReportService } from '@/api/services/bug-report';
 import { BugReportImageGallery } from './BugReportImageGallery';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { BUG_REPORT } from '@/utils/constants';
 import type { GetBugReportDetailResponse } from '@/types/bug-report';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 interface BugReportDetailModalProps {
   bugReportId: number | null;
@@ -24,6 +24,7 @@ export const BugReportDetailModal = ({
   onClose,
   onStatusChange,
 }: BugReportDetailModalProps) => {
+  const { t } = useTranslation();
   const { handleError, handleSuccess } = useErrorHandler();
   const [bugReport, setBugReport] = useState<GetBugReportDetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export const BugReportDetailModal = ({
         .catch((error: unknown) => {
           // 네트워크 에러 처리
           if (error instanceof Error && error.message.includes('Network')) {
-            handleError(new Error('네트워크 연결을 확인해주세요.'), 'BugReportDetailModal');
+            handleError(new Error(t('common.networkError')), 'BugReportDetailModal');
           } else {
             handleError(error, 'BugReportDetailModal');
           }
@@ -91,13 +92,13 @@ export const BugReportDetailModal = ({
     setUpdating(true);
     try {
       await bugReportService.updateBugReportStatus(bugReport.id, 'CONFIRMED');
-      handleSuccess('상태가 변경되었습니다.');
+      handleSuccess(t('bugReport.detail.statusChanged'));
       setBugReport({ ...bugReport, status: 'CONFIRMED' });
       onStatusChange?.();
     } catch (error: unknown) {
       // 네트워크 에러 처리
       if (error instanceof Error && error.message.includes('Network')) {
-        handleError(new Error('네트워크 연결을 확인해주세요.'), 'BugReportDetailModal');
+        handleError(new Error(t('common.networkError')), 'BugReportDetailModal');
       } else {
         handleError(error, 'BugReportDetailModal');
       }
@@ -172,15 +173,15 @@ export const BugReportDetailModal = ({
               <div>
                 <div className="mb-2 flex items-center gap-3">
                   <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
-                    {BUG_REPORT.CATEGORIES[bugReport.category]}
+                    {t(`bugReport.categories.${bugReport.category.toLowerCase()}`)}
                   </span>
                   {bugReport.status === 'CONFIRMED' ? (
                     <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
-                      확인
+                      {t('bugReport.status.confirmed')}
                     </span>
                   ) : (
                     <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-400">
-                      미확인
+                      {t('bugReport.status.unconfirmed')}
                     </span>
                   )}
                 </div>
@@ -190,7 +191,7 @@ export const BugReportDetailModal = ({
 
             {/* 상세 내용 */}
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-100">상세 내용</h3>
+              <h3 className="mb-2 text-sm font-semibold text-slate-100">{t('bugReport.detail.content')}</h3>
               <p className="whitespace-pre-wrap rounded-lg border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-300">
                 {bugReport.description}
               </p>
@@ -204,15 +205,15 @@ export const BugReportDetailModal = ({
             {/* 메타 정보 */}
             <div className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">생성일</span>
+                <span className="text-slate-400">{t('bugReport.detail.createdAt')}</span>
                 <span className="text-slate-300">{formatDate(bugReport.createdAt)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">수정일</span>
+                <span className="text-slate-400">{t('bugReport.detail.updatedAt')}</span>
                 <span className="text-slate-300">{formatDate(bugReport.updatedAt)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">유저 ID</span>
+                <span className="text-slate-400">{t('bugReport.detail.userId')}</span>
                 <span className="text-slate-300">{bugReport.user?.id ?? 'N/A'}</span>
               </div>
             </div>
@@ -224,14 +225,14 @@ export const BugReportDetailModal = ({
                   onClick={onClose}
                   className="rounded-lg border border-slate-600 bg-slate-800 px-6 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
                 >
-                  닫기
+                  {t('common.close')}
                 </button>
                 <button
                   onClick={handleStatusChange}
                   disabled={updating}
                   className="rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-2 text-sm font-semibold text-white transition hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {updating ? '처리 중...' : '확인 처리'}
+                  {updating ? t('bugReport.detail.processing') : t('bugReport.detail.confirm')}
                 </button>
               </div>
             )}
@@ -242,7 +243,7 @@ export const BugReportDetailModal = ({
                   onClick={onClose}
                   className="rounded-lg border border-slate-600 bg-slate-800 px-6 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
                 >
-                  닫기
+                  {t('common.close')}
                 </button>
               </div>
             )}

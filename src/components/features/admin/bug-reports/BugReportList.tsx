@@ -4,6 +4,7 @@
 
 import type { BugReport } from '@/types/bug-report';
 import { BugReportListItem } from './BugReportListItem';
+import { useTranslation } from 'react-i18next';
 
 interface BugReportListProps {
   bugReports: BugReport[];
@@ -18,6 +19,7 @@ export const BugReportList = ({
   selectedIds = [],
   onSelectionChange,
 }: BugReportListProps) => {
+  const { t } = useTranslation();
   const handleSelectAll = (checked: boolean) => {
     if (!onSelectionChange) return;
     if (checked) {
@@ -55,7 +57,7 @@ export const BugReportList = ({
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           />
         </svg>
-        <p className="text-slate-400">버그 제보가 없습니다.</p>
+        <p className="text-slate-400">{t('bugReport.list.empty')}</p>
       </div>
     );
   }
@@ -78,7 +80,7 @@ export const BugReportList = ({
               className="h-5 w-5 cursor-pointer rounded border-slate-600 bg-slate-800 text-pink-500 focus:ring-2 focus:ring-pink-500/20"
             />
             <span className="text-sm text-slate-300">
-              전체 선택 {selectedIds.length > 0 && `(${selectedIds.length})`}
+              {t('bugReport.list.selectAll')} {selectedIds.length > 0 && `(${selectedIds.length})`}
             </span>
           </label>
         </div>

@@ -6,12 +6,14 @@
 import type { PlaceReview } from '@/types/menu';
 import { formatDateTime } from '@/utils/format';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PlaceReviewsSectionProps {
   reviews: PlaceReview[];
 }
 
 export const PlaceReviewsSection = ({ reviews }: PlaceReviewsSectionProps) => {
+  const { t } = useTranslation();
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
 
   // 리뷰 펼치기/접기 토글
@@ -33,9 +35,9 @@ export const PlaceReviewsSection = ({ reviews }: PlaceReviewsSectionProps) => {
 
   return (
     <div>
-      <h4 className="mb-3 text-sm font-semibold text-slate-100">리뷰</h4>
+      <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.reviewsTitle')}</h4>
       <p className="mb-4 text-xs text-slate-400">
-        일부 리뷰를 가져왔어요.
+        {t('place.reviewsFetched')}
       </p>
 
       <div className="flex gap-3 overflow-x-auto custom-scroll pb-2">
@@ -72,7 +74,7 @@ export const PlaceReviewsSection = ({ reviews }: PlaceReviewsSectionProps) => {
                       onClick={() => toggleReviewExpanded(index)}
                       className="mt-1 self-start text-xs font-medium text-orange-400 hover:text-orange-300 transition"
                     >
-                      {isExpanded ? '접기' : '펼쳐보기'}
+                      {isExpanded ? t('place.collapse') : t('place.expand')}
                     </button>
                   )}
                 </>

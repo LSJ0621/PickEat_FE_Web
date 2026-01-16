@@ -2,6 +2,7 @@
  * 버그 제보 폼 컴포넌트
  */
 
+import { useTranslation } from 'react-i18next';
 import { BUG_REPORT } from '@/utils/constants';
 import type { BugReportCategory, CreateBugReportRequest } from '@/types/bug-report';
 import { ImageUploader } from './ImageUploader';
@@ -29,6 +30,8 @@ export const BugReportForm = ({
   onRemoveImage,
   onSubmit,
 }: BugReportFormProps) => {
+  const { t } = useTranslation();
+
   return (
     <form
       onSubmit={(e) => {
@@ -39,22 +42,22 @@ export const BugReportForm = ({
     >
       {/* 카테고리 선택 */}
       <div>
-        <label className="mb-3 block text-sm font-medium text-slate-300">카테고리</label>
+        <label className="mb-3 block text-sm font-medium text-slate-300">{t('bugReport.category')}</label>
         <div className="flex gap-4">
-          {(['BUG', 'INQUIRY', 'OTHER'] as BugReportCategory[]).map((category) => (
+          {BUG_REPORT.CATEGORY_KEYS.map((key) => (
             <label
-              key={category}
+              key={key}
               className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 transition hover:border-slate-600"
             >
               <input
                 type="radio"
                 name="category"
-                value={category}
-                checked={data.category === category}
-                onChange={() => onCategoryChange(category)}
+                value={key.toUpperCase()}
+                checked={data.category === key.toUpperCase()}
+                onChange={() => onCategoryChange(key.toUpperCase() as BugReportCategory)}
                 className="h-4 w-4 text-pink-500 focus:ring-pink-500"
               />
-              <span className="text-sm text-slate-300">{BUG_REPORT.CATEGORIES[category]}</span>
+              <span className="text-sm text-slate-300">{t(`bugReport.categories.${key}`)}</span>
             </label>
           ))}
         </div>
@@ -66,7 +69,7 @@ export const BugReportForm = ({
       {/* 제목 입력 */}
       <div>
         <label htmlFor="title" className="mb-2 block text-sm font-medium text-slate-300">
-          제목
+          {t('bugReport.title')}
         </label>
         <input
           id="title"
@@ -74,7 +77,7 @@ export const BugReportForm = ({
           value={data.title}
           onChange={(e) => onTitleChange(e.target.value)}
           maxLength={BUG_REPORT.TITLE_MAX_LENGTH}
-          placeholder="버그 제보 제목을 입력해주세요"
+          placeholder={t('bugReport.titlePlaceholder')}
           className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
         />
         <div className="mt-1 flex items-center justify-between">
@@ -88,7 +91,7 @@ export const BugReportForm = ({
       {/* 상세 내용 입력 */}
       <div>
         <label htmlFor="description" className="mb-2 block text-sm font-medium text-slate-300">
-          상세 내용
+          {t('bugReport.content')}
         </label>
         <textarea
           id="description"
@@ -96,7 +99,7 @@ export const BugReportForm = ({
           onChange={(e) => onDescriptionChange(e.target.value)}
           maxLength={BUG_REPORT.DESCRIPTION_MAX_LENGTH}
           rows={6}
-          placeholder="버그에 대한 상세한 설명을 입력해주세요"
+          placeholder={t('bugReport.contentPlaceholder')}
           className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
         />
         <div className="mt-1 flex items-center justify-between">
@@ -109,7 +112,7 @@ export const BugReportForm = ({
 
       {/* 이미지 업로더 */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-300">이미지 (선택)</label>
+        <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.form.imageLabel')}</label>
         <ImageUploader
           images={data.images || []}
           onImagesChange={onImagesChange}
@@ -125,7 +128,7 @@ export const BugReportForm = ({
           disabled={isSubmitting}
           className="w-full rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-3 font-semibold text-white transition hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? '제출 중...' : '제출하기'}
+          {isSubmitting ? t('bugReport.form.submitting') : t('bugReport.form.submit')}
         </button>
       </div>
     </form>

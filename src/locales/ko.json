@@ -1,0 +1,746 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "confirm": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "networkError": "네트워크 연결을 확인해주세요.",
+    "close": "닫기",
+    "all": "전체",
+    "reset": "초기화",
+    "search": "검색",
+    "pageLoading": "페이지를 불러오는 중...",
+    "notification": "알림"
+  },
+  "auth": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "register": "회원가입",
+    "email": "이메일",
+    "password": "비밀번호",
+    "passwordConfirm": "비밀번호 확인",
+    "name": "이름",
+    "emailPlaceholder": "이메일을 입력하세요",
+    "passwordPlaceholder": "비밀번호를 입력하세요",
+    "namePlaceholder": "이름을 입력하세요",
+    "loginWithEmail": "이메일로 계속하기",
+    "loginWithGoogle": "Google로 계속하기",
+    "loginWithKakao": "카카오로 계속하기",
+    "noAccount": "계정이 없으신가요?",
+    "haveAccount": "이미 계정이 있으신가요?",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "resetPassword": "재설정하기",
+    "loginTitle": "PickEat 계정으로 로그인",
+    "registerTitle": "회원가입",
+    "registerSubtitle": "새로운 계정을 만들어 시작하세요",
+    "registerSignUp": "PickEat Sign Up",
+    "socialLoginTitle": "Social Login",
+    "socialLoginSubtitle": "한 번의 클릭으로 입장",
+    "socialLoginDescription": "PickEat 홈, 추천, 식당 화면과 동일한 인터랙션을 제공합니다.",
+    "benefitsTitle": "Benefits",
+    "benefitsSubtitle": "로그인 후 더 편리해집니다",
+    "benefit1": "AI 맞춤 추천과 실시간 식당 데이터를 하나의 화면에서 확인",
+    "benefit2": "최근 기록 자동 불러오기, 주소 기반 거리 계산 지원",
+    "appTitle": "PickEat",
+    "appDescription": "AI가 추천하는 오늘의 메뉴",
+    "appSubDescription": "맛집 검색부터 메뉴 추천까지",
+    "loginFailed": "로그인에 실패했습니다",
+    "loginError": "로그인에 실패했습니다.",
+    "tokenNotIssued": "토큰이 발급되지 않았습니다.",
+    "reRegisterTitle": "재가입 안내",
+    "reRegisterButton": "재가입하기",
+    "reRegister": {
+      "title": "재가입",
+      "description": "탈퇴한 계정을 재가입합니다.",
+      "success": {
+        "message": "재가입이 완료되었습니다. 로그인해주세요."
+      }
+    },
+    "loginRequired": {
+      "title": "로그인이 필요한 서비스입니다",
+      "message": "해당 기능은 로그인 후 이용할 수 있습니다. 로그인 후 더 많은 기능을 이용해보세요!",
+      "goToLogin": "로그인하러 가기"
+    },
+    "oauth": {
+      "kakaoLoading": "카카오 로그인 진행 중...",
+      "googleLoading": "구글 로그인 진행 중..."
+    }
+  },
+  "home": {
+    "title": "AI 추천 주문",
+    "subtitle": "팀의 취향과 날씨 데이터를 조합해 최적의 메뉴를 추천합니다",
+    "ctaButton": "AI 메뉴 추천 받기",
+    "loginPrompt": "로그인 후 AI 에이전트가 준비한 맞춤 메뉴를 확인하세요",
+    "hero": {
+      "badge": "PickEat OS",
+      "title": "오늘 뭐 먹지?",
+      "titleHighlight": "AI 에이전트",
+      "titleSuffix": "에게 맡기세요",
+      "description": "PickEat은 메뉴 추천과 가게 탐색 과정을 자동화하는 AI 기반 추천 OS입니다.",
+      "descriptionContinued": "로그인하고 나만의 식사 플로우를 경험해보세요.",
+      "loginButton": "로그인하고 시작하기",
+      "previewButton": "에이전트 화면 미리보기",
+      "startButton": "에이전트 바로 이용하기",
+      "historyButton": "최근 추천 이력 보기"
+    },
+    "features": {
+      "badge": "Features",
+      "title": "핵심 기능",
+      "description": "AI 기반의 스마트한 식사 추천 시스템으로 더 나은 선택을 경험하세요.",
+      "cardBadge": "Feature",
+      "aiRecommendation": {
+        "title": "AI 메뉴 추천",
+        "description": "기분, 날씨, 취향을 반영한 메뉴를 실시간으로 제안합니다."
+      },
+      "storeSearch": {
+        "title": "메뉴별 가게 탐색",
+        "description": "원하는 메뉴를 고르면 근처 가게 후보를 AI가 선별합니다."
+      },
+      "history": {
+        "title": "히스토리 관리",
+        "description": "추천받은 메뉴와 가게 이력을 한눈에 확인하고 재탐색할 수 있습니다."
+      }
+    },
+    "howItWorks": {
+      "badge": "How it works",
+      "title": "AI 추천 플로우",
+      "description": "간단한 3단계로 원하는 메뉴와 가게를 찾아보세요.",
+      "step1": {
+        "title": "AI에게 오늘의 기분이나 상황을 알려주세요.",
+        "description": "간단한 대화로 당신의 상황을 파악합니다."
+      },
+      "step2": {
+        "title": "추천된 메뉴 중 마음에 드는 항목을 선택하세요.",
+        "description": "AI가 제안한 메뉴 중에서 선택하면 됩니다."
+      },
+      "step3": {
+        "title": "메뉴별 AI 가게 추천으로 바로 근처 식당을 확인하세요.",
+        "description": "선택한 메뉴를 판매하는 주변 식당을 추천해드립니다."
+      }
+    },
+    "highlights": {
+      "badge": "Highlights",
+      "title": "주요 기능 하이라이트",
+      "description": "PickEat의 핵심 기능을 통해 더 스마트한 식사 선택을 경험하세요.",
+      "aiRecommendation": {
+        "title": "AI 추천 기능",
+        "description": "개인화된 메뉴 추천으로 매일 새로운 선택을 경험하세요."
+      },
+      "mapSearch": {
+        "title": "지도 기반 검색",
+        "description": "지도와 연동하여 실제 위치 기반 식당을 찾아드립니다."
+      },
+      "personalized": {
+        "title": "개인화된 추천",
+        "description": "당신의 취향과 이력을 학습하여 더 정확한 추천을 제공합니다."
+      }
+    },
+    "cta": {
+      "title": "지금 바로 PickEat을 시작해보세요",
+      "description": "로그인 후 AI 에이전트가 준비한 맞춤 추천과 가게 탐색을 경험할 수 있습니다.",
+      "loginButton": "이메일로 로그인",
+      "previewButton": "에이전트 미리보기",
+      "startButton": "에이전트로 이동",
+      "mypageButton": "마이페이지 열어보기"
+    }
+  },
+  "errors": {
+    "AUTH_INVALID_CREDENTIALS": "이메일 또는 비밀번호가 올바르지 않습니다.",
+    "AUTH_EMAIL_NOT_VERIFIED": "이메일 인증이 완료되지 않았습니다.",
+    "AUTH_EMAIL_ALREADY_EXISTS": "이미 등록된 이메일입니다.",
+    "AUTH_INVALID_VERIFICATION_CODE": "잘못된 인증번호입니다.",
+    "AUTH_VERIFICATION_CODE_EXPIRED": "인증번호가 만료되었습니다.",
+    "AUTH_SOCIAL_LOGIN_ACCOUNT": "소셜 로그인으로 가입된 계정입니다.",
+    "AUTH_EMAIL_NOT_REGISTERED": "등록되지 않은 이메일입니다.",
+    "AUTH_RE_REGISTER_NOT_AVAILABLE": "재가입이 불가능합니다.",
+    "AUTH_RE_REGISTER_ERROR": "재가입 처리 중 오류가 발생했습니다.",
+    "USER_NOT_FOUND": "사용자를 찾을 수 없습니다.",
+    "USER_DEACTIVATED": "계정이 비활성화되었습니다. 관리자에게 문의해주세요.",
+    "USER_MAX_ADDRESSES_EXCEEDED": "주소는 최대 {{maxCount}}개까지만 저장할 수 있습니다.",
+    "USER_ADDRESS_NOT_FOUND": "주소를 찾을 수 없습니다.",
+    "MENU_SELECTION_NOT_FOUND": "선택 이력을 찾을 수 없습니다.",
+    "MENU_EMPTY": "메뉴가 비어있습니다.",
+    "EXTERNAL_AI_ERROR": "AI 서비스 오류가 발생했습니다.",
+    "EXTERNAL_GOOGLE_PLACES_ERROR": "장소 검색 서비스 오류가 발생했습니다.",
+    "INTERNAL_SERVER_ERROR": "서버 내부 오류가 발생했습니다.",
+    "VALIDATION_ERROR": "입력값이 올바르지 않습니다.",
+    "CONFIG_MISSING_ERROR": "서버 설정 오류가 발생했습니다.",
+    "NETWORK_ERROR": "네트워크 오류가 발생했습니다.",
+    "UNKNOWN_ERROR": "알 수 없는 오류가 발생했습니다."
+  },
+  "messages": {
+    "loginSuccess": "로그인되었습니다.",
+    "logoutSuccess": "로그아웃되었습니다.",
+    "registerSuccess": "회원가입이 완료되었습니다. 로그인해주세요."
+  },
+  "navigation": {
+    "home": "홈",
+    "agent": "에이전트",
+    "history": "추천 이력",
+    "manage": "관리",
+    "bugReport": "버그 제보",
+    "mypage": "마이페이지",
+    "backToHome": "홈으로 돌아가기",
+    "back": "뒤로가기"
+  },
+  "user": {
+    "mypage": "마이페이지",
+    "deleteAccount": "회원 탈퇴",
+    "name": "이름",
+    "email": "이메일",
+    "noName": "이름 없음",
+    "noEmail": "이메일 없음",
+    "menuSelectionHistory": "메뉴 선택 이력",
+    "menuSelectionHistoryDesc": "선택한 메뉴들을 확인하고 관리할 수 있습니다.",
+    "viewHistory": "이력 보기",
+    "languageSettings": "언어 설정",
+    "languageSettingsDesc": "앱에서 사용할 언어를 선택하세요",
+    "deleteAccountTitle": "회원 탈퇴",
+    "deleteAccountMessage": "정말 회원 탈퇴를 하시겠습니까?<br />탈퇴 후 모든 데이터가 삭제되며 복구할 수 없습니다.",
+    "withdraw": "탈퇴하기",
+    "setDefaultAddress": "기본주소 변경",
+    "setDefaultAddressMessage": "를 기본주소로 사용하시겠습니까?",
+    "honorific": "님",
+    "preferences": {
+      "title": "취향",
+      "edit": "취향 수정",
+      "save": "취향 정보 저장",
+      "loading": "로딩 중...",
+      "noPreferences": "등록된 취향 정보가 없습니다.",
+      "aiReport": "AI 리포트"
+    },
+    "address": {
+      "title": "주소 관리",
+      "manage": "주소 관리",
+      "add": "주소 추가",
+      "edit": "편집",
+      "done": "완료",
+      "noAddress": "주소가 등록되지 않았습니다.",
+      "addressCount": "총 {{count}}개의 주소가 등록되어 있습니다",
+      "noAddresses": "등록된 주소가 없습니다.",
+      "deleteSelected": "선택한 {{count}}개 주소 삭제",
+      "addAddress": "+ 주소 추가 ({{current}}/{{max}})",
+      "maxAddresses": "최대 {{max}}개까지 주소를 등록할 수 있습니다.",
+      "addModalDescription": "최대 4개까지 주소를 등록할 수 있습니다. (현재: {{current}}/4, 추가 가능: {{remaining}}개)",
+      "addModalNote": "주소는 하나씩만 추가할 수 있습니다.",
+      "selected": "선택한 주소",
+      "aliasPlaceholder": "별칭 입력 (예: 집, 회사) - 선택사항",
+      "clearSelection": "선택 취소",
+      "addButton": "주소 추가"
+    }
+  },
+  "menu": {
+    "recommendation": {
+      "title": "메뉴 추천 받기",
+      "prompt": "어떤 메뉴를 원하시나요?",
+      "placeholder": "예: 오늘 기분이 안좋은데 메뉴 추천해줘",
+      "submit": "메뉴 추천 받기",
+      "loading": "AI가 메뉴를 추천하고 있어요...",
+      "loadingHint": "잠시만 기다려주세요",
+      "result": "추천 메뉴",
+      "select": "메뉴 선택하기",
+      "reason": "추천 이유",
+      "aiLabel": "AI 추천 메뉴",
+      "clickHint": "메뉴를 클릭하면 식당을 검색할 수 있습니다"
+    },
+    "loginRequired": "로그인이 필요합니다.",
+    "promptRequired": "메뉴 추천 요청을 입력해주세요.",
+    "history": "추천 이력",
+    "selectionHistory": "메뉴 선택 이력",
+    "selectionHistoryDesc": "선택한 메뉴들을 날짜별로 확인하고 관리할 수 있습니다.",
+    "historyDesc": "과거에 받은 메뉴 추천을 확인할 수 있습니다.",
+    "noHistory": "추천 이력이 없습니다.",
+    "noSelections": "선택한 메뉴가 없습니다.",
+    "noRecommendationsForDate": "선택한 날짜에 받은 추천이 없습니다.",
+    "viewAllHistory": "전체 이력 보기",
+    "filterReset": "필터 초기화",
+    "showingDateOnly": "의 추천만 표시",
+    "loadMore": "더 보기",
+    "loadingMore": "불러오는 중...",
+    "totalCount": "총 {{count}}개의 추천 이력 (모두 불러왔습니다)",
+    "dateFilter": "날짜 필터",
+    "viewAll": "전체 보기",
+    "editMode": "편집하기",
+    "exitEditMode": "편집 종료",
+    "cancelAll": "전체 취소",
+    "modify": "수정",
+    "deleteMenu": "메뉴 삭제",
+    "menuSelectionSaved": "메뉴 선택이 저장되었습니다.",
+    "menuSelectionCancelled": "메뉴 선택이 취소되었습니다.",
+    "cancelMenuSelection": "메뉴 선택 취소",
+    "cancelMenuSelectionMessage": "이 메뉴 선택을 취소하시겠습니까?",
+    "confirmCancel": "취소하기",
+    "goBack": "돌아가기",
+    "breakfast": "아침",
+    "lunch": "점심",
+    "dinner": "저녁",
+    "etc": "기타",
+    "selectAtLeastOne": "최소 하나의 메뉴를 선택해주세요.",
+    "selectMealTime": "식사 시간을 선택해주세요.",
+    "selectionComplete": "메뉴 선택이 완료되었습니다.",
+    "selectMenu": "메뉴 선택하기",
+    "editMenu": "메뉴 수정하기",
+    "selectMenusPlural": "원하는 메뉴를 선택해주세요 (중복 선택 가능)",
+    "whenToEat": "언제 먹을 메뉴인가요?",
+    "selectionCompleteWithCount": "선택 완료 ({{count}}개)",
+    "editCompleteWithCount": "수정 완료 ({{count}}개)",
+    "noAvailableMenus": "선택 가능한 메뉴가 없습니다.",
+    "menuSelectionUpdated": "메뉴 선택이 수정되었습니다."
+  },
+  "agent": {
+    "title": "기분 · 날씨 · 위치를 이해하는 추천과",
+    "subtitle": "주변 맛집 탐색",
+    "description": "PickEat 홈에서 AI 추천을 받고, 바로 근처 매장까지 확인하세요.",
+    "loginToGetRecommendation": "로그인하고 추천 받기",
+    "quickStartWithKakao": "카카오로 빠른 시작",
+    "loginRequired": "맞춤 추천을 받으려면 로그인하세요",
+    "loginRequiredDesc": "로그인하면 오늘의 기분을 반영한 추천과 주변 식당 탐색을 하나의 보드에서 진행할 수 있습니다.",
+    "goToLogin": "로그인 페이지로 이동",
+    "exploreOptions": "에 대해 어떤 방식으로 탐색할까요?",
+    "normalSearch": "일반 검색",
+    "aiRecommendation": "AI 추천 보기",
+    "noLocationData": "위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.",
+    "needsAddressForAi": "주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.",
+    "smartCompanion": "Smart Eatery Companion",
+    "tabs": {
+      "generalSearch": "일반 검색",
+      "aiRecommendation": "AI 추천"
+    },
+    "results": {
+      "selectMenu": "메뉴를 선택해주세요",
+      "selectMenuHint": "메뉴 추천을 받고 선택해주세요.",
+      "noSearchResults": "일반 검색 결과가 없습니다.",
+      "trySearch": "일반 검색을 실행해보세요.",
+      "noAiResults": "AI 추천 결과가 없습니다.",
+      "tryAiRecommendation": "AI 추천을 실행해보세요.",
+      "noResultsYet": "아직 결과가 없습니다.",
+      "tryBothOptions": "일반 검색 또는 AI 추천을 실행해보세요."
+    }
+  },
+  "map": {
+    "title": "네이버 지도",
+    "stores": "개 매장",
+    "totalStores": "총 {{count}}개 매장",
+    "selected": "선택됨",
+    "loadingMap": "지도를 불러오는 중...",
+    "errorOccurred": "오류가 발생했습니다",
+    "refresh": "새로고침",
+    "noLocationData": "표시할 위치 정보가 없습니다",
+    "noLocationDataDesc": "먼저 주변 식당을 검색한 뒤, 지도 보기 버튼을 눌러주세요.",
+    "apiKeyMissing": "네이버 지도 API 키가 설정되지 않았습니다. .env에 VITE_NAVER_MAP_CLIENT_ID를 추가해주세요.",
+    "noLocationError": "표시할 위치 정보가 없습니다. 주소를 등록하거나 가게 목록에서 지도를 열어주세요.",
+    "scriptLoadTimeout": "네이버 지도 스크립트 로드 타임아웃",
+    "scriptLoadFailed": "네이버 지도 스크립트 로드 실패",
+    "keyNotSet": "네이버 지도 키가 설정되지 않았습니다.",
+    "noStoresToDisplay": "표시할 매장이 없습니다.",
+    "mapInitFailed": "네이버 지도 객체를 초기화하지 못했습니다.",
+    "noCoordinates": "표시할 좌표가 없습니다.",
+    "loadMapError": "지도를 불러오는 중 오류가 발생했습니다."
+  },
+  "place": {
+    "selectedStore": "선택된 가게",
+    "rating": "평점",
+    "reviews": "리뷰",
+    "reviewCount": "개",
+    "openNow": "현재 영업 중",
+    "closedNow": "현재 영업 종료",
+    "photos": "사진",
+    "storePhoto": "가게 사진",
+    "previousPhoto": "이전 사진",
+    "nextPhoto": "다음 사진",
+    "photoNavTip": "좌우 버튼을 눌러 다른 사진을 확인할 수 있습니다.",
+    "locationInfo": "위치 정보",
+    "mapDragTip": "지도를 드래그해 주변 위치를 살펴볼 수 있습니다.",
+    "storeLocation": "가게 위치",
+    "reviewsTitle": "리뷰",
+    "reviewsFetched": "일부 리뷰를 가져왔어요.",
+    "collapse": "접기",
+    "expand": "펼쳐보기",
+    "blogsTitle": "추가 탐색 · 블로그/웹 리뷰",
+    "blogsDescription": "{{placeName}}에 대한 다른 사람들의 후기와 리뷰를 확인해 보세요.",
+    "noBlogsFound": "아직 연관 블로그/웹 문서를 찾지 못했습니다.",
+    "blogWebDoc": "블로그/웹 문서",
+    "noTitle": "제목 없는 문서",
+    "blogSearchFailed": "블로그 검색에 실패했습니다."
+  },
+  "validation": {
+    "required": "필수 입력 항목입니다.",
+    "email": {
+      "invalid": "올바른 이메일 형식이 아닙니다.",
+      "required": "이메일을 입력해주세요.",
+      "duplicateCheckRequired": "이메일 중복 확인을 해주세요.",
+      "verificationRequired": "이메일 인증을 완료해주세요."
+    },
+    "password": {
+      "tooShort": "비밀번호는 {{minLength}}자 이상이어야 합니다.",
+      "mismatch": "비밀번호가 일치하지 않습니다.",
+      "required": "비밀번호를 입력해주세요.",
+      "confirmRequired": "비밀번호 확인을 입력해주세요.",
+      "emailAndPasswordRequired": "이메일과 비밀번호를 입력해주세요."
+    },
+    "name": {
+      "required": "이름을 입력해주세요."
+    },
+    "verificationCode": {
+      "required": "인증 코드를 입력해주세요.",
+      "invalid": "잘못된 인증 코드입니다."
+    },
+    "address": {
+      "required": "주소를 선택해주세요."
+    },
+    "bugReport": {
+      "categoryRequired": "카테고리를 선택해주세요.",
+      "titleRequired": "제목을 입력해주세요.",
+      "titleTooLong": "제목은 30자 이하여야 합니다.",
+      "contentRequired": "상세 내용을 입력해주세요.",
+      "contentTooLong": "상세 내용은 500자 이하여야 합니다.",
+      "imageLimitExceeded": "이미지는 최대 5장까지 업로드할 수 있습니다.",
+      "imageSizeExceeded": "이미지 크기는 최대 5MB까지 가능합니다.",
+      "imageFormatInvalid": "지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif, webp만 가능)"
+    }
+  },
+  "success": {
+    "login": "로그인되었습니다.",
+    "logout": "로그아웃되었습니다.",
+    "register": "회원가입이 완료되었습니다.",
+    "orderCreated": "주문이 완료되었습니다."
+  },
+  "oauth": {
+    "error": {
+      "noCode": "인증 코드를 받지 못했습니다.",
+      "noToken": "토큰이 발급되지 않았습니다.",
+      "loginFailed": "로그인에 실패했습니다.",
+      "statusCode": "상태 코드",
+      "unknown": "알 수 없는 오류가 발생했습니다."
+    },
+    "reRegister": {
+      "title": "재가입 안내",
+      "message": "탈퇴한 이력이 있습니다. 재가입하시겠습니까?",
+      "confirm": "재가입",
+      "cancel": "취소",
+      "processing": "처리 중...",
+      "backToLogin": "로그인 페이지로 돌아가기",
+      "emailLabel": "재가입할 이메일",
+      "emailNotFound": "이메일 정보를 불러오지 못했습니다.",
+      "confirmDescription": "확인을 선택하면 위 이메일로 추가 입력 없이 재가입합니다.",
+      "noEmail": "이메일 정보가 없습니다.",
+      "success": "재가입이 완료되었습니다. 로그인해주세요."
+    },
+    "nameInput": {
+      "title": "이름을 입력해주세요",
+      "description": "카카오 로그인을 완료하기 위해 이름이 필요합니다.",
+      "placeholder": "이름 입력",
+      "submit": "완료"
+    },
+    "processing": "로그인 처리 중..."
+  },
+  "passwordReset": {
+    "request": {
+      "title": "비밀번호 재설정",
+      "description": "가입 이메일로 인증번호를 보내드려요. 메일함을 확인하고 6자리 인증번호를 입력해주세요.",
+      "loginHint": "이미 로그인 정보를 기억하신다면",
+      "backToLogin": "로그인 화면으로 돌아가기",
+      "email": {
+        "label": "이메일",
+        "placeholder": "가입한 이메일을 입력하세요"
+      },
+      "code": {
+        "label": "인증번호",
+        "placeholder": "6자리 인증번호 입력",
+        "hint": "가입 시 사용한 이메일로 받은 인증번호를 입력해주세요. 입력값은 초기화되지 않으니 바로 다시 시도할 수 있습니다."
+      },
+      "button": {
+        "sendCode": "인증번호 발송",
+        "resend": "재발송",
+        "resendWithCount": "재발송 ({{count}}회)",
+        "waiting": "대기 {{time}}",
+        "verify": "인증하기"
+      },
+      "error": {
+        "sendFailed": "인증 메일 발송에 실패했습니다.",
+        "verifyFailed": "인증에 실패했습니다.",
+        "limitReached": "오늘의 발송 가능 횟수를 모두 사용했어요."
+      },
+      "sendCodeFailed": "재설정 코드 발송 실패",
+      "verifyFailed": "인증 실패"
+    },
+    "title": "새 비밀번호 설정",
+    "description": "인증 완료된 이메일에 대해 새 비밀번호를 설정하세요. 입력값은 초기화되지 않습니다.",
+    "restartHint": "인증 단계를 다시 진행하려면",
+    "verifiedEmail": {
+      "label": "인증된 이메일",
+      "notFound": "이메일을 찾을 수 없습니다."
+    },
+    "newPassword": {
+      "label": "새 비밀번호",
+      "placeholder": "새 비밀번호를 입력하세요",
+      "hint": "최소 8자, 영문과 숫자를 조합해주세요. 서버 규칙과 다르면 응답 메시지가 그대로 표시됩니다."
+    },
+    "confirmPassword": {
+      "label": "새 비밀번호 확인",
+      "placeholder": "새 비밀번호를 다시 입력하세요"
+    },
+    "button": {
+      "submit": "비밀번호 변경",
+      "resendCode": "인증번호 다시 받기"
+    },
+    "validation": {
+      "required": "새 비밀번호를 입력해주세요.",
+      "minLength": "비밀번호는 최소 8자 이상이어야 합니다.",
+      "combination": "영문과 숫자를 조합해서 입력해주세요."
+    },
+    "error": {
+      "emailNotFound": "이메일을 찾지 못했어요",
+      "restartRequired": "재설정을 다시 시작해주세요.",
+      "changeFailed": "비밀번호를 변경하지 못했습니다.",
+      "title": "비밀번호 재설정 실패"
+    },
+    "success": {
+      "title": "비밀번호 재설정 완료"
+    }
+  },
+  "restaurant": {
+    "searchResults": "{{menuName}} 검색 결과 ({{count}}개)",
+    "searchResultsTitle": "{{menuName}} 검색 결과",
+    "close": "닫기",
+    "viewMoreOnNaverMap": "네이버 지도에서 더 많은 결과 확인하기",
+    "viewMap": "지도 보기",
+    "viewSite": "사이트 보기",
+    "nearbyResults": "주변 식당 검색 결과",
+    "noRestaurantsFound": "주변에 해당 메뉴를 판매하는 식당이 없습니다.",
+    "distance": "거리",
+    "distanceKm": "거리 {{distance}}km",
+    "aiRecommendedStores": "AI 추천 식당",
+    "reset": "초기화",
+    "noRecommendations": "아직 추천 결과가 없습니다. AI 추천을 실행해보세요.",
+    "tapCardForDetails": "가게 카드를 누르면 상세 정보를 확인할 수 있습니다.",
+    "aiSearching": "AI가 가게를 찾는 중입니다...",
+    "recommendationStores": "추천 매장",
+    "totalStoresVisible": "총 {{count}}개 매장이 한눈에 보입니다.",
+    "andMoreStores": "외 {{count}}개 매장",
+    "noAddress": "주소 정보 없음",
+    "liveMap": "Live Map"
+  },
+  "history": {
+    "recommendationReason": "추천 이유",
+    "aiRecommendation": "AI 추천",
+    "close": "닫기",
+    "exploreOptions": "{{menuName}}에 대해 어떤 방식으로 탐색할까요?",
+    "normalSearch": "일반 검색 (네이버)",
+    "aiRecommendGet": "AI 추천 받기",
+    "noLocationWarning": "위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.",
+    "needsAddressForAi": "주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.",
+    "loadingAiRecommendations": "AI 추천 맛집 불러오는 중...",
+    "menuLabel": "메뉴"
+  },
+  "setup": {
+    "title": "서비스 이용을 위한 정보 입력",
+    "subtitle": "더 나은 추천을 위해 아래 정보를 입력해주세요",
+    "name": {
+      "title": "이름",
+      "placeholder": "이름을 입력하세요",
+      "description": "서비스에서 사용할 이름을 입력해주세요"
+    },
+    "address": {
+      "title": "주소",
+      "titleModal": "주소 등록",
+      "description": "주변 식당 추천을 위해 주소를 입력해주세요",
+      "descriptionModal": "주변 식당 추천을 위해 주소를 등록해주세요",
+      "search": "주소 검색",
+      "searchPlaceholder": "주소를 검색하세요",
+      "searchDesc": "주소를 검색하여 선택해주세요",
+      "selected": "선택한 주소",
+      "detail": "상세 주소",
+      "detailPlaceholder": "상세 주소를 입력하세요 (선택사항)",
+      "alias": "별칭 (선택사항)",
+      "aliasPlaceholder": "별칭을 입력하세요 (예: 집, 회사)",
+      "aliasDescription": "주소를 쉽게 구분하기 위한 별칭을 입력해주세요 (예: 집, 회사)",
+      "setDefault": "기본 주소로 설정",
+      "noResults": "검색 결과가 없습니다.",
+      "searchFailed": "주소 검색에 실패했습니다.",
+      "saveFailed": "주소 저장에 실패했습니다.",
+      "registered": "주소가 등록되었습니다.",
+      "selectRequired": "주소를 선택해주세요.",
+      "notFound": "주소를 찾을 수 없습니다.",
+      "register": "등록하기"
+    },
+    "preferences": {
+      "title": "취향 정보",
+      "description": "좋아하는 음식과 싫어하는 음식을 입력해주세요",
+      "likes": "좋아하는 것",
+      "dislikes": "싫어하는 것",
+      "likesPlaceholder": "좋아하는 음식이나 재료를 입력하세요",
+      "dislikesPlaceholder": "싫어하는 음식이나 재료를 입력하세요",
+      "add": "추가"
+    },
+    "next": "다음",
+    "prev": "이전",
+    "skip": "건너뛰기",
+    "complete": "완료",
+    "save": "저장하기",
+    "register": "등록하기",
+    "search": "검색",
+    "saveFailed": "정보 저장에 실패했습니다."
+  },
+  "bugReport": {
+    "pageTitle": "버그 제보",
+    "pageDescription": "발견하신 버그나 문의사항을 알려주세요.",
+    "success": "버그 제보가 성공적으로 등록되었습니다.",
+    "imageSizeError": "이미지 크기가 너무 큽니다. 각 이미지는 5MB 이하여야 합니다.",
+    "category": "카테고리",
+    "title": "제목",
+    "content": "상세 내용",
+    "categories": {
+      "bug": "버그 제보",
+      "inquiry": "문의 사항",
+      "other": "기타"
+    },
+    "status": {
+      "unconfirmed": "미확인",
+      "confirmed": "확인",
+      "fixed": "수정완료",
+      "closed": "종료"
+    },
+    "form": {
+      "imageLabel": "이미지 (선택)",
+      "submit": "제출하기",
+      "submitting": "제출 중..."
+    },
+    "image": {
+      "sizeLimit": "이미지 크기는 최대 {{size}}MB까지 가능합니다.",
+      "formatError": "지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif, webp만 가능)",
+      "maxCount": "최대 {{maxImages}}장까지 업로드할 수 있습니다.",
+      "dragPrompt": "이미지를 드래그하거나 클릭하여 업로드",
+      "sizeInfo": "최대 {{maxImages}}장, 각 {{size}}MB 이하",
+      "uploadAlt": "업로드 {{index}}"
+    },
+    "detail": {
+      "content": "상세 내용",
+      "createdAt": "생성일",
+      "updatedAt": "수정일",
+      "userId": "유저 ID",
+      "statusChanged": "상태가 변경되었습니다.",
+      "confirm": "확인 처리",
+      "processing": "처리 중..."
+    },
+    "filter": {
+      "status": "상태",
+      "category": "카테고리",
+      "date": "날짜",
+      "searchPlaceholder": "제목, 내용, 작성자 이메일로 검색..."
+    },
+    "list": {
+      "empty": "버그 제보가 없습니다.",
+      "selectAll": "전체 선택"
+    },
+    "gallery": {
+      "title": "이미지",
+      "imageAlt": "이미지 {{index}}",
+      "thumbnailAlt": "썸네일 {{index}}",
+      "previous": "이전 이미지",
+      "next": "다음 이미지"
+    },
+    "titlePlaceholder": "버그 제보 제목을 입력해주세요",
+    "contentPlaceholder": "버그에 대한 상세한 설명을 입력해주세요"
+  },
+  "passwordInput": {
+    "minLength": "최소 {{minLength}}자",
+    "confirmPlaceholder": "비밀번호를 다시 입력하세요"
+  },
+  "emailVerification": {
+    "emailAvailable": "사용 가능한 이메일입니다.",
+    "didNotReceive": "메일을 받지 못하셨나요?",
+    "resendLink": "재발송 받기",
+    "title": "이메일 인증",
+    "codePlaceholder": "6자리 인증번호 입력",
+    "sendCode": "인증번호 발송",
+    "resend": "재발송",
+    "verify": "인증하기",
+    "verified": "인증 완료",
+    "sending": "발송 중...",
+    "verifying": "인증 중...",
+    "checkDuplicate": "중복 확인",
+    "checking": "확인 중...",
+    "timeRemaining": "유효시간",
+    "codeSent": "인증 코드를 발송했습니다. 3분 이내에 입력해주세요.",
+    "sendFailed": "인증 코드를 발송하지 못했습니다. 잠시 후 다시 시도해주세요.",
+    "verifySuccess": "이메일 인증이 완료되었습니다.",
+    "verifyFailed": "인증에 실패했습니다. 코드를 확인해주세요.",
+    "sendCodeFirst": "인증 코드를 먼저 발송해주세요.",
+    "checkEmailFailed": "이메일 확인에 실패했습니다.",
+    "reRegisterPrompt": "기존에 탈퇴 이력이 있습니다. 재가입하시겠습니까?"
+  },
+  "landing": {
+    "nav": {
+      "features": "기능",
+      "workflow": "운영 흐름",
+      "demo": "데모 신청",
+      "adminLogin": "Admin 로그인"
+    },
+    "hero": {
+      "liveStatus": "오늘도 182개 매장이 PickEat으로 주문을 처리하고 있어요",
+      "badge": "새로운 매장 운영 OS",
+      "title": "주문, 운영, 리포트를",
+      "titleHighlight": "하나의 화면",
+      "titleSuffix": "에서 끝내세요",
+      "description": "PickEat은 매장의 모든 주문 채널을 하나로 묶어 운영팀이 빠르게 의사결정할 수 있는 지표를 제공합니다. 복잡한 스프레드시트 대신 직관적인 보드를 경험해 보세요.",
+      "ctaDemo": "데모 예약하기",
+      "ctaProductTour": "제품 투어 보기",
+      "statsOrders": "주문이 지난주 PickEat을 통해 처리됨",
+      "statsFranchise": "프랜차이즈 HQ가 운영 데이터를 통합"
+    },
+    "stats": {
+      "preparationTime": "평균 준비시간",
+      "reorderRate": "재주문율",
+      "expansionSpeed": "매장 확장 속도",
+      "preparationTimeValue": "12분",
+      "reorderRateValue": "74%",
+      "expansionSpeedValue": "x3",
+      "preparationTimeSub": "-36% vs 이전",
+      "reorderRateSub": "+18% 성장",
+      "expansionSpeedSub": "한 분기 기준",
+      "channelDistribution": "주문 채널별 비중",
+      "dataBaseline": "데이터 기준: 지난 7일"
+    },
+    "features": {
+      "aiRecommendation": {
+        "title": "AI 추천 주문",
+        "description": "팀의 취향과 날씨 데이터를 조합해 가장 만족도가 높은 메뉴를 추천합니다."
+      },
+      "smartSync": {
+        "title": "스마트 주문 동기화",
+        "description": "주문 상태가 실시간으로 동기화되어 매장 · 고객이 같은 정보를 공유합니다."
+      },
+      "paymentAutomation": {
+        "title": "결제 & 회계 자동화",
+        "description": "여러 매출 채널을 통합해 회계팀이 바로 사용할 수 있는 리포트를 생성합니다."
+      }
+    },
+    "workflow": {
+      "title": "세 단계로 완성하는 운영",
+      "description": "온보딩부터 리포팅까지 필요한 화면만 남겼습니다. 어떤 단계에서든 팀이 다음 행동을 빠르게 결정할 수 있도록 설계됐습니다.",
+      "downloadGuide": "도입 가이드 다운로드",
+      "step1": {
+        "title": "메뉴 온보딩",
+        "description": "CSV · POS 연동으로 수분 안에 메뉴/옵션을 불러옵니다."
+      },
+      "step2": {
+        "title": "주문 통합",
+        "description": "배달앱 · 키오스크 · 매장 주문을 PickEat 보드에 한 번에 모읍니다."
+      },
+      "step3": {
+        "title": "운영 인사이트",
+        "description": "객단가, 재방문율, 인기 메뉴 트렌드를 대시보드에서 바로 확인하세요."
+      }
+    },
+    "cta": {
+      "title": "팀 규모와 상관없이 2주 안에 운영 대시보드를 활성화합니다.",
+      "description": "솔루션 아키텍트와 1:1로 구성 점검을 진행하고, 파일럿 스토어 2곳까지 무료로 지원합니다.",
+      "buttonMeeting": "온보딩 미팅 잡기",
+      "buttonProposal": "제안서 받기"
+    }
+  }
+}
