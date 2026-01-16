@@ -1,0 +1,746 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "networkError": "Please check your network connection.",
+    "close": "Close",
+    "all": "All",
+    "reset": "Reset",
+    "search": "Search",
+    "pageLoading": "Loading page...",
+    "notification": "Notification"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Confirm Password",
+    "name": "Name",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "namePlaceholder": "Enter your name",
+    "loginWithEmail": "Continue with Email",
+    "loginWithGoogle": "Continue with Google",
+    "loginWithKakao": "Continue with Kakao",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "forgotPassword": "Forgot your password?",
+    "resetPassword": "Reset",
+    "loginTitle": "Sign in with your PickEat account",
+    "registerTitle": "Sign Up",
+    "registerSubtitle": "Create a new account to get started",
+    "registerSignUp": "PickEat Sign Up",
+    "socialLoginTitle": "Social Login",
+    "socialLoginSubtitle": "Sign in with one click",
+    "socialLoginDescription": "Experience the same interaction as PickEat home, recommendations, and restaurant screens.",
+    "benefitsTitle": "Benefits",
+    "benefitsSubtitle": "More convenient after signing in",
+    "benefit1": "Check AI personalized recommendations and real-time restaurant data on one screen",
+    "benefit2": "Automatically load recent records and support distance calculation based on address",
+    "appTitle": "PickEat",
+    "appDescription": "Today's menu recommended by AI",
+    "appSubDescription": "From restaurant search to menu recommendations",
+    "loginFailed": "Login Failed",
+    "loginError": "Login failed.",
+    "tokenNotIssued": "Token was not issued.",
+    "reRegisterTitle": "Re-registration Guide",
+    "reRegisterButton": "Re-register",
+    "reRegister": {
+      "title": "Re-register",
+      "description": "Re-register a deleted account.",
+      "success": {
+        "message": "Re-registration complete. Please log in."
+      }
+    },
+    "loginRequired": {
+      "title": "Login Required",
+      "message": "This feature requires login. Log in to access more features!",
+      "goToLogin": "Go to Login"
+    },
+    "oauth": {
+      "kakaoLoading": "Logging in with Kakao...",
+      "googleLoading": "Logging in with Google..."
+    }
+  },
+  "home": {
+    "title": "AI Menu Recommendation",
+    "subtitle": "We recommend the best menu by combining your team's preferences and weather data",
+    "ctaButton": "Get AI Menu Recommendation",
+    "loginPrompt": "Log in to see personalized menus prepared by our AI agent",
+    "hero": {
+      "badge": "PickEat OS",
+      "title": "What should we eat today?",
+      "titleHighlight": "AI Agent",
+      "titleSuffix": "will help you decide",
+      "description": "PickEat is an AI-powered recommendation OS that automates menu suggestions and restaurant discovery.",
+      "descriptionContinued": "Sign in and experience your own personalized dining flow.",
+      "loginButton": "Get Started with Sign In",
+      "previewButton": "Preview AI Agent",
+      "startButton": "Go to AI Agent",
+      "historyButton": "View Recent Recommendations"
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Core Features",
+      "description": "Experience better choices with our AI-powered smart dining recommendation system.",
+      "cardBadge": "Feature",
+      "aiRecommendation": {
+        "title": "AI Menu Recommendation",
+        "description": "Real-time menu suggestions reflecting your mood, weather, and preferences."
+      },
+      "storeSearch": {
+        "title": "Menu-Based Store Search",
+        "description": "Select your desired menu and AI will curate nearby restaurant options."
+      },
+      "history": {
+        "title": "History Management",
+        "description": "View and re-explore your recommended menu and restaurant history at a glance."
+      }
+    },
+    "howItWorks": {
+      "badge": "How it works",
+      "title": "AI Recommendation Flow",
+      "description": "Find your desired menu and restaurant in 3 simple steps.",
+      "step1": {
+        "title": "Tell the AI about your mood or situation today.",
+        "description": "A simple conversation helps understand your situation."
+      },
+      "step2": {
+        "title": "Choose from the recommended menu options.",
+        "description": "Simply select from the menus suggested by AI."
+      },
+      "step3": {
+        "title": "Get AI restaurant recommendations for your selected menu.",
+        "description": "We recommend nearby restaurants that serve your chosen menu."
+      }
+    },
+    "highlights": {
+      "badge": "Highlights",
+      "title": "Key Feature Highlights",
+      "description": "Experience smarter dining choices through PickEat's core features.",
+      "aiRecommendation": {
+        "title": "AI Recommendation",
+        "description": "Experience new choices daily with personalized menu recommendations."
+      },
+      "mapSearch": {
+        "title": "Map-Based Search",
+        "description": "Find actual location-based restaurants integrated with maps."
+      },
+      "personalized": {
+        "title": "Personalized Recommendations",
+        "description": "More accurate recommendations by learning your preferences and history."
+      }
+    },
+    "cta": {
+      "title": "Start using PickEat right now",
+      "description": "Experience personalized recommendations and restaurant discovery prepared by our AI agent after logging in.",
+      "loginButton": "Sign in with Email",
+      "previewButton": "Preview Agent",
+      "startButton": "Go to Agent",
+      "mypageButton": "Open My Page"
+    }
+  },
+  "errors": {
+    "AUTH_INVALID_CREDENTIALS": "Invalid email or password.",
+    "AUTH_EMAIL_NOT_VERIFIED": "Email verification is not completed.",
+    "AUTH_EMAIL_ALREADY_EXISTS": "This email is already registered.",
+    "AUTH_INVALID_VERIFICATION_CODE": "Invalid verification code.",
+    "AUTH_VERIFICATION_CODE_EXPIRED": "Verification code has expired.",
+    "AUTH_SOCIAL_LOGIN_ACCOUNT": "This account is registered via social login.",
+    "AUTH_EMAIL_NOT_REGISTERED": "This email is not registered.",
+    "AUTH_RE_REGISTER_NOT_AVAILABLE": "Re-registration is not available.",
+    "AUTH_RE_REGISTER_ERROR": "An error occurred during re-registration.",
+    "USER_NOT_FOUND": "User not found.",
+    "USER_DEACTIVATED": "Your account has been deactivated. Please contact support.",
+    "USER_MAX_ADDRESSES_EXCEEDED": "You can save up to {{maxCount}} addresses.",
+    "USER_ADDRESS_NOT_FOUND": "Address not found.",
+    "MENU_SELECTION_NOT_FOUND": "Selection history not found.",
+    "MENU_EMPTY": "Menu is empty.",
+    "EXTERNAL_AI_ERROR": "AI service error occurred.",
+    "EXTERNAL_GOOGLE_PLACES_ERROR": "Place search service error occurred.",
+    "INTERNAL_SERVER_ERROR": "Internal server error occurred.",
+    "VALIDATION_ERROR": "Invalid input value.",
+    "CONFIG_MISSING_ERROR": "Server configuration error occurred.",
+    "NETWORK_ERROR": "Network error occurred.",
+    "UNKNOWN_ERROR": "Unknown error occurred."
+  },
+  "messages": {
+    "loginSuccess": "Successfully logged in.",
+    "logoutSuccess": "Successfully logged out.",
+    "registerSuccess": "Registration completed. Please log in."
+  },
+  "navigation": {
+    "home": "Home",
+    "agent": "Agent",
+    "history": "History",
+    "manage": "Manage",
+    "bugReport": "Bug Report",
+    "mypage": "My Page",
+    "backToHome": "Back to Home",
+    "back": "Back"
+  },
+  "user": {
+    "mypage": "My Page",
+    "deleteAccount": "Delete Account",
+    "name": "Name",
+    "email": "Email",
+    "noName": "No name",
+    "noEmail": "No email",
+    "menuSelectionHistory": "Menu Selection History",
+    "menuSelectionHistoryDesc": "View and manage your selected menus.",
+    "viewHistory": "View History",
+    "languageSettings": "Language Settings",
+    "languageSettingsDesc": "Select your preferred language",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountMessage": "Are you sure you want to delete your account?<br />All data will be permanently deleted and cannot be recovered.",
+    "withdraw": "Delete Account",
+    "setDefaultAddress": "Set Default Address",
+    "setDefaultAddressMessage": "Do you want to set this as your default address?",
+    "honorific": "",
+    "preferences": {
+      "title": "Preferences",
+      "edit": "Edit Preferences",
+      "save": "Save Preferences",
+      "loading": "Loading...",
+      "noPreferences": "No preferences registered.",
+      "aiReport": "AI Report"
+    },
+    "address": {
+      "title": "Address Management",
+      "manage": "Manage Address",
+      "add": "Add Address",
+      "edit": "Edit",
+      "done": "Done",
+      "noAddress": "No address registered.",
+      "addressCount": "Total of {{count}} addresses registered",
+      "noAddresses": "No addresses registered.",
+      "deleteSelected": "Delete {{count}} selected addresses",
+      "addAddress": "+ Add Address ({{current}}/{{max}})",
+      "maxAddresses": "You can register up to {{max}} addresses.",
+      "addModalDescription": "You can register up to 4 addresses. (Current: {{current}}/4, Available: {{remaining}} more)",
+      "addModalNote": "You can only add one address at a time.",
+      "selected": "Selected Address",
+      "aliasPlaceholder": "Enter alias (e.g., Home, Office) - Optional",
+      "clearSelection": "Clear Selection",
+      "addButton": "Add Address"
+    }
+  },
+  "menu": {
+    "recommendation": {
+      "title": "Get Menu Recommendation",
+      "prompt": "What kind of menu would you like?",
+      "placeholder": "e.g., I'm feeling down today, recommend me a menu",
+      "submit": "Get Recommendation",
+      "loading": "AI is recommending a menu...",
+      "loadingHint": "Please wait a moment",
+      "result": "Recommended Menu",
+      "select": "Select Menu",
+      "reason": "Recommendation Reason",
+      "aiLabel": "AI Recommended Menu",
+      "clickHint": "Click on a menu to search for restaurants"
+    },
+    "loginRequired": "Login is required.",
+    "promptRequired": "Please enter a menu recommendation request.",
+    "history": "Recommendation History",
+    "selectionHistory": "Menu Selection History",
+    "selectionHistoryDesc": "View and manage your selected menus by date.",
+    "historyDesc": "Check your past menu recommendations.",
+    "noHistory": "No recommendation history.",
+    "noSelections": "No selected menus.",
+    "noRecommendationsForDate": "No recommendations received on the selected date.",
+    "viewAllHistory": "View All History",
+    "filterReset": "Reset Filter",
+    "showingDateOnly": "Showing recommendations for",
+    "loadMore": "Load More",
+    "loadingMore": "Loading...",
+    "totalCount": "Total {{count}} recommendations (All loaded)",
+    "dateFilter": "Date Filter",
+    "viewAll": "View All",
+    "editMode": "Edit",
+    "exitEditMode": "Exit Edit",
+    "cancelAll": "Cancel All",
+    "modify": "Modify",
+    "deleteMenu": "Delete Menu",
+    "menuSelectionSaved": "Menu selection saved.",
+    "menuSelectionCancelled": "Menu selection cancelled.",
+    "cancelMenuSelection": "Cancel Menu Selection",
+    "cancelMenuSelectionMessage": "Do you want to cancel this menu selection?",
+    "confirmCancel": "Cancel",
+    "goBack": "Go Back",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "etc": "Other",
+    "selectAtLeastOne": "Please select at least one menu.",
+    "selectMealTime": "Please select a meal time.",
+    "selectionComplete": "Menu selection completed.",
+    "selectMenu": "Select Menu",
+    "editMenu": "Edit Menu",
+    "selectMenusPlural": "Select your desired menus (multiple selection allowed)",
+    "whenToEat": "When will you eat this menu?",
+    "selectionCompleteWithCount": "Complete Selection ({{count}} items)",
+    "editCompleteWithCount": "Complete Edit ({{count}} items)",
+    "noAvailableMenus": "No menus available to select.",
+    "menuSelectionUpdated": "Menu selection has been updated."
+  },
+  "agent": {
+    "title": "Recommendations based on mood, weather, and location",
+    "subtitle": "Nearby restaurant discovery",
+    "description": "Get AI recommendations from PickEat home and check nearby stores instantly.",
+    "loginToGetRecommendation": "Sign in to get recommendations",
+    "quickStartWithKakao": "Quick start with Kakao",
+    "loginRequired": "Sign in to get personalized recommendations",
+    "loginRequiredDesc": "Once signed in, you can get mood-based recommendations and explore nearby restaurants on a single board.",
+    "goToLogin": "Go to Login Page",
+    "exploreOptions": "How would you like to explore?",
+    "normalSearch": "Normal Search",
+    "aiRecommendation": "View AI Recommendations",
+    "noLocationData": "No location data. Please register your address to search restaurants.",
+    "needsAddressForAi": "Address or location data is required to use AI recommendations.",
+    "smartCompanion": "Smart Eatery Companion",
+    "tabs": {
+      "generalSearch": "General Search",
+      "aiRecommendation": "AI Recommendation"
+    },
+    "results": {
+      "selectMenu": "Please select a menu",
+      "selectMenuHint": "Get a menu recommendation and make your choice.",
+      "noSearchResults": "No search results found.",
+      "trySearch": "Try running a general search.",
+      "noAiResults": "No AI recommendations available.",
+      "tryAiRecommendation": "Try running an AI recommendation.",
+      "noResultsYet": "No results yet.",
+      "tryBothOptions": "Try running a general search or AI recommendation."
+    }
+  },
+  "map": {
+    "title": "Naver Map",
+    "stores": "stores",
+    "totalStores": "Total {{count}} stores",
+    "selected": "Selected",
+    "loadingMap": "Loading map...",
+    "errorOccurred": "An error occurred",
+    "refresh": "Refresh",
+    "noLocationData": "No location data to display",
+    "noLocationDataDesc": "Please search for nearby restaurants first, then click the map view button.",
+    "apiKeyMissing": "Naver Map API key is not set. Please add VITE_NAVER_MAP_CLIENT_ID to .env.",
+    "noLocationError": "No location data to display. Please register your address or open the map from the restaurant list.",
+    "scriptLoadTimeout": "Naver Map script load timeout",
+    "scriptLoadFailed": "Failed to load Naver Map script",
+    "keyNotSet": "Naver Map key is not set.",
+    "noStoresToDisplay": "No stores to display.",
+    "mapInitFailed": "Failed to initialize Naver Map object.",
+    "noCoordinates": "No coordinates to display.",
+    "loadMapError": "An error occurred while loading the map."
+  },
+  "place": {
+    "selectedStore": "Selected Store",
+    "rating": "Rating",
+    "reviews": "Reviews",
+    "reviewCount": "items",
+    "openNow": "Open Now",
+    "closedNow": "Closed",
+    "photos": "Photos",
+    "storePhoto": "Store Photo",
+    "previousPhoto": "Previous Photo",
+    "nextPhoto": "Next Photo",
+    "photoNavTip": "Press left/right buttons to view other photos.",
+    "locationInfo": "Location Information",
+    "mapDragTip": "Drag the map to explore nearby locations.",
+    "storeLocation": "Store Location",
+    "reviewsTitle": "Reviews",
+    "reviewsFetched": "Fetched some reviews.",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "blogsTitle": "Additional Exploration · Blog/Web Reviews",
+    "blogsDescription": "Check out reviews and feedback from others about {{placeName}}.",
+    "noBlogsFound": "No related blog/web documents found yet.",
+    "blogWebDoc": "Blog/Web Document",
+    "noTitle": "Untitled Document",
+    "blogSearchFailed": "Blog search failed."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": {
+      "invalid": "Invalid email format.",
+      "required": "Please enter your email.",
+      "duplicateCheckRequired": "Please check email availability.",
+      "verificationRequired": "Please complete email verification."
+    },
+    "password": {
+      "tooShort": "Password must be at least {{minLength}} characters.",
+      "mismatch": "Passwords do not match.",
+      "required": "Please enter your password.",
+      "confirmRequired": "Please confirm your password.",
+      "emailAndPasswordRequired": "Please enter email and password."
+    },
+    "name": {
+      "required": "Please enter your name."
+    },
+    "verificationCode": {
+      "required": "Please enter the verification code.",
+      "invalid": "Invalid verification code."
+    },
+    "address": {
+      "required": "Please select an address."
+    },
+    "bugReport": {
+      "categoryRequired": "Please select a category.",
+      "titleRequired": "Please enter a title.",
+      "titleTooLong": "Title must be 30 characters or less.",
+      "contentRequired": "Please enter detailed content.",
+      "contentTooLong": "Content must be 500 characters or less.",
+      "imageLimitExceeded": "You can upload up to 5 images.",
+      "imageSizeExceeded": "Image size must be 5MB or less.",
+      "imageFormatInvalid": "Unsupported image format. (Only jpg, jpeg, png, gif, webp allowed)"
+    }
+  },
+  "success": {
+    "login": "Successfully logged in.",
+    "logout": "Successfully logged out.",
+    "register": "Registration completed.",
+    "orderCreated": "Order placed successfully."
+  },
+  "oauth": {
+    "error": {
+      "noCode": "Failed to receive authorization code.",
+      "noToken": "Token was not issued.",
+      "loginFailed": "Login failed.",
+      "statusCode": "Status code",
+      "unknown": "An unknown error occurred."
+    },
+    "reRegister": {
+      "title": "Re-registration Notice",
+      "message": "You have a withdrawal history. Would you like to re-register?",
+      "confirm": "Re-register",
+      "cancel": "Cancel",
+      "processing": "Processing...",
+      "backToLogin": "Back to Login",
+      "emailLabel": "Email for re-registration",
+      "emailNotFound": "Failed to retrieve email information.",
+      "confirmDescription": "If you confirm, you will be re-registered with the above email without additional input.",
+      "noEmail": "Email information is not available.",
+      "success": "Re-registration completed. Please log in."
+    },
+    "nameInput": {
+      "title": "Please enter your name",
+      "description": "Your name is required to complete Kakao login.",
+      "placeholder": "Enter name",
+      "submit": "Complete"
+    },
+    "processing": "Processing login..."
+  },
+  "passwordReset": {
+    "request": {
+      "title": "Reset Password",
+      "description": "We'll send a verification code to your registered email. Check your inbox and enter the 6-digit code.",
+      "loginHint": "If you remember your login credentials",
+      "backToLogin": "Return to login",
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your registered email"
+      },
+      "code": {
+        "label": "Verification Code",
+        "placeholder": "Enter 6-digit code",
+        "hint": "Enter the verification code sent to your registered email. Your input will not be reset, so you can retry immediately."
+      },
+      "button": {
+        "sendCode": "Send Code",
+        "resend": "Resend",
+        "resendWithCount": "Resend ({{count}} left)",
+        "waiting": "Wait {{time}}",
+        "verify": "Verify"
+      },
+      "error": {
+        "sendFailed": "Failed to send verification email.",
+        "verifyFailed": "Verification failed.",
+        "limitReached": "You've used all available sends for today."
+      },
+      "sendCodeFailed": "Send Code Failed",
+      "verifyFailed": "Verification Failed"
+    },
+    "title": "Set New Password",
+    "description": "Set a new password for the verified email. Your input will not be reset.",
+    "restartHint": "To restart the verification process",
+    "verifiedEmail": {
+      "label": "Verified Email",
+      "notFound": "Email not found."
+    },
+    "newPassword": {
+      "label": "New Password",
+      "placeholder": "Enter new password",
+      "hint": "Use at least 8 characters with letters and numbers. The server response will be shown if validation differs."
+    },
+    "confirmPassword": {
+      "label": "Confirm New Password",
+      "placeholder": "Re-enter new password"
+    },
+    "button": {
+      "submit": "Change Password",
+      "resendCode": "Get New Code"
+    },
+    "validation": {
+      "required": "Please enter a new password.",
+      "minLength": "Password must be at least 8 characters.",
+      "combination": "Use a combination of letters and numbers."
+    },
+    "error": {
+      "emailNotFound": "Email not found",
+      "restartRequired": "Please restart the reset process.",
+      "changeFailed": "Failed to change password.",
+      "title": "Password Reset Failed"
+    },
+    "success": {
+      "title": "Password Reset Complete"
+    }
+  },
+  "restaurant": {
+    "searchResults": "{{menuName}} search results ({{count}} items)",
+    "searchResultsTitle": "{{menuName}} search results",
+    "close": "Close",
+    "viewMoreOnNaverMap": "View more results on Naver Map",
+    "viewMap": "View Map",
+    "viewSite": "View Site",
+    "nearbyResults": "Nearby Restaurant Search Results",
+    "noRestaurantsFound": "No restaurants found nearby that serve this menu.",
+    "distance": "Distance",
+    "distanceKm": "Distance {{distance}}km",
+    "aiRecommendedStores": "AI Recommended Restaurants",
+    "reset": "Reset",
+    "noRecommendations": "No recommendations yet. Try AI recommendations.",
+    "tapCardForDetails": "Tap a restaurant card to view details.",
+    "aiSearching": "AI is searching for restaurants...",
+    "recommendationStores": "Recommended Stores",
+    "totalStoresVisible": "Total {{count}} stores are visible.",
+    "andMoreStores": "And {{count}} more stores",
+    "noAddress": "No address information",
+    "liveMap": "Live Map"
+  },
+  "history": {
+    "recommendationReason": "Recommendation Reason",
+    "aiRecommendation": "AI Recommendations",
+    "close": "Close",
+    "exploreOptions": "How would you like to explore {{menuName}}?",
+    "normalSearch": "Normal Search (Naver)",
+    "aiRecommendGet": "Get AI Recommendations",
+    "noLocationWarning": "No location data. Please register your address to search restaurants.",
+    "needsAddressForAi": "Address or location data is required to use AI recommendations.",
+    "loadingAiRecommendations": "Loading AI recommended restaurants...",
+    "menuLabel": "Menu"
+  },
+  "setup": {
+    "title": "Enter Information to Use the Service",
+    "subtitle": "Please enter the information below for better recommendations",
+    "name": {
+      "title": "Name",
+      "placeholder": "Enter your name",
+      "description": "Please enter the name you'll use in the service"
+    },
+    "address": {
+      "title": "Address",
+      "titleModal": "Register Address",
+      "description": "Please enter your address for nearby restaurant recommendations",
+      "descriptionModal": "Please register your address for nearby restaurant recommendations",
+      "search": "Search Address",
+      "searchPlaceholder": "Search for an address",
+      "searchDesc": "Search and select an address",
+      "selected": "Selected Address",
+      "detail": "Detailed Address",
+      "detailPlaceholder": "Enter detailed address (optional)",
+      "alias": "Alias (optional)",
+      "aliasPlaceholder": "Enter alias (e.g., Home, Office)",
+      "aliasDescription": "Enter an alias to easily identify the address (e.g., Home, Office)",
+      "setDefault": "Set as default address",
+      "noResults": "No search results.",
+      "searchFailed": "Address search failed.",
+      "saveFailed": "Failed to save address.",
+      "registered": "Address has been registered.",
+      "selectRequired": "Please select an address.",
+      "notFound": "No address found.",
+      "register": "Register"
+    },
+    "preferences": {
+      "title": "Preference Information",
+      "description": "Please enter your favorite and disliked foods",
+      "likes": "Likes",
+      "dislikes": "Dislikes",
+      "likesPlaceholder": "Enter your favorite foods or ingredients",
+      "dislikesPlaceholder": "Enter your disliked foods or ingredients",
+      "add": "Add"
+    },
+    "next": "Next",
+    "prev": "Previous",
+    "skip": "Skip",
+    "complete": "Complete",
+    "save": "Save",
+    "register": "Register",
+    "search": "Search",
+    "saveFailed": "Failed to save information."
+  },
+  "bugReport": {
+    "pageTitle": "Bug Report",
+    "pageDescription": "Let us know about any bugs or inquiries you've found.",
+    "success": "Bug report has been successfully submitted.",
+    "imageSizeError": "Image size is too large. Each image must be 5MB or less.",
+    "category": "Category",
+    "title": "Title",
+    "content": "Details",
+    "categories": {
+      "bug": "Bug Report",
+      "inquiry": "Inquiry",
+      "other": "Other"
+    },
+    "status": {
+      "unconfirmed": "Unconfirmed",
+      "confirmed": "Confirmed",
+      "fixed": "Fixed",
+      "closed": "Closed"
+    },
+    "form": {
+      "imageLabel": "Images (Optional)",
+      "submit": "Submit",
+      "submitting": "Submitting..."
+    },
+    "image": {
+      "sizeLimit": "Image size must be {{size}}MB or less.",
+      "formatError": "Unsupported image format. (Only jpg, jpeg, png, gif, webp are allowed)",
+      "maxCount": "You can upload up to {{maxImages}} images.",
+      "dragPrompt": "Drag images or click to upload",
+      "sizeInfo": "Up to {{maxImages}} images, {{size}}MB each",
+      "uploadAlt": "Upload {{index}}"
+    },
+    "detail": {
+      "content": "Details",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "userId": "User ID",
+      "statusChanged": "Status has been changed.",
+      "confirm": "Confirm",
+      "processing": "Processing..."
+    },
+    "filter": {
+      "status": "Status",
+      "category": "Category",
+      "date": "Date",
+      "searchPlaceholder": "Search by title, content, or author email..."
+    },
+    "list": {
+      "empty": "No bug reports found.",
+      "selectAll": "Select All"
+    },
+    "gallery": {
+      "title": "Images",
+      "imageAlt": "Image {{index}}",
+      "thumbnailAlt": "Thumbnail {{index}}",
+      "previous": "Previous Image",
+      "next": "Next Image"
+    },
+    "titlePlaceholder": "Enter bug report title",
+    "contentPlaceholder": "Enter detailed description of the bug"
+  },
+  "passwordInput": {
+    "minLength": "min {{minLength}} chars",
+    "confirmPlaceholder": "Re-enter your password"
+  },
+  "emailVerification": {
+    "emailAvailable": "This email is available.",
+    "didNotReceive": "Didn't receive the email?",
+    "resendLink": "Resend",
+    "title": "Email Verification",
+    "codePlaceholder": "Enter 6-digit code",
+    "sendCode": "Send Code",
+    "resend": "Resend",
+    "verify": "Verify",
+    "verified": "Verified",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
+    "checkDuplicate": "Check Duplicate",
+    "checking": "Checking...",
+    "timeRemaining": "Time remaining",
+    "codeSent": "Verification code has been sent. Please enter it within 3 minutes.",
+    "sendFailed": "Failed to send verification code. Please try again later.",
+    "verifySuccess": "Email verification completed.",
+    "verifyFailed": "Verification failed. Please check the code.",
+    "sendCodeFirst": "Please send the verification code first.",
+    "checkEmailFailed": "Failed to check email.",
+    "reRegisterPrompt": "You have a previous withdrawal history. Would you like to re-register?"
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "workflow": "Workflow",
+      "demo": "Demo",
+      "adminLogin": "Admin Login"
+    },
+    "hero": {
+      "liveStatus": "182 stores are processing orders with PickEat today",
+      "badge": "New Store Operating OS",
+      "title": "Orders, Operations, Reports",
+      "titleHighlight": "on One Screen",
+      "titleSuffix": "All in One Place",
+      "description": "PickEat consolidates all your store's order channels into one, providing the metrics your operations team needs to make quick decisions. Experience an intuitive board instead of complex spreadsheets.",
+      "ctaDemo": "Book a Demo",
+      "ctaProductTour": "View Product Tour",
+      "statsOrders": "orders processed via PickEat last week",
+      "statsFranchise": "franchise HQs integrating operational data"
+    },
+    "stats": {
+      "preparationTime": "Avg Prep Time",
+      "reorderRate": "Reorder Rate",
+      "expansionSpeed": "Store Expansion",
+      "preparationTimeValue": "12min",
+      "reorderRateValue": "74%",
+      "expansionSpeedValue": "x3",
+      "preparationTimeSub": "-36% vs previous",
+      "reorderRateSub": "+18% growth",
+      "expansionSpeedSub": "per quarter",
+      "channelDistribution": "Order Channel Distribution",
+      "dataBaseline": "Data: Last 7 days"
+    },
+    "features": {
+      "aiRecommendation": {
+        "title": "AI Order Recommendations",
+        "description": "Recommend the most satisfying menu by combining team preferences and weather data."
+      },
+      "smartSync": {
+        "title": "Smart Order Sync",
+        "description": "Order status is synchronized in real-time so stores and customers share the same information."
+      },
+      "paymentAutomation": {
+        "title": "Payment & Accounting Automation",
+        "description": "Integrate multiple revenue channels to generate reports that your accounting team can use immediately."
+      }
+    },
+    "workflow": {
+      "title": "Operations Completed in Three Steps",
+      "description": "We kept only the screens you need, from onboarding to reporting. Designed to help teams make quick decisions at every stage.",
+      "downloadGuide": "Download Onboarding Guide",
+      "step1": {
+        "title": "Menu Onboarding",
+        "description": "Load menus and options in minutes via CSV or POS integration."
+      },
+      "step2": {
+        "title": "Order Integration",
+        "description": "Bring delivery app, kiosk, and in-store orders together on the PickEat board."
+      },
+      "step3": {
+        "title": "Operations Insights",
+        "description": "Check average check size, revisit rate, and popular menu trends right on your dashboard."
+      }
+    },
+    "cta": {
+      "title": "Activate your operations dashboard in 2 weeks, regardless of team size.",
+      "description": "We conduct 1:1 configuration reviews with a solution architect and support up to 2 pilot stores for free.",
+      "buttonMeeting": "Schedule Onboarding Meeting",
+      "buttonProposal": "Get Proposal"
+    }
+  }
+}

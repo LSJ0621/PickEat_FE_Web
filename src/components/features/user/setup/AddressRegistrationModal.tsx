@@ -14,6 +14,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 interface AddressRegistrationModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ export const AddressRegistrationModal = ({
   onComplete,
   onClose,
 }: AddressRegistrationModalProps) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const addressSearch = useAddressSearch();
   const { handleError, handleSuccess } = useErrorHandler();
@@ -49,7 +51,7 @@ export const AddressRegistrationModal = ({
 
   const handleSave = async () => {
     if (!addressSearch.selectedAddress) {
-      handleError('주소를 선택해주세요.', 'AddressRegistration');
+      handleError(t('validation.address.required'), 'AddressRegistration');
       return;
     }
 
@@ -92,7 +94,7 @@ export const AddressRegistrationModal = ({
         })
       );
 
-      handleSuccess('주소가 등록되었습니다.');
+      handleSuccess(t('setup.address.registered'));
       onComplete();
     } catch (error: unknown) {
       handleError(error, 'AddressRegistration');
@@ -129,24 +131,24 @@ export const AddressRegistrationModal = ({
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
     >
-      <div 
+      <div
         className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md ${
           isAnimating ? 'modal-content-enter' : 'modal-content-exit'
         }`}
       >
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">주소 등록</h2>
+            <h2 className="text-2xl font-bold text-white">{t('setup.address.titleModal')}</h2>
             <p className="mt-2 text-sm text-slate-400">
-              주변 식당 추천을 위해 주소를 등록해주세요
+              {t('setup.address.descriptionModal')}
             </p>
           </div>
 
           {/* 주소 검색 섹션 */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white">주소 검색</h3>
-              <p className="mt-1 text-sm text-slate-400">주소를 검색하여 선택해주세요</p>
+              <h3 className="text-lg font-semibold text-white">{t('setup.address.search')}</h3>
+              <p className="mt-1 text-sm text-slate-400">{t('setup.address.searchDesc')}</p>
             </div>
             <div className="space-y-3">
               <AddressSearchInput
@@ -165,7 +167,7 @@ export const AddressRegistrationModal = ({
 
               {addressSearch.selectedAddress && (
                 <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                  <p className="text-xs text-emerald-200">선택한 주소</p>
+                  <p className="text-xs text-emerald-200">{t('setup.address.selected')}</p>
                   <p className="mt-1 text-white font-medium">
                     {addressSearch.selectedAddress.roadAddress || addressSearch.selectedAddress.address}
                   </p>
@@ -178,16 +180,16 @@ export const AddressRegistrationModal = ({
           {addressSearch.selectedAddress && (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white">별칭 (선택사항)</h3>
+                <h3 className="text-lg font-semibold text-white">{t('setup.address.alias')}</h3>
                 <p className="mt-1 text-sm text-slate-400">
-                  주소를 쉽게 구분하기 위한 별칭을 입력해주세요 (예: 집, 회사)
+                  {t('setup.address.aliasDescription')}
                 </p>
               </div>
               <input
                 type="text"
                 value={alias}
                 onChange={(e) => setAlias(e.target.value)}
-                placeholder="별칭을 입력하세요 (예: 집, 회사)"
+                placeholder={t('setup.address.aliasPlaceholder')}
                 maxLength={20}
                 className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
               />
@@ -204,7 +206,7 @@ export const AddressRegistrationModal = ({
                 disabled={isSaving}
                 className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
               >
-                취소
+                {t('common.cancel')}
               </Button>
             )}
             <Button
@@ -215,7 +217,7 @@ export const AddressRegistrationModal = ({
               disabled={!addressSearch.selectedAddress || isSaving}
               className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-white shadow-md shadow-orange-500/30"
             >
-              등록하기
+              {t('setup.register')}
             </Button>
           </div>
         </div>

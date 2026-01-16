@@ -4,11 +4,12 @@
 
 import apiClient from '@/api/client';
 import { ENDPOINTS } from '@/api/endpoints';
-import type { DeleteAccountResponse } from '@/types/auth';
+import type { Language } from '@/types/common';
 import type {
     AddressSearchResponse,
     BatchDeleteAddressRequest,
     CreateAddressRequest,
+    DeleteAccountResponse,
     DeleteAddressResponse,
     GetAddressesResponse,
     GetDefaultAddressResponse,
@@ -180,6 +181,11 @@ export const userService = {
       ENDPOINTS.USER.ADDRESS_SET_SEARCH(id)
     );
     return response.data;
+  },
+
+  // 언어 설정 변경
+  updateUserLanguage: async (language: Language): Promise<void> => {
+    await apiClient.patch(ENDPOINTS.USER.LANGUAGE, { language });
   },
 };
 

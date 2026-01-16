@@ -6,9 +6,11 @@ import { AuthPromptModal } from '@/components/common/AuthPromptModal';
 import { Button } from '@/components/common/Button';
 import { useAppSelector } from '@/store/hooks';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const HomeHero = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
@@ -18,20 +20,20 @@ export const HomeHero = () => {
       <section className="relative flex min-h-[90vh] flex-col items-center justify-center px-4 py-20 text-center">
         <div className="mb-8">
           <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80 animate-fade-in">
-            PickEat OS
+            {t('home.hero.badge')}
           </p>
           <h1 className="mt-6 text-5xl font-bold leading-tight text-white sm:text-6xl lg:text-7xl animate-fade-in-up">
-            오늘 뭐 먹지?
+            {t('home.hero.title')}
             <br />
             <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-fuchsia-500 bg-clip-text text-transparent">
-              AI 에이전트
+              {t('home.hero.titleHighlight')}
             </span>
-            에게 맡기세요
+            {t('home.hero.titleSuffix')}
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300 sm:text-xl animate-fade-in-up-delay">
-            PickEat은 메뉴 추천과 가게 탐색 과정을 자동화하는 AI 기반 추천 OS입니다.
+            {t('home.hero.description')}
             <br />
-            로그인하고 나만의 식사 플로우를 경험해보세요.
+            {t('home.hero.descriptionContinued')}
           </p>
         </div>
 
@@ -39,7 +41,7 @@ export const HomeHero = () => {
           {!isAuthenticated ? (
             <>
               <Button size="lg" onClick={() => navigate('/login')} className="px-8 py-6 text-lg">
-                로그인하고 시작하기
+                {t('home.hero.loginButton')}
               </Button>
               <Button
                 variant="ghost"
@@ -47,13 +49,13 @@ export const HomeHero = () => {
                 onClick={() => setShowAuthPrompt(true)}
                 className="px-8 py-6 text-lg"
               >
-                에이전트 화면 미리보기
+                {t('home.hero.previewButton')}
               </Button>
             </>
           ) : (
             <>
               <Button size="lg" onClick={() => navigate('/agent')} className="px-8 py-6 text-lg">
-                에이전트 바로 이용하기
+                {t('home.hero.startButton')}
               </Button>
               <Button
                 variant="ghost"
@@ -61,7 +63,7 @@ export const HomeHero = () => {
                 onClick={() => navigate('/recommendations/history')}
                 className="px-8 py-6 text-lg"
               >
-                최근 추천 이력 보기
+                {t('home.hero.historyButton')}
               </Button>
             </>
           )}

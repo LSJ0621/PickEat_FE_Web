@@ -3,6 +3,7 @@ import { useAppSelector } from '@/store/hooks';
 import { isAdminRole } from '@/utils/role';
 import type { ReactElement } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 
@@ -16,6 +17,7 @@ interface NavItem {
 const SAFE_AREA_CLASSES = 'h-[88px] sm:h-[104px]';
 
 export const AppFooter = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
@@ -26,7 +28,7 @@ export const AppFooter = () => {
   const navItems: NavItem[] = useMemo(() => {
     const baseItems: NavItem[] = [
       {
-        label: '홈',
+        label: t('navigation.home'),
         path: '/',
         icon: (
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +37,7 @@ export const AppFooter = () => {
         ),
       },
       {
-        label: '에이전트',
+        label: t('navigation.agent'),
         path: '/agent',
         requiresAuth: true,
         icon: (
@@ -45,7 +47,7 @@ export const AppFooter = () => {
         ),
       },
       {
-        label: '추천 이력',
+        label: t('navigation.history'),
         path: '/recommendations/history',
         requiresAuth: true,
         icon: (
@@ -59,14 +61,14 @@ export const AppFooter = () => {
     // Admin은 "관리" 탭, 일반 사용자는 "버그 제보" 탭
     if (isAdminRole(userRole)) {
       baseItems.push({
-        label: '관리',
+        label: t('navigation.manage'),
         path: '/admin/dashboard',
         requiresAuth: true,
         icon: <Settings className="h-6 w-6" />,
       });
     } else {
       baseItems.push({
-        label: '버그 제보',
+        label: t('navigation.bugReport'),
         path: '/bug-report',
         requiresAuth: true,
         icon: (
@@ -78,7 +80,7 @@ export const AppFooter = () => {
     }
 
     baseItems.push({
-      label: '마이페이지',
+      label: t('navigation.mypage'),
       path: '/mypage',
       requiresAuth: true,
       icon: (
@@ -89,7 +91,7 @@ export const AppFooter = () => {
     });
 
     return baseItems;
-  }, [userRole]);
+  }, [userRole, t]);
 
   const handleNavClick = (item: NavItem) => {
     if (item.requiresAuth && !isAuthenticated) {

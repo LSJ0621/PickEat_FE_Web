@@ -2,7 +2,8 @@
  * 공통 Button 컴포넌트 예시
  */
 
-import React from 'react'
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost'
@@ -19,6 +20,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
+  const { t } = useTranslation();
   const baseClasses =
     'inline-flex items-center justify-center font-semibold rounded-2xl tracking-tight transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60 disabled:cursor-not-allowed'
 
@@ -43,7 +45,7 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? '로딩 중...' : children}
+      {isLoading ? t('common.loading') : children}
     </button>
   )
 }

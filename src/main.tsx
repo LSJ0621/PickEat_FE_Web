@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { store } from './store'
 import { ToastProvider } from './components/common/ToastProvider'
+import './i18n/config'
 import './index.css'
 import Routes from './routes'
 

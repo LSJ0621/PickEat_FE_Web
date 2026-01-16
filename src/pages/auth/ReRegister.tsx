@@ -14,8 +14,10 @@ import { ERROR_MESSAGES } from '@/utils/constants';
 import { isEmpty, isPasswordMatch, isValidPassword } from '@/utils/validation';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const ReRegisterPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { handleError, handleSuccess } = useErrorHandler();
   const [searchParams] = useSearchParams();
@@ -102,7 +104,7 @@ export const ReRegisterPage = () => {
         password,
         name: name.trim(),
       });
-      handleSuccess('재가입이 완료되었습니다. 로그인해주세요.');
+      handleSuccess(t('auth.reRegister.success.message'));
       navigate('/login');
     } catch (error: unknown) {
       handleError(error, 'ReRegister');
@@ -124,8 +126,8 @@ export const ReRegisterPage = () => {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-2xl font-bold text-slate-950 shadow-lg shadow-orange-500/30">
               P
             </div>
-            <h1 className="mb-2 text-2xl font-semibold text-white">재가입</h1>
-            <p className="text-sm text-slate-300">탈퇴한 계정을 재가입합니다.</p>
+            <h1 className="mb-2 text-2xl font-semibold text-white">{t('auth.reRegister.title')}</h1>
+            <p className="text-sm text-slate-300">{t('auth.reRegister.description')}</p>
           </div>
 
           <div className="space-y-4">

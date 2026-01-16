@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { UserAddress } from '@/types/user';
@@ -31,6 +32,7 @@ export const AddressListModal = ({
   onDeleteAddresses,
   onAddAddress,
 }: AddressListModalProps) => {
+  const { t } = useTranslation();
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(open);
 
@@ -78,7 +80,7 @@ export const AddressListModal = ({
       >
         <ModalCloseButton onClose={handleClose} />
         <div className="flex items-center justify-between mb-6 pr-12">
-          <h2 className="text-2xl font-bold text-white">주소 관리</h2>
+          <h2 className="text-2xl font-bold text-white">{t('user.address.title')}</h2>
           {!isEditMode && addresses.length > 1 && (
             <Button
               size="sm"
@@ -86,7 +88,7 @@ export const AddressListModal = ({
               onClick={() => onEditModeChange(true)}
               className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
             >
-              편집
+              {t('user.address.edit')}
             </Button>
           )}
           {isEditMode && (
@@ -96,7 +98,7 @@ export const AddressListModal = ({
               onClick={handleEditComplete}
               className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
             >
-              완료
+              {t('user.address.done')}
             </Button>
           )}
         </div>
@@ -176,7 +178,7 @@ export const AddressListModal = ({
           )}
 
           {addresses.length === 0 && (
-            <p className="text-center text-slate-400 py-8">등록된 주소가 없습니다.</p>
+            <p className="text-center text-slate-400 py-8">{t('user.address.noAddresses')}</p>
           )}
 
           {/* 편집 모드에서 선택된 주소 삭제 버튼 */}
@@ -187,7 +189,7 @@ export const AddressListModal = ({
               onClick={() => onDeleteAddresses(selectedDeleteIds)}
               className="w-full bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md shadow-red-500/30"
             >
-              선택한 {selectedDeleteIds.length}개 주소 삭제
+              {t('user.address.deleteSelected', { count: selectedDeleteIds.length })}
             </Button>
           )}
 
@@ -200,13 +202,13 @@ export const AddressListModal = ({
               className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
               data-testid="address-list-add-button"
             >
-              + 주소 추가 ({addresses.length}/4)
+              {t('user.address.addAddress', { current: addresses.length, max: 4 })}
             </Button>
           )}
 
           {!isEditMode && addresses.length >= 4 && (
             <p className="text-center text-sm text-slate-400">
-              최대 4개까지 주소를 등록할 수 있습니다.
+              {t('user.address.maxAddresses', { max: 4 })}
             </p>
           )}
         </div>

@@ -3,27 +3,19 @@
  */
 
 import { useScrollAnimation } from '@/hooks/common/useScrollAnimation';
+import { useTranslation } from 'react-i18next';
 
-const steps = [
-  {
-    number: 1,
-    title: 'AI에게 오늘의 기분이나 상황을 알려주세요.',
-    description: '간단한 대화로 당신의 상황을 파악합니다.',
-  },
-  {
-    number: 2,
-    title: '추천된 메뉴 중 마음에 드는 항목을 선택하세요.',
-    description: 'AI가 제안한 메뉴 중에서 선택하면 됩니다.',
-  },
-  {
-    number: 3,
-    title: '메뉴별 AI 가게 추천으로 바로 근처 식당을 확인하세요.',
-    description: '선택한 메뉴를 판매하는 주변 식당을 추천해드립니다.',
-  },
-];
+const STEP_NUMBERS = [1, 2, 3] as const;
 
 export const HomeHowItWorks = () => {
+  const { t } = useTranslation();
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.2, delay: 100 });
+
+  const steps = STEP_NUMBERS.map((num) => ({
+    number: num,
+    title: t(`home.howItWorks.step${num}.title`),
+    description: t(`home.howItWorks.step${num}.description`),
+  }));
 
   return (
     <section ref={ref} className="py-20 px-4">
@@ -33,12 +25,12 @@ export const HomeHowItWorks = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">How it works</p>
+          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('home.howItWorks.badge')}</p>
           <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
-            AI 추천 플로우
+            {t('home.howItWorks.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
-            간단한 3단계로 원하는 메뉴와 가게를 찾아보세요.
+            {t('home.howItWorks.description')}
           </p>
         </div>
 
@@ -53,7 +45,11 @@ export const HomeHowItWorks = () => {
 };
 
 interface StepItemProps {
-  step: typeof steps[0];
+  step: {
+    number: number;
+    title: string;
+    description: string;
+  };
   index: number;
 }
 

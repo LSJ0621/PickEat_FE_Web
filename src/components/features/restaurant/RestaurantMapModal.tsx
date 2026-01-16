@@ -9,6 +9,8 @@ import type { Restaurant } from '@/types/search';
 import { MAP_CONFIG } from '@/utils/constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 
 interface RestaurantMapModalProps {
   restaurants: Restaurant[];
@@ -56,10 +58,10 @@ const ensureNaverMaps = (clientId: string) => {
         } else {
           delete windowWithCallback[callbackName];
           naverMapLoaderPromise = null;
-          reject(new Error('네이버 지도 스크립트 로드 타임아웃'));
+          reject(new Error(i18n.t('map.scriptLoadTimeout')));
         }
       };
-      
+
       checkLoaded();
     } else {
       const script = document.createElement('script');
@@ -69,7 +71,7 @@ const ensureNaverMaps = (clientId: string) => {
       script.onerror = () => {
         delete windowWithCallback[callbackName];
         naverMapLoaderPromise = null;
-        reject(new Error('네이버 지도 스크립트 로드 실패'));
+        reject(new Error(i18n.t('map.scriptLoadFailed')));
       };
       document.head.appendChild(script);
     }
@@ -99,6 +101,7 @@ const getLatLngFromRestaurant = (restaurant: Restaurant) => {
 };
 
 export const RestaurantMapModal = ({ restaurants, menuName, onClose }: RestaurantMapModalProps) => {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
@@ -122,12 +125,12 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
 
     const initMap = async () => {
       if (!clientId) {
-        setError('네이버 지도 키가 설정되지 않았습니다.');
+        setError(t('map.keyNotSet'));
         return;
       }
 
       if (restaurants.length === 0) {
-        setError('표시할 매장이 없습니다.');
+        setError(t('map.noStoresToDisplay'));
         return;
       }
 
@@ -140,9 +143,9 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
         }
 
         const naverMaps = window.naver?.maps;
-        
+
         if (!naverMaps) {
-          setError('네이버 지도 객체를 초기화하지 못했습니다.');
+          setError(t('map.mapInitFailed'));
           return;
         }
 
@@ -154,7 +157,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
           .filter((item): item is { restaurant: Restaurant; latLng: NaverLatLng } => item !== null);
 
         if (markerTargets.length === 0) {
-          setError('표시할 좌표가 없습니다.');
+          setError(t('map.noCoordinates'));
           return;
         }
 
@@ -180,7 +183,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
           const infoWindow = new naverMaps.InfoWindow({
             content: `<div style="padding:8px 12px;font-size:13px;color:#111;">
               <div style="font-weight:600;">${restaurant.name}</div>
-              <div>${restaurant.roadAddress || restaurant.address || '주소 정보 없음'}</div>
+              <div>${restaurant.roadAddress || restaurant.address || t('restaurant.noAddress')}</div>
             </div>`,
           });
 
@@ -244,7 +247,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
         setError(null);
       } catch {
         if (currentExecutionIdRef.current === executionId) {
-          setError('지도를 불러오는 중 오류가 발생했습니다.');
+          setError(t('map.loadMapError'));
         }
       }
     };
@@ -300,9 +303,9 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
         <ModalCloseButton onClose={onClose} size="lg" />
 
         <div className="w-full lg:w-80">
-          <p className="text-xs uppercase tracking-[0.45em] text-orange-200/80">Live Map</p>
-          <h3 className="mt-3 text-3xl font-semibold leading-tight">{menuName} 추천 매장</h3>
-          <p className="mt-2 text-sm text-slate-400">총 {restaurants.length}개 매장이 한눈에 보입니다.</p>
+          <p className="text-xs uppercase tracking-[0.45em] text-orange-200/80">{t('restaurant.liveMap')}</p>
+          <h3 className="mt-3 text-3xl font-semibold leading-tight">{menuName} {t('restaurant.recommendationStores')}</h3>
+          <p className="mt-2 text-sm text-slate-400">{t('restaurant.totalStoresVisible', { count: restaurants.length })}</p>
 
           <div className="mt-6 space-y-3 pr-4">
             {restaurants.slice(0, 6).map((restaurant, idx) => (
@@ -319,7 +322,7 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
             ))}
             {restaurants.length > 6 && (
               <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-2 text-sm text-slate-300">
-                외 {restaurants.length - 6}개 매장
+                {t('restaurant.andMoreStores', { count: restaurants.length - 6 })}
               </div>
             )}
           </div>

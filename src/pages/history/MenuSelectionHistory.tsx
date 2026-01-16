@@ -11,9 +11,11 @@ import { useAppSelector } from '@/store/hooks';
 import type { MenuPayload, MenuSelection, MenuSlot } from '@/types/menu';
 import { formatDateKorean } from '@/utils/format';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const MenuSelectionHistory = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError, handleSuccess } = useErrorHandler();
@@ -109,7 +111,7 @@ export const MenuSelectionHistory = () => {
         etc,
       });
 
-      handleSuccess('메뉴 선택이 저장되었습니다.');
+      handleSuccess(t('menu.menuSelectionSaved'));
       await loadSelections();
       setEditingSelectionId(null);
       setEditingPayload(null);
@@ -133,7 +135,7 @@ export const MenuSelectionHistory = () => {
     setIsUpdating(selectionId);
     try {
       await menuService.updateMenuSelection(selectionId, { cancel: true });
-      handleSuccess('메뉴 선택이 취소되었습니다.');
+      handleSuccess(t('menu.menuSelectionCancelled'));
       await loadSelections();
     } catch (error: unknown) {
       handleError(error, 'MenuSelectionHistory');
@@ -172,15 +174,15 @@ export const MenuSelectionHistory = () => {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">메뉴 선택 이력</h1>
-          <p className="mt-2 text-sm text-slate-400">선택한 메뉴들을 날짜별로 확인하고 관리할 수 있습니다.</p>
+          <h1 className="text-3xl font-bold text-white">{t('menu.selectionHistory')}</h1>
+          <p className="mt-2 text-sm text-slate-400">{t('menu.selectionHistoryDesc')}</p>
         </div>
 
         {/* 날짜 필터 + 전체 편집 토글 */}
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
             <label htmlFor="date-filter" className="mb-2 block text-sm font-medium text-slate-200">
-              날짜 필터
+              {t('menu.dateFilter')}
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -197,7 +199,7 @@ export const MenuSelectionHistory = () => {
                   onClick={() => setSelectedDate('')}
                   className="ml-1"
                 >
-                  전체 보기
+                  {t('menu.viewAll')}
                 </Button>
               )}
             </div>
@@ -224,7 +226,7 @@ export const MenuSelectionHistory = () => {
                   : 'bg-gradient-to-r from-orange-500 to-rose-500 px-4 text-xs text-white shadow-sm shadow-orange-500/40'
               }
             >
-              {isGlobalEditing ? '편집 종료' : '편집하기'}
+              {isGlobalEditing ? t('menu.exitEditMode') : t('menu.editMode')}
             </Button>
           </div>
         </div>
@@ -235,7 +237,7 @@ export const MenuSelectionHistory = () => {
           </div>
         ) : sortedDates.length === 0 ? (
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl shadow-black/40 backdrop-blur">
-            <p className="text-slate-400">선택한 메뉴가 없습니다.</p>
+            <p className="text-slate-400">{t('menu.noSelections')}</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -249,10 +251,10 @@ export const MenuSelectionHistory = () => {
               const selection = selectionsForDate[0];
               const isEditing = editingSelectionId === selection.id;
               const slots: { key: MenuSlot; label: string }[] = [
-                { key: 'breakfast', label: '아침' },
-                { key: 'lunch', label: '점심' },
-                { key: 'dinner', label: '저녁' },
-                { key: 'etc', label: '기타' },
+                { key: 'breakfast', label: t('menu.breakfast') },
+                { key: 'lunch', label: t('menu.lunch') },
+                { key: 'dinner', label: t('menu.dinner') },
+                { key: 'etc', label: t('menu.etc') },
               ];
 
               return (
@@ -273,7 +275,7 @@ export const MenuSelectionHistory = () => {
                               disabled={isUpdating === selection.id}
                               className="font-medium text-red-400 hover:text-red-300 disabled:opacity-60"
                             >
-                              전체 취소
+                              {t('menu.cancelAll')}
                             </button>
                           )}
                           {!isEditing && (
@@ -284,7 +286,7 @@ export const MenuSelectionHistory = () => {
                               disabled={isUpdating === selection.id}
                               className="bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-sm shadow-orange-500/40"
                             >
-                              수정
+                              {t('menu.modify')}
                             </Button>
                           )}
                         </>
@@ -315,7 +317,7 @@ export const MenuSelectionHistory = () => {
                                       type="button"
                                       onClick={() => handleRemoveMenu(key, idx)}
                                       className="ml-1 text-[11px] text-orange-100/80 hover:text-white"
-                                      aria-label="메뉴 삭제"
+                                      aria-label={t('menu.deleteMenu')}
                                     >
                                       ✕
                                     </button>
@@ -340,7 +342,7 @@ export const MenuSelectionHistory = () => {
                           isLoading={isUpdating === selection.id}
                           className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-white shadow-sm shadow-emerald-500/40"
                         >
-                          저장
+                          {t('common.save')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -349,7 +351,7 @@ export const MenuSelectionHistory = () => {
                           disabled={isUpdating === selection.id}
                           className="border border-white/20 bg-white/5 px-4 text-xs text-slate-200 hover:bg-white/10"
                         >
-                          취소
+                          {t('common.cancel')}
                         </Button>
                       </>
                     )}
@@ -364,12 +366,12 @@ export const MenuSelectionHistory = () => {
       {/* 취소 확인 모달 */}
       <ConfirmDialog
         open={cancelConfirm.show}
-        title="메뉴 선택 취소"
-        message="이 메뉴 선택을 취소하시겠습니까?"
+        title={t('menu.cancelMenuSelection')}
+        message={t('menu.cancelMenuSelectionMessage')}
         onConfirm={handleCancelConfirm}
         onCancel={handleCancelCancel}
-        confirmLabel="취소하기"
-        cancelLabel="돌아가기"
+        confirmLabel={t('menu.confirmCancel')}
+        cancelLabel={t('menu.goBack')}
         variant="danger"
       />
     </div>

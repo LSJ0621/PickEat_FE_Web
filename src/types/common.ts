@@ -2,6 +2,8 @@
  * 공통 타입 정의
  */
 
+export type Language = 'ko' | 'en';
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
