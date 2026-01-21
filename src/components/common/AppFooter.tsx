@@ -2,10 +2,11 @@ import { AuthPromptModal } from '@/components/common/AuthPromptModal';
 import { useAppSelector } from '@/store/hooks';
 import { isAdminRole } from '@/utils/role';
 import type { ReactElement } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
+import { shallowEqual } from 'react-redux';
 
 interface NavItem {
   label: string;
@@ -20,8 +21,8 @@ export const AppFooter = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  const userRole = useAppSelector((state) => state.auth?.user?.role);
+  const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated, shallowEqual);
+  const userRole = useAppSelector((state) => state.auth?.user?.role, shallowEqual);
   const [showPrompt, setShowPrompt] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
@@ -101,10 +102,6 @@ export const AppFooter = () => {
     }
     navigate(item.path);
   };
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [location.pathname]);
 
   return (
     <>

@@ -112,8 +112,8 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       
       // 로컬 상태도 업데이트 (analysis 포함)
       await loadPreferences();
-      
-      handleSuccess('취향 정보가 저장되었습니다.');
+
+      handleSuccess('toast.preferences.saved');
       return true; // 성공 시 true 반환
     } catch (error: unknown) {
       handleError(error, 'usePreferences');

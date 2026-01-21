@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/common/Button';
@@ -15,6 +15,7 @@ import {
   resetAiRecommendations,
   setSelectedPlace,
 } from '@/store/slices/agentSlice';
+import { useToast } from '@/hooks/common/useToast';
 
 // Lazy load modal
 const PlaceDetailsModal = lazy(() => import('@/components/features/restaurant/PlaceDetailsModal').then(m => ({ default: m.PlaceDetailsModal })));
@@ -24,12 +25,18 @@ export const AgentPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
+  const userSetupInfo = useAppSelector((state) => ({
+    address: state.auth?.user?.address,
+    preferences: state.auth?.user?.preferences,
+  }));
+  const toast = useToast();
   const { latitude, longitude, hasLocation, address } = useUserLocation();
 
   // 섹션 위치 참조 (검색 결과 / AI 추천 카드로 스크롤 이동용)
   const restaurantSectionRef = useRef<HTMLDivElement>(null);
   const aiSectionRef = useRef<HTMLDivElement>(null);
   const resultsSectionRef = useRef<ResultsSectionRef>(null);
+  const hasRedirectedRef = useRef(false);
 
   // Redux에서 상태 가져오기
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
@@ -47,6 +54,24 @@ export const AgentPage = () => {
   });
 
   const { showConfirmCard } = useConfirmModal({ handleCancel });
+
+  // 사용자 설정 체크 및 리다이렉트
+  useEffect(() => {
+    if (hasRedirectedRef.current) return;
+    if (!isAuthenticated) return;
+
+    const needsAddress = !userSetupInfo.address;
+    const needsPreferences = !userSetupInfo.preferences ||
+      (userSetupInfo.preferences.likes.length === 0 && userSetupInfo.preferences.dislikes.length === 0);
+    const needsSetup = needsAddress || needsPreferences;
+
+    if (needsSetup) {
+      hasRedirectedRef.current = true;
+      toast.warning(t('agent.needsSetupRedirect'));
+      navigate('/mypage', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable and doesn't need to be in deps; hasRedirectedRef prevents duplicate runs
+  }, [isAuthenticated, userSetupInfo.address, userSetupInfo.preferences, navigate, t]);
 
   // 네이버 검색: 로딩 시작 직후(카드가 생긴 시점)에 카드로 스크롤 (모바일에서만)
   // 문제 4 해결: 데스크톱에서는 그리드 레이아웃으로 이미 보이므로 스크롤 불필요

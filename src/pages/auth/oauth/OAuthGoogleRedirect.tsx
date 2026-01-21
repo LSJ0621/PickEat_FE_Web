@@ -7,6 +7,7 @@ import { OAuthLoadingScreen } from '@/components/common/OAuthLoadingScreen';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
+import { getApiErrorMessage } from '@/utils/translateMessage';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -61,6 +62,7 @@ export const OAuthGoogleRedirect = () => {
             latitude: loginData.latitude ?? null,
             longitude: loginData.longitude ?? null,
             preferences: loginData.preferences ?? null,
+            preferredLanguage: 'ko',
             createdAt: new Date().toISOString(),
           },
           token: loginData.token,
@@ -90,8 +92,9 @@ export const OAuthGoogleRedirect = () => {
 
         // 그 외 에러 처리
         handleError(err, 'OAuthGoogleRedirect');
+        const errorMessage = getApiErrorMessage(err, t('oauth.error.loginFailed'));
         const statusCode = isAxiosError(err) ? err.response?.status : undefined;
-        setError(`${t('oauth.error.loginFailed')}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
+        setError(`${errorMessage}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
         setLoading(false);
       }
     };

@@ -7,6 +7,7 @@ import type { NaverLatLng } from '@/types/naverMaps';
 import type { Restaurant } from '@/types/search';
 import { useCallback, useEffect, useState } from 'react';
 import { MAP_CONFIG } from '@/utils/constants';
+import { useTranslation } from 'react-i18next';
 
 interface UseNaverMapOptions {
   mapRef: React.RefObject<HTMLDivElement | null>;
@@ -27,6 +28,7 @@ interface UseNaverMapReturn {
  */
 export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
   const { mapRef, naverClientId, restaurants, selectedRestaurant, userLatLng, blockingError } = options;
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
@@ -74,7 +76,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
 
       const naverMaps = window.naver?.maps;
       if (!naverMaps) {
-        setRuntimeError('네이버 지도 객체를 초기화하지 못했습니다.');
+        setRuntimeError(t('map.mapInitFailed'));
         setLoading(false);
         return;
       }
@@ -100,7 +102,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
       const mapCenter = selectedLatLng || userLatLngObj || restaurantMarkers[0]?.latLng;
 
       if (!mapCenter) {
-        setRuntimeError('지도에 표시할 좌표가 없습니다.');
+        setRuntimeError(t('map.noCoordinates'));
         setLoading(false);
         return;
       }
@@ -266,7 +268,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
       };
 
       window.navermap_authFailure = () => {
-        setRuntimeError('네이버 지도 인증에 실패했습니다. 클라이언트 ID를 확인해주세요.');
+        setRuntimeError(t('map.loadMapError'));
         setLoading(false);
       };
 
@@ -287,7 +289,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
       script.async = true;
       script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=geocoder&callback=${callbackName}`;
       script.onerror = () => {
-        setRuntimeError('네이버 지도 API 로드에 실패했습니다.');
+        setRuntimeError(t('map.scriptLoadFailed'));
         setLoading(false);
       };
       document.head.appendChild(script);
@@ -310,7 +312,7 @@ export const useNaverMap = (options: UseNaverMapOptions): UseNaverMapReturn => {
       }
       window.navermap_authFailure = undefined;
     };
-  }, [blockingError, naverClientId, restaurants, selectedRestaurant, userLatLng, getLatLngFromRestaurant, mapRef]);
+  }, [blockingError, naverClientId, restaurants, selectedRestaurant, userLatLng, getLatLngFromRestaurant, mapRef, t]);
 
   return {
     loading,

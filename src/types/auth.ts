@@ -2,6 +2,8 @@
  * 인증 관련 타입 정의
  */
 
+import type { Language } from './common';
+
 export interface User {
   email: string;
   name: string;
@@ -13,6 +15,7 @@ export interface User {
     dislikes: string[];
     analysis?: string | null;
   } | null;
+  preferredLanguage: Language;
   role?: string;
   createdAt?: string;
 }
@@ -106,6 +109,8 @@ export interface CheckEmailResponse {
 export interface EmailVerificationResponse {
   success: boolean;
   message?: string;
+  messageCode?: string;
+  remainCount?: number;
 }
 
 export interface ReRegisterRequest {

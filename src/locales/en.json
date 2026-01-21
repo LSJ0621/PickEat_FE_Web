@@ -15,6 +15,21 @@
     "pageLoading": "Loading page...",
     "notification": "Notification"
   },
+  "dateFilter": {
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "viewAll": "View All",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "periodQuery": "period query",
+    "afterQuery": "after query",
+    "beforeQuery": "before query",
+    "selectDate": "Select date",
+    "dateQuery": "date query",
+    "clearDate": "Clear",
+    "selectedDate": "Selected date"
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",
@@ -148,30 +163,103 @@
     }
   },
   "errors": {
+    "address": {
+      "selectToDelete": "Please select an address to delete.",
+      "cannotDeleteDefault": "Cannot delete default address. Please change the default address first.",
+      "confirmDelete": "Are you sure you want to delete {{count}} address(es)?",
+      "cannotDeleteDefaultShort": "Cannot delete default address.",
+      "maxDeleteLimit": "You can delete up to 3 addresses at a time.",
+      "selectAddress": "Please select an address.",
+      "maxAddressLimit": "You can register up to 4 addresses."
+    },
+    "agent": {
+      "noLocationData": "No location data. Please register your address.",
+      "savedResultNotFound": "You already received this recommendation but saved results were not found.",
+      "locationRequired": "Please register your address or location to use AI recommendations.",
+      "noAiResults": "No AI recommendations available."
+    },
+    "history": {
+      "noSavedAiResults": "No saved AI recommendations found."
+    },
     "AUTH_INVALID_CREDENTIALS": "Invalid email or password.",
-    "AUTH_EMAIL_NOT_VERIFIED": "Email verification is not completed.",
+    "AUTH_EMAIL_NOT_VERIFIED": "Email verification not completed.",
+    "AUTH_ACCOUNT_DEACTIVATED": "Account deactivated. Please contact administrator.",
+    "AUTH_NO_REREGISTER_ACCOUNT": "No account available for re-registration.",
+    "AUTH_REREGISTER_ERROR": "Error processing re-registration.",
+    "AUTH_EMAIL_ALREADY_REGISTERED": "Email already registered.",
+    "AUTH_EMAIL_IN_USE": "Email already in use.",
+    "AUTH_WITHDRAWAL_HISTORY_REREGISTER": "Withdrawal history exists. Please re-register.",
+    "AUTH_WITHDRAWAL_HISTORY_CONFIRM": "Withdrawal history exists. Would you like to re-register?",
+    "AUTH_EMAIL_NOT_REGISTERED": "Email not registered.",
+    "AUTH_SOCIAL_LOGIN_ACCOUNT": "Account registered with social login.",
+    "AUTH_INVALID_REFRESH_TOKEN": "Invalid refresh token.",
     "AUTH_EMAIL_ALREADY_EXISTS": "This email is already registered.",
     "AUTH_INVALID_VERIFICATION_CODE": "Invalid verification code.",
     "AUTH_VERIFICATION_CODE_EXPIRED": "Verification code has expired.",
-    "AUTH_SOCIAL_LOGIN_ACCOUNT": "This account is registered via social login.",
-    "AUTH_EMAIL_NOT_REGISTERED": "This email is not registered.",
+    "AUTH_VERIFICATION_CODE_INVALID": "Invalid verification code",
+    "AUTH_VERIFICATION_CODE_USED": "This code has already been used",
+    "AUTH_VERIFICATION_CODE_INVALIDATED": "This code has been invalidated",
+    "AUTH_VERIFICATION_BLOCKED": "Too many attempts. Please try again tomorrow",
+    "AUTH_VERIFICATION_TOO_MANY_REQUESTS": "Too many requests. Please wait and try again",
+    "AUTH_DAILY_SEND_LIMIT_EXCEEDED": "Daily send limit exceeded",
+    "AUTH_ALREADY_COMPLETED_TODAY": "Verification already completed today",
+    "AUTH_PASSWORD_CHANGE_LIMIT": "Password can only be changed once per day",
     "AUTH_RE_REGISTER_NOT_AVAILABLE": "Re-registration is not available.",
     "AUTH_RE_REGISTER_ERROR": "An error occurred during re-registration.",
     "USER_NOT_FOUND": "User not found.",
+    "USER_ALREADY_WITHDRAWN": "Account already withdrawn.",
     "USER_DEACTIVATED": "Your account has been deactivated. Please contact support.",
     "USER_MAX_ADDRESSES_EXCEEDED": "You can save up to {{maxCount}} addresses.",
     "USER_ADDRESS_NOT_FOUND": "Address not found.",
+    "ADDRESS_NOT_FOUND": "Address not found.",
+    "ADDRESS_MAX_LIMIT": "Maximum {{count}} addresses allowed.",
+    "ADDRESS_NO_ID_TO_DELETE": "No address ID to delete.",
+    "ADDRESS_CANNOT_DELETE_DEFAULT": "Cannot delete default address.",
+    "ADDRESS_LAT_LNG_REQUIRED": "Latitude and longitude required.",
+    "ADDRESS_UPDATE_FAILED": "Address update failed.",
+    "MENU_INVALID_SELECTION_ID": "Invalid selection ID.",
+    "MENU_NAME_REQUIRED": "menuName parameter required.",
+    "MENU_INVALID_HISTORY_ID": "Invalid recommendation history ID.",
+    "MENU_DEFAULT_ADDRESS_REQUIRED": "Please set a default address.",
+    "MENU_HISTORY_NOT_FOUND": "Recommendation history not found.",
     "MENU_SELECTION_NOT_FOUND": "Selection history not found.",
     "MENU_EMPTY": "Menu is empty.",
+    "MENU_HISTORY_OWNERSHIP_REQUIRED": "You can only link selections to your own recommendation history.",
+    "MENU_RECOMMENDATION_ID_REQUIRED": "Menu recommendation ID is required.",
+    "PLACE_ALREADY_RECOMMENDED": "AI place recommendation has already been received.",
+    "PLACE_SEARCH_NO_RESULTS": "No search results found.",
+    "PLACE_AI_RECOMMENDATION_FAILED": "Failed to generate AI recommendation results.",
+    "NOTIFICATION_NOT_FOUND": "Notification not found.",
+    "BUG_REPORT_NOT_FOUND": "Bug report not found.",
+    "ADMIN_USER_NOT_FOUND": "Admin user not found.",
+    "ADMIN_USER_ALREADY_DEACTIVATED": "User already deactivated.",
+    "ADMIN_USER_ALREADY_ACTIVATED": "User already activated.",
+    "SEARCH_NO_RESULTS": "No search results.",
+    "LOCATION_ADDRESS_NOT_FOUND": "Address not found.",
     "EXTERNAL_AI_ERROR": "AI service error occurred.",
     "EXTERNAL_GOOGLE_PLACES_ERROR": "Place search service error occurred.",
-    "INTERNAL_SERVER_ERROR": "Internal server error occurred.",
+    "INTERNAL_SERVER_ERROR": "Internal server error.",
     "VALIDATION_ERROR": "Invalid input value.",
     "CONFIG_MISSING_ERROR": "Server configuration error occurred.",
     "NETWORK_ERROR": "Network error occurred.",
     "UNKNOWN_ERROR": "Unknown error occurred."
   },
   "messages": {
+    "AUTH_EMAIL_VERIFICATION_COMPLETED": "Email verification completed.",
+    "AUTH_PASSWORD_RESET_COMPLETED": "Password changed successfully.",
+    "AUTH_LOGOUT_COMPLETED": "Logged out successfully.",
+    "AUTH_REGISTRATION_COMPLETED": "Registration completed.",
+    "AUTH_RE_REGISTRATION_COMPLETED": "Re-registration completed. Please login.",
+    "AUTH_EMAIL_AVAILABLE": "This email is available.",
+    "AUTH_VERIFICATION_CODE_SENT": "Verification code sent. {{count}} resend(s) remaining.",
+    "AUTH_EMAIL_CONFIG_MISSING": "Email service configuration is missing.",
+    "AUTH_EMAIL_CONFIG_ERROR": "Email service error. Please try again later.",
+    "USER_WITHDRAWAL_COMPLETED": "Account deletion completed.",
+    "USER_LANGUAGE_CHANGED": "Language setting changed.",
+    "USER_ADDRESS_DELETED": "Address deleted.",
+    "NOTIFICATION_DELETED": "Notification deleted.",
+    "ADMIN_USER_DEACTIVATED": "Account deactivated.",
+    "ADMIN_USER_ACTIVATED": "Account activated.",
     "loginSuccess": "Successfully logged in.",
     "logoutSuccess": "Successfully logged out.",
     "registerSuccess": "Registration completed. Please log in."
@@ -304,6 +392,7 @@
     "aiRecommendation": "View AI Recommendations",
     "noLocationData": "No location data. Please register your address to search restaurants.",
     "needsAddressForAi": "Address or location data is required to use AI recommendations.",
+    "needsSetupRedirect": "Please register your preferences and address first.",
     "smartCompanion": "Smart Eatery Companion",
     "tabs": {
       "generalSearch": "General Search",
@@ -338,7 +427,9 @@
     "noStoresToDisplay": "No stores to display.",
     "mapInitFailed": "Failed to initialize Naver Map object.",
     "noCoordinates": "No coordinates to display.",
-    "loadMapError": "An error occurred while loading the map."
+    "loadMapError": "An error occurred while loading the map.",
+    "initFailed": "Failed to initialize map",
+    "authFailed": "Map authentication failed"
   },
   "place": {
     "selectedStore": "Selected Store",
@@ -368,6 +459,17 @@
   },
   "validation": {
     "required": "This field is required.",
+    "VALIDATION_REQUIRED": "{{field}} is required.",
+    "VALIDATION_STRING": "{{field}} must be a string.",
+    "VALIDATION_INT": "{{field}} must be an integer.",
+    "VALIDATION_MIN": "{{field}} must be at least {{min}}.",
+    "VALIDATION_MAX": "{{field}} must be at most {{max}}.",
+    "VALIDATION_MAX_LENGTH": "{{field}} max {{max}} characters.",
+    "VALIDATION_INVALID_ENUM": "Invalid {{field}} value.",
+    "VALIDATION_BOOLEAN": "{{field}} must be boolean.",
+    "VALIDATION_DATE_FORMAT": "{{field}} must be valid date format.",
+    "VALIDATION_ARRAY_MIN": "Select at least {{min}} item(s).",
+    "VALIDATION_ARRAY_MAX": "Select at most {{max}} item(s).",
     "email": {
       "invalid": "Invalid email format.",
       "required": "Please enter your email.",
@@ -401,6 +503,23 @@
       "imageSizeExceeded": "Image size must be 5MB or less.",
       "imageFormatInvalid": "Unsupported image format. (Only jpg, jpeg, png, gif, webp allowed)"
     }
+  },
+  "fields": {
+    "title": "Title",
+    "content": "Content",
+    "type": "Type",
+    "status": "Status",
+    "page": "Page",
+    "limit": "Limit",
+    "ids": "IDs",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "category": "Category",
+    "description": "Description",
+    "isPinned": "Pinned",
+    "scheduledAt": "Scheduled At",
+    "date": "Date"
   },
   "success": {
     "login": "Successfully logged in.",
@@ -672,6 +791,48 @@
     "sendCodeFirst": "Please send the verification code first.",
     "checkEmailFailed": "Failed to check email.",
     "reRegisterPrompt": "You have a previous withdrawal history. Would you like to re-register?"
+  },
+  "toast": {
+    "auth": {
+      "loginRequired": "Login required"
+    },
+    "address": {
+      "added": "Address added",
+      "updated": "Address updated",
+      "deleted": "{{count}} address(es) deleted",
+      "defaultChanged": "Default address changed"
+    },
+    "ai": {
+      "noResults": "No recommendations found",
+      "showingSavedRecommendation": "You already received this recommendation. Showing saved results."
+    },
+    "preferences": {
+      "saved": "Preferences saved"
+    },
+    "place": {
+      "detailLoadFailed": "Failed to load place details"
+    }
+  },
+  "datePicker": {
+    "title": "Select Date",
+    "today": "Today",
+    "yearSuffix": "",
+    "monthSuffix": "",
+    "daySuffix": "",
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    }
   },
   "landing": {
     "nav": {
