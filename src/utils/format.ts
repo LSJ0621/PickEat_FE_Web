@@ -22,6 +22,14 @@ export const formatDate = (date: string | Date, format: string = 'YYYY-MM-DD'): 
     .replace('ss', seconds);
 };
 
+/**
+ * 표준 날짜 포맷 (YYYY-MM-DD)
+ * 예: "2024-01-15"
+ */
+export const formatDateStandard = (date: string | Date): string => {
+  return formatDate(date, 'YYYY-MM-DD');
+};
+
 // 숫자 포맷팅 (천 단위 구분)
 export const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('ko-KR').format(num);
@@ -77,5 +85,32 @@ export const formatSeconds = (seconds: number): string => {
     .padStart(2, '0');
   const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
   return `${minutes}:${remainingSeconds}`;
+};
+
+// 날짜 범위 계산 유틸리티
+export const getDateRange = (type: 'today' | 'week' | 'month'): { start: string; end: string } => {
+  const today = new Date();
+  const endDate = formatDateStandard(today);
+
+  if (type === 'today') {
+    return { start: endDate, end: endDate };
+  }
+
+  if (type === 'week') {
+    // 이번 주 월요일 계산
+    const dayOfWeek = today.getDay();
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 일요일이면 -6, 아니면 월요일까지의 거리
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diff);
+    return { start: formatDateStandard(monday), end: endDate };
+  }
+
+  if (type === 'month') {
+    // 이번 달 1일 계산
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    return { start: formatDateStandard(firstDay), end: endDate };
+  }
+
+  return { start: '', end: '' };
 };
 

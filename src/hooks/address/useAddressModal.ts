@@ -5,8 +5,11 @@
 
 import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useAppDispatch } from '@/store/hooks';
+import { updateUser } from '@/store/slices/authSlice';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UseAddressModalOptions {
   addressesCount: number;
@@ -16,6 +19,8 @@ interface UseAddressModalOptions {
 export const useAddressModal = (options?: UseAddressModalOptions) => {
   const { addressesCount = 0, onAddressAdded } = options || {};
   const { handleError, handleSuccess } = useErrorHandler();
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   // 주소 추가/수정 모달 관련 상태
   const [addressQuery, setAddressQuery] = useState('');
@@ -62,22 +67,33 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
   // 주소 추가
   const handleAddAddress = useCallback(async (): Promise<boolean> => {
     if (!selectedAddress) {
-      handleError('주소를 선택해주세요.', 'useAddressModal');
+      handleError(t('errors.address.selectAddress'), 'useAddressModal');
       return false;
     }
 
     // 최대 4개 제한 확인
     if (addressesCount >= 4) {
-      handleError('최대 4개까지 주소를 등록할 수 있습니다.', 'useAddressModal');
+      handleError(t('errors.address.maxAddressLimit'), 'useAddressModal');
       return false;
     }
 
     setIsSaving(true);
     try {
-      await userService.createAddress({
+      const createdAddress = await userService.createAddress({
         selectedAddress,
         alias: addressAlias.trim() || undefined,
       });
+
+      // Update Redux when first address is registered (becomes default)
+      if (addressesCount === 0 && createdAddress.isDefault) {
+        dispatch(
+          updateUser({
+            address: createdAddress.roadAddress,
+            latitude: createdAddress.latitude,
+            longitude: createdAddress.longitude,
+          })
+        );
+      }
 
       // 주소 추가 후 리스트 새로고침 (콜백이 있으면 사용)
       if (onAddressAdded) {
@@ -89,7 +105,7 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
       setSelectedAddress(null);
       setAddressAlias('');
       setHasSearchedAddress(false);
-      handleSuccess('주소가 추가되었습니다.');
+      handleSuccess('toast.address.added');
       return true; // 성공 시 true 반환
     } catch (error: unknown) {
       handleError(error, 'useAddressModal');
@@ -97,7 +113,7 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
     } finally {
       setIsSaving(false);
     }
-  }, [selectedAddress, addressAlias, addressesCount, onAddressAdded, handleError, handleSuccess]);
+  }, [selectedAddress, addressAlias, addressesCount, onAddressAdded, handleError, handleSuccess, dispatch, t]);
 
   // 주소 추가 모달 초기화
   const resetAddressModal = useCallback(() => {

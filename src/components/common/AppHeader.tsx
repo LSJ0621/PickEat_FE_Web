@@ -9,12 +9,13 @@ import { UserMenu } from '@/components/common/UserMenu';
 import { useAppSelector } from '@/store/hooks';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { shallowEqual } from 'react-redux';
 
 export const AppHeader = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
+  const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated, shallowEqual);
 
   // 인증 관련 페이지에서는 헤더 오른쪽 영역을 숨겨서
   // 로그인 버튼/유저 이름이 보이지 않도록 처리

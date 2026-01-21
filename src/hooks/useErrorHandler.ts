@@ -5,6 +5,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { isAxiosError } from 'axios';
+import { useTranslation } from 'react-i18next';
 import { extractErrorMessage } from '@/utils/error';
 import { useToast } from '@/hooks/common/useToast';
 
@@ -33,25 +34,27 @@ const getErrorType = (error: unknown): ErrorTypeValue => {
 
 export const useErrorHandler = () => {
   const toast = useToast();
+  const { t } = useTranslation();
 
   const handleError = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (error: unknown, _context?: string) => {
-      const message = extractErrorMessage(error, '오류가 발생했습니다.');
+      const message = extractErrorMessage(error, t('common.error'));
       const type = getErrorType(error);
 
       // 에러 타입별 duration 설정
       const duration = type === ErrorType.VALIDATION ? 4000 : 5000;
       toast.error(message, duration);
     },
-    [toast]
+    [toast, t]
   );
 
   const handleSuccess = useCallback(
-    (message: string, duration?: number) => {
-      toast.success(message, duration);
+    (messageKey: string, interpolation?: Record<string, unknown>, duration?: number) => {
+      const translatedMessage = t(messageKey, interpolation);
+      toast.success(translatedMessage, duration);
     },
-    [toast]
+    [toast, t]
   );
 
   // Memoize the return value to prevent infinite re-renders in consumers

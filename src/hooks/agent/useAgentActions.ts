@@ -14,6 +14,7 @@ import {
 import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
 import { isAxiosError } from 'axios';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UseAgentActionsProps {
   latitude: number | null;
@@ -32,6 +33,7 @@ export function useAgentActions({
 }: UseAgentActionsProps) {
   const dispatch = useAppDispatch();
   const { handleError, handleSuccess } = useErrorHandler();
+  const { t } = useTranslation();
 
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
@@ -60,12 +62,12 @@ export function useAgentActions({
 
   const handleSearch = useCallback(async () => {
     if (!isAuthenticated) {
-      handleError('로그인이 필요합니다.', 'Agent');
+      handleError(t('toast.auth.loginRequired'), 'Agent');
       return;
     }
 
     if (!hasLocation || latitude === null || longitude === null) {
-      handleError('위치 정보가 없습니다. 주소를 등록해주세요.', 'Agent');
+      handleError(t('errors.agent.noLocationData'), 'Agent');
       return;
     }
 
@@ -99,6 +101,7 @@ export function useAgentActions({
     dispatch,
     resultsSectionRef,
     handleError,
+    t,
   ]);
 
   const handleCancel = useCallback(() => {
@@ -127,9 +130,9 @@ export function useAgentActions({
 
         if (!silent) {
           if (normalized.length === 0) {
-            handleError('이미 추천받은 이력이 있지만 저장된 결과를 찾지 못했습니다.', 'Agent');
+            handleError(t('errors.agent.savedResultNotFound'), 'Agent');
           } else {
-            handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
+            handleSuccess('toast.ai.showingSavedRecommendation');
           }
         }
       } catch (historyError) {
@@ -138,12 +141,12 @@ export function useAgentActions({
         }
       }
     },
-    [dispatch, handleError, handleSuccess]
+    [dispatch, handleError, handleSuccess, t]
   );
 
   const handleAiRecommendation = useCallback(async () => {
     if (!isAuthenticated) {
-      handleError('로그인이 필요합니다.', 'Agent');
+      handleError(t('toast.auth.loginRequired'), 'Agent');
       return;
     }
 
@@ -158,7 +161,7 @@ export function useAgentActions({
       dispatch(setShowConfirmCard(false));
       // 이미 추천받은 메뉴도 AI 탭으로 전환
       resultsSectionRef.current?.switchToTab('ai');
-      handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
+      handleSuccess('toast.ai.showingSavedRecommendation');
       return;
     }
 
@@ -170,7 +173,7 @@ export function useAgentActions({
     const queryBase = normalizedAddress || locationFallback;
 
     if (!queryBase) {
-      handleError('AI 추천을 사용하려면 주소 또는 위치 정보를 등록해주세요.', 'Agent');
+      handleError(t('errors.agent.locationRequired'), 'Agent');
       return;
     }
 
@@ -195,7 +198,7 @@ export function useAgentActions({
 
       dispatch(upsertAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
       if (normalized.length === 0) {
-        handleError('AI 추천 결과가 없습니다.', 'Agent');
+        handleError(t('errors.agent.noAiResults'), 'Agent');
       }
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
@@ -220,6 +223,7 @@ export function useAgentActions({
     handleError,
     handleSuccess,
     loadStoredAiRecommendations,
+    t,
   ]);
 
   return {

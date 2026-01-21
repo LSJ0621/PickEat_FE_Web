@@ -6,7 +6,7 @@
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { NaverLatLng } from '@/types/naverMaps';
 import type { Restaurant } from '@/types/search';
-import { MAP_CONFIG } from '@/utils/constants';
+import { MAP_CONFIG, Z_INDEX } from '@/utils/constants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -290,10 +290,11 @@ export const RestaurantMapModal = ({ restaurants, menuName, onClose }: Restauran
   }
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur ${
+    <div
+      className={`fixed inset-0 flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
     >
       <div 
         className={`relative flex w-full max-w-6xl flex-col gap-6 rounded-[36px] border border-white/10 bg-slate-950/95 p-6 text-white shadow-[0_40px_120px_rgba(2,6,23,0.8)] lg:flex-row lg:p-10 ${

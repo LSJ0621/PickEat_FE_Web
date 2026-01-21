@@ -28,6 +28,7 @@ export const mockUser: User = {
     dislikes: ['매운 음식'],
     analysis: null,
   },
+  preferredLanguage: 'ko',
   role: 'USER',
   createdAt: '2024-01-01T00:00:00.000Z',
 };

@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import type { KakaoLoginResponse } from '@/types/auth';
 import { ERROR_MESSAGES } from '@/utils/constants';
+import { getApiErrorMessage } from '@/utils/translateMessage';
 import { isEmpty } from '@/utils/validation';
 import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
@@ -77,6 +78,7 @@ export const OAuthKakaoRedirect = () => {
             latitude: data.latitude ?? null,
             longitude: data.longitude ?? null,
             preferences: data.preferences ?? null,
+            preferredLanguage: 'ko',
             createdAt: new Date().toISOString(),
           },
           token: data.token,
@@ -106,8 +108,9 @@ export const OAuthKakaoRedirect = () => {
 
         // 그 외 에러 처리
         handleError(err, 'OAuthKakaoRedirect');
+        const errorMessage = getApiErrorMessage(err, t('oauth.error.loginFailed'));
         const statusCode = isAxiosError(err) ? err.response?.status : undefined;
-        setError(`${t('oauth.error.loginFailed')}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
+        setError(`${errorMessage}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
         setLoading(false);
       }
     };
@@ -166,6 +169,7 @@ export const OAuthKakaoRedirect = () => {
           latitude: loginData.latitude ?? null,
           longitude: loginData.longitude ?? null,
           preferences: loginData.preferences ?? null,
+          preferredLanguage: 'ko',
           createdAt: new Date().toISOString(),
         },
         token: loginData.token,

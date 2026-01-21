@@ -2,9 +2,13 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 import { server } from '@tests/mocks/server';
+import i18n from '@/i18n/config';
 
 // MSW 서버 설정
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(async () => {
+  await i18n.changeLanguage('ko');
+  server.listen({ onUnhandledRequest: 'error' });
+});
 afterAll(() => server.close());
 afterEach(() => {
   cleanup();

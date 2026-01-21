@@ -5,7 +5,7 @@ import { usePlaceDetails } from '@/hooks/place/usePlaceDetails';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { MAP_CONFIG } from '@/utils/constants';
+import { MAP_CONFIG, Z_INDEX } from '@/utils/constants';
 import { useTranslation } from 'react-i18next';
 
 interface PlaceDetailsModalProps {
@@ -117,10 +117,11 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
   }
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-[10000] flex items-start justify-center bg-black/70 p-4 pt-8 backdrop-blur overflow-y-auto ${
+    <div
+      className={`fixed inset-0 flex items-start justify-center bg-black/70 p-4 pt-8 backdrop-blur overflow-y-auto ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
+      style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
         // 배경 클릭 시 모달 닫기
         if (e.target === e.currentTarget) {

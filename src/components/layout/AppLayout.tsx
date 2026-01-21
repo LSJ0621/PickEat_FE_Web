@@ -5,7 +5,6 @@
 
 import { AppFooter } from '@/components/common/AppFooter';
 import { AppHeader } from '@/components/common/AppHeader';
-import { useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
@@ -15,12 +14,10 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children, showHeader = true, showFooter = true }: AppLayoutProps) => {
-  const location = useLocation();
-
   return (
     <div className="flex min-h-screen flex-col">
       {showHeader && <AppHeader />}
-      <div key={location.pathname} className="flex flex-1 flex-col">{children}</div>
+      <div className="flex flex-1 flex-col">{children}</div>
       {showFooter && <AppFooter />}
     </div>
   );

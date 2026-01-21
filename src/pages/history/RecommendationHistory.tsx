@@ -5,7 +5,9 @@
 import { userService } from '@/api/services/user';
 import { HistoryItem } from '@/components/features/history/HistoryItem';
 import { SkeletonCardList } from '@/components/common/SkeletonCard';
+import { DateFilterPanel } from '@/components/common/DateFilterPanel';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
+import { useDateFilter } from '@/hooks/common/useDateFilter';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { RecommendationHistoryItem } from '@/types/user';
@@ -21,49 +23,51 @@ export const RecommendationHistory = () => {
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
   const [hasNext, setHasNext] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const pageRef = useRef(1);
   const isLoadingRef = useRef(false);
 
-  const handleDateChange = (date: string) => {
-    setSelectedDate(date);
-    pageRef.current = 1;
-    setHasNext(false);
-  };
-
-  const handleClearDate = () => {
-    setSelectedDate('');
-    pageRef.current = 1;
-    setHasNext(false);
-  };
+  // Date filter hook with pagination reset callback
+  const {
+    selectedDate,
+    handleDateChange,
+    handleClearDate,
+  } = useDateFilter({
+    onDateChange: () => {
+      // Reset pagination when dates change
+      pageRef.current = 1;
+      setHasNext(false);
+    },
+  });
 
   const loadHistory = useCallback(async (targetPage: number = 1, append: boolean = false) => {
     if (isLoadingRef.current) {
       return;
     }
-    
+
     isLoadingRef.current = true;
     if (append) {
       setLoadingMore(true);
     } else {
       setLoading(true);
     }
-    
+
     try {
+      // Single date filter: use selectedDate if set, otherwise fetch all
+      const dateParam = selectedDate || undefined;
       const result = await userService.getRecommendationHistory({
-        date: selectedDate || undefined,
+        date: dateParam,
         page: targetPage,
         limit: 10,
       });
-      
+
       if (append) {
         setHistory((prev) => [...prev, ...result.items]);
       } else {
         setHistory(result.items);
       }
-      
+
       pageRef.current = targetPage;
       setHasNext(result.pageInfo.hasNext);
       setTotalCount(result.pageInfo.totalCount);
@@ -121,57 +125,12 @@ export const RecommendationHistory = () => {
           </div>
 
           {/* 날짜 필터 */}
-          {selectedDate && (
-            <div className="mb-8">
-              <div className="flex items-center gap-2">
-                <div className="relative rounded-xl border border-orange-500/50 bg-orange-500/10 transition-all">
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="w-[150px] cursor-pointer bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:rounded [&::-webkit-calendar-picker-indicator]:p-1 [&::-webkit-calendar-picker-indicator]:hover:bg-white/10 [&::-webkit-calendar-picker-indicator]:invert"
-                  />
-                </div>
-                
-                <button
-                  onClick={handleClearDate}
-                  className="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
-                  title={t('menu.filterReset')}
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                <span>
-                  <span className="text-orange-400 font-medium">
-                    {new Date(selectedDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </span>
-                  {t('menu.showingDateOnly')}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {!selectedDate && (
-            <div className="mb-8">
-              <div className="flex items-center gap-2">
-                <div className="relative rounded-xl border border-white/10 bg-white/5 transition-all hover:border-white/20">
-                  <input
-                    type="date"
-                    value=""
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="w-[150px] cursor-pointer bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:rounded [&::-webkit-calendar-picker-indicator]:p-1 [&::-webkit-calendar-picker-indicator]:hover:bg-white/10 [&::-webkit-calendar-picker-indicator]:invert"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="mb-8">
+            <DateFilterPanel
+              selectedDate={selectedDate}
+              onDateChange={handleDateChange}
+            />
+          </div>
 
           {loading ? (
             <div className="space-y-4">
