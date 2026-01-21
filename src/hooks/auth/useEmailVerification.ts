@@ -8,6 +8,7 @@ import { useVerificationTimer } from '@/hooks/auth/useVerificationTimer';
 import { ERROR_MESSAGES } from '@/utils/constants';
 import { extractErrorMessage } from '@/utils/error';
 import { formatSeconds } from '@/utils/format';
+import { getApiSuccessMessage, getApiErrorMessage } from '@/utils/translateMessage';
 import { isEmpty, isValidEmail } from '@/utils/validation';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -143,19 +144,18 @@ export const useEmailVerification = (
     setEmailError(undefined);
     try {
       const response = await authService.sendEmailVerificationCode(email, verificationType);
-      const serverMessage =
-        response?.message || t('emailVerification.codeSent');
+      const serverMessage = getApiSuccessMessage(
+        response,
+        response.remainCount !== undefined ? { count: response.remainCount } : undefined
+      );
       setIsCodeSent(true);
       setIsEmailVerified(false);
       setVerificationCode('');
       verificationTimer.start(180);
-      setVerificationMessage(serverMessage);
+      setVerificationMessage(serverMessage || t('emailVerification.codeSent'));
       setVerificationMessageVariant('success');
     } catch (error: unknown) {
-      const errorMessage = extractErrorMessage(
-        error,
-        t('emailVerification.sendFailed')
-      );
+      const errorMessage = getApiErrorMessage(error, t('emailVerification.sendFailed'));
 
       setVerificationMessage(errorMessage);
       setVerificationMessageVariant('error');
@@ -185,16 +185,13 @@ export const useEmailVerification = (
     setEmailError(undefined);
     try {
       const response = await authService.verifyEmailCode(email, verificationCode.trim(), verificationType);
-      const serverMessage = response?.message || t('emailVerification.verifySuccess');
+      const serverMessage = getApiSuccessMessage(response);
       setIsEmailVerified(true);
       verificationTimer.stop();
-      setVerificationMessage(serverMessage);
+      setVerificationMessage(serverMessage || t('emailVerification.verifySuccess'));
       setVerificationMessageVariant('success');
     } catch (error: unknown) {
-      const errorMessage = extractErrorMessage(
-        error,
-        t('emailVerification.verifyFailed')
-      );
+      const errorMessage = getApiErrorMessage(error, t('emailVerification.verifyFailed'));
 
       setVerificationMessage(errorMessage);
       setVerificationMessageVariant('error');

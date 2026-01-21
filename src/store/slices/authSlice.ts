@@ -11,6 +11,7 @@ import type { Language } from '@/types/common';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { clearAgentState } from './agentSlice';
+import i18n from '@/i18n/config';
 
 interface AuthState {
   user: User | null;
@@ -168,6 +169,21 @@ const authSlice = createSlice({
         if (action.payload) {
           state.user = normalizeUser(action.payload.user);
           state.isAuthenticated = true;
+
+          // 서버의 preferredLanguage와 동기화
+          const serverLanguage = action.payload.user?.preferredLanguage;
+          // 유효한 언어인지 검증 후 적용, 유효하지 않으면 기본값 사용
+          if (serverLanguage && (serverLanguage === 'ko' || serverLanguage === 'en')) {
+            state.language = serverLanguage;
+            i18n.changeLanguage(serverLanguage);
+            localStorage.setItem('i18nextLng', serverLanguage);
+          } else if (serverLanguage) {
+            // 유효하지 않은 언어가 전달된 경우 기본값으로 fallback
+            const defaultLang = 'ko';
+            state.language = defaultLang;
+            i18n.changeLanguage(defaultLang);
+            localStorage.setItem('i18nextLng', defaultLang);
+          }
         } else {
           state.user = null;
           state.isAuthenticated = false;

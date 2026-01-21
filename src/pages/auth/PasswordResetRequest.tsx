@@ -1,7 +1,7 @@
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
 import { StatusPopupCard } from '@/components/common/StatusPopupCard';
-import { extractErrorMessage } from '@/utils/error';
+import { getApiSuccessMessage, getApiErrorMessage } from '@/utils/translateMessage';
 import { isEmpty } from '@/utils/validation';
 import { ERROR_MESSAGES } from '@/utils/constants';
 import { isAxiosError } from 'axios';
@@ -65,7 +65,12 @@ export const PasswordResetRequestPage = () => {
     try {
       const response = await authService.sendPasswordResetCode(email.trim());
       setIsCodeSent(true);
-      setInfoMessage(response.message);
+      setInfoMessage(
+        getApiSuccessMessage(
+          response,
+          response.remainCount !== undefined ? { count: response.remainCount } : undefined
+        )
+      );
       if (typeof response.retryAfter === 'number') {
         setCooldownRemaining(Math.ceil(response.retryAfter));
       }
@@ -75,7 +80,7 @@ export const PasswordResetRequestPage = () => {
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         const status = error.response.status;
-        const message = error.response.data?.message ?? t('passwordReset.request.error.sendFailed');
+        const message = getApiErrorMessage(error, t('passwordReset.request.error.sendFailed'));
         if (status === 400) {
           setErrors((prev) => ({ ...prev, email: message }));
         } else if (status === 429) {
@@ -100,7 +105,7 @@ export const PasswordResetRequestPage = () => {
         setPopup({
           open: true,
           title: t('passwordReset.request.sendCodeFailed'),
-          message: extractErrorMessage(error, t('passwordReset.request.error.sendFailed')),
+          message: getApiErrorMessage(error, t('passwordReset.request.error.sendFailed')),
           variant: 'error',
         });
       }
@@ -127,12 +132,12 @@ export const PasswordResetRequestPage = () => {
         sessionStorage.setItem(RESET_EMAIL_STORAGE_KEY, email.trim());
         navigate(`/password/reset?email=${encodeURIComponent(email.trim())}`);
       } else {
-        setErrors((prev) => ({ ...prev, code: response.message ?? t('passwordReset.request.error.verifyFailed') }));
+        setErrors((prev) => ({ ...prev, code: getApiErrorMessage(response, t('passwordReset.request.error.verifyFailed')) }));
       }
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
         const status = error.response.status;
-        const message = error.response.data?.message ?? t('passwordReset.request.error.verifyFailed');
+        const message = getApiErrorMessage(error, t('passwordReset.request.error.verifyFailed'));
         if (status === 400) {
           setErrors((prev) => ({ ...prev, code: message }));
         } else {
@@ -147,7 +152,7 @@ export const PasswordResetRequestPage = () => {
         setPopup({
           open: true,
           title: t('passwordReset.request.verifyFailed'),
-          message: extractErrorMessage(error, t('passwordReset.request.error.verifyFailed')),
+          message: getApiErrorMessage(error, t('passwordReset.request.error.verifyFailed')),
           variant: 'error',
         });
       }

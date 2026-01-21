@@ -7,6 +7,7 @@ import { BugReportImageGallery } from './BugReportImageGallery';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import type { GetBugReportDetailResponse } from '@/types/bug-report';
+import { Z_INDEX } from '@/utils/constants';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -142,9 +143,10 @@ export const BugReportDetailModal = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[10000] flex items-start justify-center bg-black/70 p-4 pt-8 backdrop-blur overflow-y-auto ${
+      className={`fixed inset-0 flex items-start justify-center bg-black/70 p-4 pt-8 backdrop-blur overflow-y-auto ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
+      style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

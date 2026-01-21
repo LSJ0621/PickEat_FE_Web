@@ -11,6 +11,7 @@ import type { PlaceRecommendationItem } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
 import { isAxiosError } from 'axios';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UseHistoryAiRecommendationsOptions {
   historyItem: RecommendationHistoryItem;
@@ -38,6 +39,7 @@ export const useHistoryAiRecommendations = (
   const { latitude, longitude, address } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError, handleSuccess } = useErrorHandler();
+  const { t } = useTranslation();
 
   const loadStoredAiRecommendations = useCallback(
     async (menuName: string, { silent }: { silent?: boolean } = {}) => {
@@ -56,9 +58,9 @@ export const useHistoryAiRecommendations = (
 
         if (!silent) {
           if (normalized.length === 0) {
-            handleError('저장된 AI 추천 결과가 없습니다.', 'HistoryAiRecommendations');
+            handleError(t('errors.history.noSavedAiResults'), 'HistoryAiRecommendations');
           } else {
-            handleSuccess('이미 추천받은 메뉴입니다. 저장된 결과를 보여드렸어요.');
+            handleSuccess('toast.ai.showingSavedRecommendation');
           }
         }
       } catch (historyError) {
@@ -67,13 +69,13 @@ export const useHistoryAiRecommendations = (
         }
       }
     },
-    [historyItem.id, handleError, handleSuccess]
+    [historyItem.id, handleError, handleSuccess, t]
   );
 
   const handleAiRecommend = useCallback(
     async (selectedMenu: string) => {
       if (!isAuthenticated) {
-        handleError('로그인이 필요합니다.', 'HistoryAiRecommendations');
+        handleError(t('toast.auth.loginRequired'), 'HistoryAiRecommendations');
         return;
       }
 
@@ -84,7 +86,7 @@ export const useHistoryAiRecommendations = (
       const queryBase = normalizedAddress || locationFallback;
 
       if (!queryBase) {
-        handleError('AI 추천을 사용하려면 주소 또는 위치 정보가 필요합니다.', 'HistoryAiRecommendations');
+        handleError(t('errors.agent.locationRequired'), 'HistoryAiRecommendations');
         return;
       }
 
@@ -107,7 +109,7 @@ export const useHistoryAiRecommendations = (
 
         setAiRecommendations(normalized);
         if (normalized.length === 0) {
-          handleError('AI 추천 결과가 없습니다.', 'HistoryAiRecommendations');
+          handleError(t('errors.agent.noAiResults'), 'HistoryAiRecommendations');
         }
       } catch (error) {
         if (isAxiosError(error) && error.response?.status === 400) {
@@ -120,7 +122,7 @@ export const useHistoryAiRecommendations = (
         setAiLoadingMenu(null);
       }
     },
-    [isAuthenticated, historyItem, address, latitude, longitude, loadStoredAiRecommendations, handleError]
+    [isAuthenticated, historyItem, address, latitude, longitude, loadStoredAiRecommendations, handleError, t]
   );
 
   const resetAiRecommendations = useCallback(() => {

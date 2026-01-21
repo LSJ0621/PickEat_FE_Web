@@ -73,128 +73,80 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   const hasRequestedMenuRecommendation =
     menuRecommendations.length > 0 || isMenuRecommendationLoading;
 
-  // 메뉴 선택 시 스크롤 처리 (탭 변경은 모달에서 선택한 후에만)
+  // Unified effect: Handle menu changes, scroll, and tab state
+  // This consolidates the previous 3 useEffect hooks to prevent cascading state updates
   useEffect(() => {
-    // 메뉴가 새로 선택되었을 때
-    if (selectedMenu && selectedMenu !== previousSelectedMenuRef.current) {
-      // ⚠️ 중요: 모달에서 선택하기 전에는 탭 변경하지 않음
-      // 탭 변경은 Agent.tsx의 handleSearch/handleAiRecommendation에서 처리
-      // 여기서는 스크롤만 처리
-      
-      // 새 메뉴 선택 시 사용자 선택 초기화 (다음 선택을 위해)
+    // Handle menu change - reset tracking and scroll
+    if (selectedMenu !== previousSelectedMenuRef.current) {
+      // Reset user tab selection on new menu
       userSelectedTabRef.current = null;
 
-      // 모바일에서 결과 영역으로 스크롤 (데스크톱은 이미 보이므로 스크롤 불필요)
-      // 데스크톱에서는 그리드 레이아웃으로 결과가 이미 보이므로 스크롤 불필요
-      let timer: ReturnType<typeof setTimeout> | null = null;
-      if (resultsSectionRef.current && window.innerWidth < 768) {
-        // 약간의 지연을 두어 DOM 업데이트 후 스크롤
-        timer = setTimeout(() => {
-          resultsSectionRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }, 150);
-      }
-      
-      previousSelectedMenuRef.current = selectedMenu;
-      
-      return () => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      };
-    } else {
-      previousSelectedMenuRef.current = selectedMenu;
-    }
-  }, [selectedMenu, searchCount, hasAiRecommendations, isSearching, aiLoadingMenu]);
-
-  // AI 추천 완료 후에도 AI 추천 탭 유지 (계획서 요구사항)
-  // ⚠️ 중요: 탭 전환은 Agent.tsx의 handleAiRecommendation에서 이미 처리됨
-  // 여기서는 AI 추천이 완료된 후에도 탭이 유지되도록 보장
-  useEffect(() => {
-    if (!selectedMenu) return;
-    
-    // 사용자가 명시적으로 일반 검색을 선택한 경우는 제외
-    if (userSelectedTabRef.current === 'search') {
-      return;
-    }
-
-    // 메뉴가 변경된 경우는 탭을 변경하지 않음 (모달에서 선택할 때까지 유지)
-    const isMenuChanged = previousSelectedMenuRef.current !== selectedMenu;
-    if (isMenuChanged) {
+      // Reset count refs for new menu
+      previousSearchCountRef.current = searchCount;
       const currentAiCount = aiRecommendationGroups.reduce(
         (sum, group) => sum + (group.menuName === selectedMenu ? group.recommendations.length : 0),
         0
       );
       previousAiCountRef.current = currentAiCount;
+
+      // Scroll to results on mobile when menu is selected
+      if (selectedMenu && resultsSectionRef.current && window.innerWidth < 768) {
+        const timer = setTimeout(() => {
+          resultsSectionRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 150);
+
+        previousSelectedMenuRef.current = selectedMenu;
+        return () => clearTimeout(timer);
+      }
+
+      previousSelectedMenuRef.current = selectedMenu;
       return;
     }
 
-    // AI 추천이 시작되었을 때 (이미 Agent.tsx에서 탭 전환했지만, 추가 보장)
+    // Only process tab changes if menu hasn't changed
+    if (!selectedMenu) return;
+
+    // Track AI loading state
     if (aiLoadingMenu && selectedMenu) {
-      // Agent.tsx에서 이미 탭을 전환했으므로, 여기서는 userSelectedTabRef만 업데이트
       userSelectedTabRef.current = 'ai';
     }
-    
-    // AI 추천 결과가 실제로 변경되었을 때만 탭 변경 (새로운 AI 추천이 완료된 경우)
+
+    // Calculate current counts for this menu
     const currentAiCount = aiRecommendationGroups.reduce(
       (sum, group) => sum + (group.menuName === selectedMenu ? group.recommendations.length : 0),
       0
     );
-    const isAiResultChanged = previousAiCountRef.current !== currentAiCount;
-    
-    // AI 추천이 완료되었을 때 AI 탭 유지
-    const currentMenuAiRecommendations = aiRecommendationGroups.find(
+    const currentMenuHasAiResults = aiRecommendationGroups.some(
       (group) => group.menuName === selectedMenu && group.recommendations.length > 0
     );
-    if (isAiResultChanged && currentMenuAiRecommendations && !aiLoadingMenu && !isSearching) {
-      // AI 추천을 선택한 경우 AI 탭 유지
-      userSelectedTabRef.current = 'ai';
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveTab('ai');
-    }
 
-    previousAiCountRef.current = currentAiCount;
-  }, [selectedMenu, aiLoadingMenu, aiRecommendationGroups, isSearching]);
-
-  // 일반 검색 완료 후에도 일반 검색 탭 유지 (계획서 요구사항)
-  // ⚠️ 중요: 탭 전환은 Agent.tsx의 handleSearch에서 이미 처리됨
-  // 여기서는 일반 검색이 완료된 후에도 탭이 유지되도록 보장
-  useEffect(() => {
-    if (!selectedMenu) return;
-    
-    // 사용자가 명시적으로 AI 추천을 선택한 경우는 제외
-    if (userSelectedTabRef.current === 'ai') {
-      return;
-    }
-
-    // 메뉴가 변경된 경우는 탭을 변경하지 않음 (모달에서 선택할 때까지 유지)
-    const isMenuChanged = previousSelectedMenuRef.current !== selectedMenu;
-    if (isMenuChanged) {
-      previousSearchCountRef.current = searchCount;
-      return;
-    }
-
-    // 검색 결과가 실제로 변경되었을 때만 탭 변경 (새로운 검색이 완료된 경우)
+    // Detect changes in results
+    const isAiResultChanged = previousAiCountRef.current !== currentAiCount;
     const isSearchResultChanged = previousSearchCountRef.current !== searchCount;
-    
-    // 일반 검색이 완료되었을 때 일반 검색 탭 유지
-    if (isSearchResultChanged && searchCount > 0 && !isSearching && !aiLoadingMenu) {
-      const currentMenuAiRecommendations = aiRecommendationGroups.find(
-        (group) => group.menuName === selectedMenu && group.recommendations.length > 0
-      );
-      // 현재 메뉴에 AI 추천 결과가 없고 일반 검색 결과만 있는 경우
-      if (!currentMenuAiRecommendations) {
-        // 일반 검색을 선택한 경우 일반 검색 탭 유지
-        userSelectedTabRef.current = 'search';
+
+    // Update tab based on completed results (not loading states)
+    // Only change tab if user hasn't manually selected one, and results have actually changed
+    if (!isSearching && !aiLoadingMenu) {
+      // AI recommendation completed
+      if (isAiResultChanged && currentMenuHasAiResults && userSelectedTabRef.current !== 'search') {
+        userSelectedTabRef.current = 'ai';
         // eslint-disable-next-line react-hooks/set-state-in-effect
+        setActiveTab('ai');
+      }
+      // Search completed (only if no AI results exist for this menu)
+      else if (isSearchResultChanged && searchCount > 0 && !currentMenuHasAiResults && userSelectedTabRef.current !== 'ai') {
+        userSelectedTabRef.current = 'search';
         setActiveTab('search');
       }
     }
 
+    // Update refs
+    previousAiCountRef.current = currentAiCount;
     previousSearchCountRef.current = searchCount;
-  }, [selectedMenu, searchCount, isSearching, aiLoadingMenu, aiRecommendationGroups]);
+  }, [selectedMenu, searchCount, aiRecommendationGroups, isSearching, aiLoadingMenu]);
 
   // 빈 상태
   if (

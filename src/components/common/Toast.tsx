@@ -3,6 +3,7 @@
  * 성공/에러/경고/정보 메시지를 표시하는 Toast 알림
  */
 
+import { Z_INDEX } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -105,7 +106,7 @@ export const ToastContainer = ({ toasts, onClose }: ToastContainerProps) => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[10001] flex flex-col-reverse gap-3">
+    <div className="fixed bottom-4 right-4 flex flex-col-reverse gap-3" style={{ zIndex: Z_INDEX.TOAST }}>
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={onClose} />
       ))}

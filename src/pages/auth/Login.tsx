@@ -8,9 +8,8 @@ import { StatusPopupCard } from '@/components/common/StatusPopupCard';
 import { useAppDispatch } from '@/store/hooks';
 import { initializeAuth, setLoading } from '@/store/slices/authSlice';
 import { ERROR_MESSAGES } from '@/utils/constants';
-import { extractErrorMessage } from '@/utils/error';
+import { getApiErrorMessage } from '@/utils/translateMessage';
 import { isEmpty } from '@/utils/validation';
-import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -83,20 +82,7 @@ export const LoginPage = () => {
 
       navigate(location.state?.redirectTo || '/');
     } catch (error: unknown) {
-      const status = isAxiosError(error) ? error.response?.status : undefined;
-      const serverMessage =
-        isAxiosError(error) &&
-        typeof error.response?.data === 'object' &&
-        error.response?.data !== null &&
-        'message' in error.response.data &&
-        typeof (error.response.data as { message?: unknown }).message === 'string'
-          ? (error.response.data as { message: string }).message
-          : undefined;
-
-      const message =
-        status === 401
-          ? serverMessage || extractErrorMessage(error, t('auth.loginError'))
-          : extractErrorMessage(error, t('auth.loginError'));
+      const message = getApiErrorMessage(error, t('auth.loginError'));
 
       setErrorPopup({
         open: true,

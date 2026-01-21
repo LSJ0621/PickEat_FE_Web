@@ -126,3 +126,14 @@ export const BUG_REPORT = {
   CATEGORY_KEYS: ['bug', 'inquiry', 'other'] as const,
 } as const;
 
+// Z-Index 체계
+export const Z_INDEX = {
+  HEADER: 30,
+  FOOTER: 30,
+  DROPDOWN: 50,
+  MODAL_BACKDROP: 100,
+  MODAL_CONTENT: 101,
+  PRIORITY_MODAL: 200,
+  TOAST: 300,
+} as const;
+
