@@ -9,10 +9,12 @@ import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
 import type { UserAddress } from '@/types/user';
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const useAddressList = () => {
   const dispatch = useAppDispatch();
   const { handleError, handleSuccess } = useErrorHandler();
+  const { t } = useTranslation();
 
   // 주소 리스트 관련 상태
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
@@ -61,7 +63,7 @@ export const useAddressList = () => {
       );
       
       await loadAddresses();
-      handleSuccess('기본 주소가 변경되었습니다.');
+      handleSuccess('toast.address.defaultChanged');
     } catch (error: unknown) {
       handleError(error, 'useAddressList');
     }
@@ -90,7 +92,7 @@ export const useAddressList = () => {
   // 주소 삭제 (배열로 여러 개 삭제)
   const handleDeleteAddresses = useCallback(async (ids: number[]) => {
     if (ids.length === 0) {
-      handleError('삭제할 주소를 선택해주세요.', 'useAddressList');
+      handleError(t('errors.address.selectToDelete'), 'useAddressList');
       return;
     }
 
@@ -101,11 +103,11 @@ export const useAddressList = () => {
     });
 
     if (hasDefaultAddress) {
-      handleError('기본주소는 삭제할 수 없습니다. 기본주소를 변경한 후 삭제해주세요.', 'useAddressList');
+      handleError(t('errors.address.cannotDeleteDefault'), 'useAddressList');
       return;
     }
 
-    if (!confirm(`정말 ${ids.length}개의 주소를 삭제하시겠습니까?`)) {
+    if (!confirm(t('errors.address.confirmDelete', { count: ids.length }))) {
       return;
     }
 
@@ -113,11 +115,11 @@ export const useAddressList = () => {
       await userService.deleteAddresses(ids);
       await loadAddresses();
       setSelectedDeleteIds([]);
-      handleSuccess(`${ids.length}개의 주소가 삭제되었습니다.`);
+      handleSuccess('toast.address.deleted', { count: ids.length });
     } catch (error: unknown) {
       handleError(error, 'useAddressList');
     }
-  }, [addresses, loadAddresses, handleError, handleSuccess]);
+  }, [addresses, loadAddresses, handleError, handleSuccess, t]);
 
   // 주소 삭제 선택 토글
   const handleToggleDeleteSelection = useCallback((id: number) => {
@@ -127,17 +129,17 @@ export const useAddressList = () => {
       // 기본주소는 선택할 수 없음
       const addr = addresses.find((a) => a.id === id);
       if (addr?.isDefault) {
-        handleError('기본주소는 삭제할 수 없습니다.', 'useAddressList');
+        handleError(t('errors.address.cannotDeleteDefaultShort'), 'useAddressList');
         return;
       }
       // 최대 3개까지 선택 가능
       if (selectedDeleteIds.length >= 3) {
-        handleError('최대 3개까지 삭제할 수 있습니다.', 'useAddressList');
+        handleError(t('errors.address.maxDeleteLimit'), 'useAddressList');
         return;
       }
       setSelectedDeleteIds([...selectedDeleteIds, id]);
     }
-  }, [selectedDeleteIds, addresses, handleError]);
+  }, [selectedDeleteIds, addresses, handleError, t]);
 
   // 주소 리스트 모달 초기화
   const resetAddressListModal = useCallback(() => {

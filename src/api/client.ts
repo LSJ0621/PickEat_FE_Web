@@ -26,6 +26,7 @@ const refreshClient = axios.create({
 });
 
 let refreshTokenRequest: Promise<string | null> | null = null;
+let isRedirecting = false; // Prevent duplicate redirects during concurrent 401 errors
 
 const fetchNewAccessToken = async () => {
   const response = await refreshClient.post<AuthResponse>(ENDPOINTS.AUTH.REFRESH);
@@ -57,27 +58,9 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // AI 관련 엔드포인트에 lang 파라미터 자동 추가
+    // 모든 요청에 Accept-Language 헤더 추가
     const currentLang = localStorage.getItem('i18nextLng') || 'ko';
-
-    // AI 관련 엔드포인트 목록
-    const aiEndpoints = [
-      '/menu/recommendations',
-      '/menu/preferences/update',
-      '/google-places/recommendations',
-    ];
-
-    // AI 엔드포인트인지 확인
-    const isAiEndpoint = aiEndpoints.some((endpoint) =>
-      config.url?.includes(endpoint)
-    );
-
-    // POST 요청이고 AI 엔드포인트인 경우 lang 파라미터 추가
-    if (isAiEndpoint && config.method === 'post' && config.data) {
-      if (typeof config.data === 'object') {
-        config.data.lang = currentLang;
-      }
-    }
+    config.headers['Accept-Language'] = currentLang;
 
     return config;
   },
@@ -116,14 +99,20 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        if (!isRedirecting) {
+          isRedirecting = true;
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }
 
     if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (!isRedirecting) {
+        isRedirecting = true;
+        window.location.href = '/login';
+      }
     }
 
     return Promise.reject(error);

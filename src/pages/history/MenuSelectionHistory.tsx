@@ -5,11 +5,13 @@
 import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { DateFilterPanel } from '@/components/common/DateFilterPanel';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
+import { useDateFilter } from '@/hooks/common/useDateFilter';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
 import type { MenuPayload, MenuSelection, MenuSlot } from '@/types/menu';
-import { formatDateKorean } from '@/utils/format';
+import { formatDateStandard } from '@/utils/format';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +23,6 @@ export const MenuSelectionHistory = () => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [selections, setSelections] = useState<MenuSelection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string>('');
   const [isGlobalEditing, setIsGlobalEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingSelectionId, setEditingSelectionId] = useState<number | null>(null);
@@ -31,19 +32,28 @@ export const MenuSelectionHistory = () => {
     selectionId: null,
   });
 
+  // Date filter hook
+  const {
+    selectedDate,
+    handleDateChange,
+  } = useDateFilter();
+
   // loadSelections를 useCallback으로 안정화 (다른 곳에서도 사용되므로)
   const loadSelections = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await menuService.getMenuSelections(selectedDate || undefined);
+      // Single date filter: use selectedDate if set, otherwise fetch all
+      const dateParam = selectedDate || undefined;
+      const result = await menuService.getMenuSelections(dateParam);
+
       // 취소된 메뉴(status가 CANCELLED이거나, 모든 slot이 비어있는 경우)는 프론트에서 필터링
-      setSelections(
-        result.selections.filter((s) => {
-          const { breakfast, lunch, dinner, etc } = s.menuPayload;
-          const allMenus = [...breakfast, ...lunch, ...dinner, ...etc];
-          return allMenus.some((name) => name.trim() !== '');
-        })
-      );
+      const filtered = result.selections.filter((s) => {
+        const { breakfast, lunch, dinner, etc } = s.menuPayload;
+        const allMenus = [...breakfast, ...lunch, ...dinner, ...etc];
+        return allMenus.some((name) => name.trim() !== '');
+      });
+
+      setSelections(filtered);
     } catch (error: unknown) {
       handleError(error, 'MenuSelectionHistory');
     } finally {
@@ -178,57 +188,35 @@ export const MenuSelectionHistory = () => {
           <p className="mt-2 text-sm text-slate-400">{t('menu.selectionHistoryDesc')}</p>
         </div>
 
-        {/* 날짜 필터 + 전체 편집 토글 */}
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <label htmlFor="date-filter" className="mb-2 block text-sm font-medium text-slate-200">
-              {t('menu.dateFilter')}
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="date-filter"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
-              />
-              {selectedDate && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedDate('')}
-                  className="ml-1"
-                >
-                  {t('menu.viewAll')}
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isGlobalEditing ? 'ghost' : 'primary'}
-              size="sm"
-              onClick={() => {
-                if (isGlobalEditing) {
-                  // 편집 종료
-                  setIsGlobalEditing(false);
-                  setEditingSelectionId(null);
-                  setEditingPayload(null);
-                } else {
-                  // 편집 모드 시작
-                  setIsGlobalEditing(true);
-                }
-              }}
-              className={
-                isGlobalEditing
-                  ? 'border border-white/20 bg-white/5 px-4 text-xs text-slate-200 hover:bg-white/10'
-                  : 'bg-gradient-to-r from-orange-500 to-rose-500 px-4 text-xs text-white shadow-sm shadow-orange-500/40'
+        {/* 날짜 필터 + 전체 편집 토글 (같은 행) */}
+        <div className="mb-6 flex items-center justify-between">
+          <DateFilterPanel
+            selectedDate={selectedDate}
+            onDateChange={handleDateChange}
+          />
+
+          <Button
+            variant={isGlobalEditing ? 'ghost' : 'primary'}
+            size="sm"
+            onClick={() => {
+              if (isGlobalEditing) {
+                // 편집 종료
+                setIsGlobalEditing(false);
+                setEditingSelectionId(null);
+                setEditingPayload(null);
+              } else {
+                // 편집 모드 시작
+                setIsGlobalEditing(true);
               }
-            >
-              {isGlobalEditing ? t('menu.exitEditMode') : t('menu.editMode')}
-            </Button>
-          </div>
+            }}
+            className={
+              isGlobalEditing
+                ? 'border border-white/20 bg-white/5 px-4 text-xs text-slate-200 hover:bg-white/10'
+                : 'bg-gradient-to-r from-orange-500 to-rose-500 px-4 text-xs text-white shadow-sm shadow-orange-500/40'
+            }
+          >
+            {isGlobalEditing ? t('menu.exitEditMode') : t('menu.editMode')}
+          </Button>
         </div>
 
         {loading ? (
@@ -264,7 +252,7 @@ export const MenuSelectionHistory = () => {
                 >
                   {/* 상단: 날짜 + (편집/전체취소) 액션 영역 */}
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-white">{formatDateKorean(date)}</h2>
+                    <h2 className="text-xl font-semibold text-white">{formatDateStandard(date)}</h2>
                     <div className="flex items-center gap-2 text-xs">
                       {isGlobalEditing && (
                         <>

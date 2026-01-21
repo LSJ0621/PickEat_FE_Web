@@ -27,9 +27,9 @@ export const AddressSearchResults = ({
   if (searchResults.length > 0) {
     return (
       <div data-testid="address-search-results" className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4`}>
-        {searchResults.map((address, index) => (
+        {searchResults.map((address) => (
           <button
-            key={index}
+            key={`${address.latitude}-${address.longitude}`}
             onClick={() => onSelectAddress(address)}
             className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-left text-sm text-white transition hover:bg-white/10"
           >

@@ -25,7 +25,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutAsync } from '@/store/slices/authSlice';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const MyPage = () => {
@@ -299,7 +299,9 @@ export const MyPage = () => {
             <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur">
               <ModalCloseButton onClose={() => setShowDeleteAccountModal(false)} />
               <h2 className="mb-4 text-2xl font-bold text-white">{t('user.deleteAccountTitle')}</h2>
-              <p className="mb-6 text-slate-300" dangerouslySetInnerHTML={{ __html: t('user.deleteAccountMessage') }} />
+              <p className="mb-6 text-slate-300">
+                <Trans i18nKey="user.deleteAccountMessage" components={{ br: <br /> }} />
+              </p>
               <div className="flex gap-3">
                 <Button
                   onClick={() => setShowDeleteAccountModal(false)}
