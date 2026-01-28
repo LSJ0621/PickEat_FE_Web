@@ -5,6 +5,7 @@
 import { Badge } from '@/components/ui/badge';
 import type { AdminUser } from '@/types/admin-settings';
 import { formatDateTime } from '@/utils/format';
+import { isSuperAdmin } from '@/utils/role';
 import { Trash2, UserCheck } from 'lucide-react';
 
 interface AdminListItemProps {
@@ -15,6 +16,7 @@ interface AdminListItemProps {
 
 export function AdminListItem({ admin, currentUserId, onRemove }: AdminListItemProps) {
   const isCurrentUser = currentUserId === admin.id;
+  const isSuperAdminUser = isSuperAdmin(admin.role);
 
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/50 p-4 hover:bg-slate-800 transition-colors">
@@ -55,9 +57,15 @@ export function AdminListItem({ admin, currentUserId, onRemove }: AdminListItemP
         </div>
         <button
           onClick={() => onRemove(admin)}
-          disabled={isCurrentUser}
+          disabled={isCurrentUser || isSuperAdminUser}
           className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title={isCurrentUser ? '본인의 권한은 제거할 수 없습니다' : '관리자 권한 제거'}
+          title={
+            isCurrentUser
+              ? '본인의 권한은 제거할 수 없습니다'
+              : isSuperAdminUser
+              ? '슈퍼 관리자 권한은 제거할 수 없습니다'
+              : '관리자 권한 제거'
+          }
         >
           <Trash2 className="h-4 w-4" />
         </button>

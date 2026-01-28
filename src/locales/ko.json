@@ -13,7 +13,11 @@
     "reset": "초기화",
     "search": "검색",
     "pageLoading": "페이지를 불러오는 중...",
-    "notification": "알림"
+    "notification": "알림",
+    "previous": "이전",
+    "next": "다음",
+    "status": "상태",
+    "processing": "처리 중..."
   },
   "dateFilter": {
     "today": "오늘",
@@ -320,6 +324,67 @@
       "addButton": "주소 추가"
     }
   },
+  "userPlace": {
+    "title": "내 맛집",
+    "subtitle": "등록된 맛집 {{count}}개",
+    "createTitle": "맛집 등록",
+    "createSubtitle": "Google Places에 등록되지 않은 로컬 맛집을 직접 등록해보세요",
+    "editTitle": "맛집 수정",
+    "editSubtitle": "등록한 맛집 정보를 수정할 수 있습니다",
+    "notFound": "맛집을 찾을 수 없습니다",
+    "cannotEdit": "이 상태에서는 수정할 수 없습니다. PENDING 또는 REJECTED 상태에서만 수정이 가능합니다.",
+    "registerTitle": "가게 등록하기",
+    "registerDesc": "Google Places에 없는 가게를 직접 등록하세요",
+    "register": "등록하기",
+    "name": "가게명",
+    "namePlaceholder": "가게명을 입력하세요",
+    "address": "주소",
+    "addressPlaceholder": "주소를 검색하세요",
+    "phoneNumber": "전화번호",
+    "phoneNumberPlaceholder": "전화번호를 입력하세요 (선택사항)",
+    "category": "카테고리",
+    "selectCategory": "카테고리 선택",
+    "description": "설명",
+    "descriptionPlaceholder": "가게에 대한 설명을 입력하세요 (선택사항)",
+    "status": {
+      "PENDING": "검토중",
+      "APPROVED": "승인됨",
+      "REJECTED": "거절됨"
+    },
+    "rejectionReason": "거절 사유",
+    "dailyRemaining": "오늘 남은 등록 횟수",
+    "duplicateWarning": "이미 등록된 가게입니다",
+    "nearbyWarning": "근처에 비슷한 가게가 있습니다",
+    "canRegister": "등록 가능합니다",
+    "confirmDelete": "이 가게를 삭제하시겠습니까?",
+    "createSuccess": "맛집이 등록되었습니다",
+    "updateSuccess": "맛집이 수정되었습니다",
+    "deleteSuccess": "맛집이 삭제되었습니다",
+    "noPlaces": "등록된 맛집이 없습니다",
+    "addPlace": "맛집 등록하기",
+    "searchPlaceholder": "가게명 또는 주소로 검색...",
+    "createdAt": "등록일시",
+    "updatedAt": "수정일시",
+    "step1Title": "1단계: 기본 정보 입력",
+    "step2Title": "2단계: 등록 전 확인",
+    "nextStep": "다음 단계",
+    "confirmCreate": "등록하기",
+    "createComplete": "등록 완료",
+    "createCompleteMessage": "맛집 등록이 완료되었습니다. 관리자 승인 후 이용 가능합니다.",
+    "goToList": "목록으로 돌아가기",
+    "form": {
+      "menuTypes": "메뉴 종류",
+      "menuTypesPlaceholder": "메뉴를 입력하고 Enter를 누르세요",
+      "menuTypesHint": "최소 1개, 최대 10개 (필수)",
+      "menuTypesRequired": "메뉴를 최소 1개 이상 입력해주세요",
+      "photos": "사진",
+      "photosPlaceholder": "사진 URL을 입력하세요",
+      "photosHint": "최대 5장까지 등록 가능",
+      "addPhoto": "사진 추가",
+      "openingHours": "영업시간",
+      "openingHoursPlaceholder": "예: 매일 11:00-21:00, 월요일 휴무"
+    }
+  },
   "menu": {
     "recommendation": {
       "title": "메뉴 추천 받기",
@@ -455,7 +520,12 @@
     "noBlogsFound": "아직 연관 블로그/웹 문서를 찾지 못했습니다.",
     "blogWebDoc": "블로그/웹 문서",
     "noTitle": "제목 없는 문서",
-    "blogSearchFailed": "블로그 검색에 실패했습니다."
+    "blogSearchFailed": "블로그 검색에 실패했습니다.",
+    "communityRegistered": "커뮤니티 등록",
+    "communityInfo": "가게 정보",
+    "phoneNumber": "전화번호",
+    "openingHoursLabel": "영업시간",
+    "menuTypesLabel": "메뉴 종류"
   },
   "validation": {
     "required": "필수 입력 항목입니다.",
@@ -653,7 +723,9 @@
     "noLocationWarning": "위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.",
     "needsAddressForAi": "주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.",
     "loadingAiRecommendations": "AI 추천 맛집 불러오는 중...",
-    "menuLabel": "메뉴"
+    "menuLabel": "메뉴",
+    "searchBadge": "검색",
+    "communityBadge": "커뮤니티"
   },
   "setup": {
     "title": "서비스 이용을 위한 정보 입력",
@@ -902,6 +974,38 @@
       "description": "솔루션 아키텍트와 1:1로 구성 점검을 진행하고, 파일럿 스토어 2곳까지 무료로 지원합니다.",
       "buttonMeeting": "온보딩 미팅 잡기",
       "buttonProposal": "제안서 받기"
+    }
+  },
+  "admin": {
+    "userPlaces": {
+      "title": "유저 가게 관리",
+      "status": {
+        "pending": "승인 대기",
+        "approved": "승인됨",
+        "rejected": "거절됨"
+      },
+      "filter": {
+        "all": "전체",
+        "searchPlaceholder": "가게명 또는 주소로 검색"
+      },
+      "detail": {
+        "approve": "승인",
+        "reject": "거절",
+        "selectAction": "처리 결과 선택",
+        "confirmApprove": "이 가게를 승인하시겠습니까?",
+        "rejectionReason": "거절 사유",
+        "rejectionReasonPlaceholder": "거절 사유를 입력해주세요 (최소 10자)",
+        "rejectionReasonMinLength": "거절 사유는 최소 10자 이상 입력해주세요.",
+        "rejectionCount": "거절 횟수"
+      },
+      "list": {
+        "empty": "유저 가게가 없습니다.",
+        "registeredBy": "등록자"
+      },
+      "messages": {
+        "approved": "가게가 승인되었습니다.",
+        "rejected": "가게가 거절되었습니다."
+      }
     }
   }
 }

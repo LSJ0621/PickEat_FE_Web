@@ -12,3 +12,13 @@ export type AdminRole = (typeof ADMIN_ROLES)[number];
 export const isAdminRole = (role: string | undefined): role is AdminRole => {
   return ADMIN_ROLES.includes(role as AdminRole);
 };
+
+/**
+ * 사용자 역할이 슈퍼 관리자인지 확인
+ */
+export const isSuperAdmin = (role?: string): boolean => role === 'SUPER_ADMIN';
+
+/**
+ * 설정 메뉴 접근 권한 확인 (SUPER_ADMIN만 접근 가능)
+ */
+export const canAccessSettings = (role?: string): boolean => isSuperAdmin(role);

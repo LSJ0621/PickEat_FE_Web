@@ -49,7 +49,6 @@ export const AgentPage = () => {
     latitude,
     longitude,
     hasLocation,
-    address,
     resultsSectionRef,
   });
 

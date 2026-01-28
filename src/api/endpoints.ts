@@ -29,6 +29,8 @@ export const ENDPOINTS = {
   MENU: {
     RECOMMEND: `${API_BASE}/menu/recommend`,
     RECOMMEND_PLACES: `${API_BASE}/menu/recommend/places`,
+    RECOMMEND_PLACES_SEARCH: `${API_BASE}/menu/recommend/places/search`,
+    RECOMMEND_PLACES_COMMUNITY: `${API_BASE}/menu/recommend/places/community`,
     RESTAURANT_BLOGS: `${API_BASE}/menu/restaurant/blogs`,
     RECOMMENDATION_DETAIL: (id: number | string) => `${API_BASE}/menu/recommendations/${id}`,
     PLACE_DETAIL: (placeId: string) => `${API_BASE}/menu/places/${placeId}/detail`,
@@ -79,9 +81,24 @@ export const ENDPOINTS = {
     USER_DETAIL: (id: number) => `${API_BASE}/admin/users/${id}`,
     USER_DEACTIVATE: (id: number) => `${API_BASE}/admin/users/${id}/deactivate`,
     USER_ACTIVATE: (id: number) => `${API_BASE}/admin/users/${id}/activate`,
+    USER_PLACES: `${API_BASE}/admin/user-places`,
+    USER_PLACE_DETAIL: (id: number) => `${API_BASE}/admin/user-places/${id}`,
+    USER_PLACE_APPROVE: (id: number) => `${API_BASE}/admin/user-places/${id}/approve`,
+    USER_PLACE_REJECT: (id: number) => `${API_BASE}/admin/user-places/${id}/reject`,
+    USER_PLACE_UPDATE: (id: number) => `${API_BASE}/admin/user-places/${id}`,
     SETTINGS: {
       ADMINS: `${API_BASE}/admin/settings/admins`,
       ADMIN_DETAIL: (id: number | string) => `${API_BASE}/admin/settings/admins/${id}`,
     },
+  },
+
+  // 유저 맛집 관련
+  USER_PLACE: {
+    CHECK: `${API_BASE}/user-places/check`,
+    LIST: `${API_BASE}/user-places`,
+    CREATE: `${API_BASE}/user-places`,
+    DETAIL: (id: number) => `${API_BASE}/user-places/${id}`,
+    UPDATE: (id: number) => `${API_BASE}/user-places/${id}`,
+    DELETE: (id: number) => `${API_BASE}/user-places/${id}`,
   },
 } as const;

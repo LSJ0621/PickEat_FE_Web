@@ -3,8 +3,10 @@
  * 관리자 페이지 좌측에 표시되는 메뉴
  */
 
-import { LayoutDashboard, Users, Bug, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Bug, Settings, Store } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAppSelector } from '@/store/hooks';
+import { canAccessSettings } from '@/utils/role';
 
 interface MenuItem {
   label: string;
@@ -24,6 +26,11 @@ const menuItems: MenuItem[] = [
     icon: Users,
   },
   {
+    label: '유저 가게',
+    path: '/admin/user-places',
+    icon: Store,
+  },
+  {
     label: '버그 리포트',
     path: '/admin/bug-reports',
     icon: Bug,
@@ -37,6 +44,14 @@ const menuItems: MenuItem[] = [
 
 export function AdminSidebar() {
   const location = useLocation();
+  const userRole = useAppSelector((state) => state.auth.user?.role);
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.path === '/admin/settings') {
+      return canAccessSettings(userRole);
+    }
+    return true;
+  });
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-700 flex-shrink-0">
@@ -48,7 +63,7 @@ export function AdminSidebar() {
       {/* 네비게이션 메뉴 */}
       <nav className="p-4">
         <ul className="space-y-2">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               location.pathname === item.path ||

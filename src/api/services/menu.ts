@@ -35,6 +35,38 @@ export const menuService = {
     });
     return response.data;
   },
+  /**
+   * 검색 기반 가게 추천 (Google Places)
+   */
+  recommendSearchPlaces: async (params: {
+    latitude: number;
+    longitude: number;
+    menuName: string;
+    menuRecommendationId: number;
+    language?: string;
+  }): Promise<PlaceRecommendationResponse> => {
+    const response = await apiClient.get<PlaceRecommendationResponse>(
+      ENDPOINTS.MENU.RECOMMEND_PLACES_SEARCH,
+      { params }
+    );
+    return response.data;
+  },
+  /**
+   * 커뮤니티 등록 가게 추천 (UserPlace)
+   */
+  recommendCommunityPlaces: async (params: {
+    latitude: number;
+    longitude: number;
+    menuName: string;
+    menuRecommendationId: number;
+    language?: string;
+  }): Promise<PlaceRecommendationResponse> => {
+    const response = await apiClient.get<PlaceRecommendationResponse>(
+      ENDPOINTS.MENU.RECOMMEND_PLACES_COMMUNITY,
+      { params }
+    );
+    return response.data;
+  },
   getRestaurantBlogs: async (query: string, restaurantName?: string): Promise<RestaurantBlogsResponse> => {
     const response = await apiClient.get<RestaurantBlogsResponse>(
       ENDPOINTS.MENU.RESTAURANT_BLOGS,

@@ -13,7 +13,10 @@
     "reset": "Reset",
     "search": "Search",
     "pageLoading": "Loading page...",
-    "notification": "Notification"
+    "notification": "Notification",
+    "previous": "Previous",
+    "next": "Next",
+    "status": "Status"
   },
   "dateFilter": {
     "today": "Today",
@@ -320,6 +323,67 @@
       "addButton": "Add Address"
     }
   },
+  "userPlace": {
+    "title": "My Places",
+    "subtitle": "{{count}} places registered",
+    "createTitle": "Register Place",
+    "createSubtitle": "Register local restaurants not listed on Google Places",
+    "editTitle": "Edit Place",
+    "editSubtitle": "You can edit your registered place information",
+    "notFound": "Place not found",
+    "cannotEdit": "Cannot edit in this status. Editing is only available for PENDING or REJECTED status.",
+    "registerTitle": "Register Place",
+    "registerDesc": "Register places not listed on Google Places",
+    "register": "Register",
+    "name": "Place Name",
+    "namePlaceholder": "Enter place name",
+    "address": "Address",
+    "addressPlaceholder": "Search for address",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "Enter phone number (optional)",
+    "category": "Category",
+    "selectCategory": "Select Category",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description about the place (optional)",
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "rejectionReason": "Rejection Reason",
+    "dailyRemaining": "Daily Remaining Registrations",
+    "duplicateWarning": "This place is already registered",
+    "nearbyWarning": "There are similar places nearby",
+    "canRegister": "Registration available",
+    "confirmDelete": "Are you sure you want to delete this place?",
+    "createSuccess": "Place has been registered",
+    "updateSuccess": "Place has been updated",
+    "deleteSuccess": "Place has been deleted",
+    "noPlaces": "No places registered",
+    "addPlace": "Register Place",
+    "searchPlaceholder": "Search by name or address...",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "step1Title": "Step 1: Enter Basic Information",
+    "step2Title": "Step 2: Pre-registration Check",
+    "nextStep": "Next Step",
+    "confirmCreate": "Register",
+    "createComplete": "Registration Complete",
+    "createCompleteMessage": "Place registration is complete. It will be available after admin approval.",
+    "goToList": "Back to List",
+    "form": {
+      "menuTypes": "Menu Types",
+      "menuTypesPlaceholder": "Enter menu and press Enter",
+      "menuTypesHint": "Min 1, Max 10 (Required)",
+      "menuTypesRequired": "Please enter at least one menu",
+      "photos": "Photos",
+      "photosPlaceholder": "Enter photo URL",
+      "photosHint": "Up to 5 photos",
+      "addPhoto": "Add Photo",
+      "openingHours": "Opening Hours",
+      "openingHoursPlaceholder": "e.g., Daily 11:00-21:00, Closed on Mondays"
+    }
+  },
   "menu": {
     "recommendation": {
       "title": "Get Menu Recommendation",
@@ -455,7 +519,12 @@
     "noBlogsFound": "No related blog/web documents found yet.",
     "blogWebDoc": "Blog/Web Document",
     "noTitle": "Untitled Document",
-    "blogSearchFailed": "Blog search failed."
+    "blogSearchFailed": "Blog search failed.",
+    "communityRegistered": "Community",
+    "communityInfo": "Place Info",
+    "phoneNumber": "Phone",
+    "openingHoursLabel": "Hours",
+    "menuTypesLabel": "Menu Types"
   },
   "validation": {
     "required": "This field is required.",
@@ -653,7 +722,9 @@
     "noLocationWarning": "No location data. Please register your address to search restaurants.",
     "needsAddressForAi": "Address or location data is required to use AI recommendations.",
     "loadingAiRecommendations": "Loading AI recommended restaurants...",
-    "menuLabel": "Menu"
+    "menuLabel": "Menu",
+    "searchBadge": "Search",
+    "communityBadge": "Community"
   },
   "setup": {
     "title": "Enter Information to Use the Service",
@@ -902,6 +973,37 @@
       "description": "We conduct 1:1 configuration reviews with a solution architect and support up to 2 pilot stores for free.",
       "buttonMeeting": "Schedule Onboarding Meeting",
       "buttonProposal": "Get Proposal"
+    }
+  },
+  "admin": {
+    "userPlaces": {
+      "title": "User Place Management",
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "filter": {
+        "all": "All",
+        "searchPlaceholder": "Search by place name or address"
+      },
+      "detail": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "confirmApprove": "Are you sure you want to approve this place?",
+        "rejectionReason": "Rejection Reason",
+        "rejectionReasonPlaceholder": "Please enter rejection reason (minimum 10 characters)",
+        "rejectionReasonMinLength": "Rejection reason must be at least 10 characters.",
+        "rejectionCount": "Rejection Count"
+      },
+      "list": {
+        "empty": "No user places found.",
+        "registeredBy": "Registered by"
+      },
+      "messages": {
+        "approved": "Place has been approved.",
+        "rejected": "Place has been rejected."
+      }
     }
   }
 }

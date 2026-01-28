@@ -126,6 +126,13 @@ export const BUG_REPORT = {
   CATEGORY_KEYS: ['bug', 'inquiry', 'other'] as const,
 } as const;
 
+// User Place 관련
+export const USER_PLACE = {
+  MAX_IMAGES: 5,
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
+  ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
+} as const;
+
 // Z-Index 체계
 export const Z_INDEX = {
   HEADER: 30,

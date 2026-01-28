@@ -203,6 +203,24 @@ export const MyPage = () => {
               </div>
             </div>
 
+            {/* 가게 등록하기 섹션 */}
+            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-400">{t('userPlace.registerTitle')}</p>
+                  <p className="mt-1 text-sm text-slate-300">{t('userPlace.registerDesc')}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => navigate('/user-places')}
+                  className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+                >
+                  {t('userPlace.register')}
+                </Button>
+              </div>
+            </div>
+
             <PreferencesSection
               likes={preferences.likes}
               dislikes={preferences.dislikes}
