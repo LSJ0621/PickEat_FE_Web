@@ -121,3 +121,56 @@ export interface AdminUserDetail {
     }>;
   };
 }
+
+// User Place Management Types
+export interface AdminUserPlaceListItem {
+  id: number;
+  name: string;
+  address: string;
+  category: string;
+  phoneNumber?: string;
+  openingHours?: string;
+  description?: string;
+  photos?: string[] | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  rejectionReason?: string;
+  rejectionCount: number;
+  lastRejectedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    email: string;
+  };
+}
+
+export interface AdminUserPlaceListQuery {
+  page?: number;
+  limit?: number;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL';
+  search?: string;
+  userId?: number;
+}
+
+export interface AdminUserPlaceListResponse {
+  items: AdminUserPlaceListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface UpdateUserPlaceByAdminRequest {
+  name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  menuTypes?: string[];
+  existingPhotos?: string[]; // URLs of photos to keep
+  images?: File[]; // New files to upload
+  openingHours?: string;
+  phoneNumber?: string;
+  category?: string;
+  description?: string;
+  version?: number; // For optimistic locking
+}

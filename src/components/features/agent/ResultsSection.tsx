@@ -43,9 +43,23 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   const isMenuRecommendationLoading = useAppSelector(
     (state) => state.agent.isMenuRecommendationLoading,
   );
+
+  // Legacy AI recommendations
   const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
   const aiLoadingMenu = useAppSelector((state) => state.agent.aiLoadingMenu);
   const hasAiRecommendations = aiRecommendationGroups.some((group) => group.recommendations.length > 0);
+
+  // New separate AI recommendations
+  const searchAiRecommendationGroups = useAppSelector((state) => state.agent.searchAiRecommendationGroups);
+  const communityAiRecommendationGroups = useAppSelector((state) => state.agent.communityAiRecommendationGroups);
+  const isSearchAiLoading = useAppSelector((state) => state.agent.isSearchAiLoading);
+  const isCommunityAiLoading = useAppSelector((state) => state.agent.isCommunityAiLoading);
+  const searchAiLoadingMenu = useAppSelector((state) => state.agent.searchAiLoadingMenu);
+  const communityAiLoadingMenu = useAppSelector((state) => state.agent.communityAiLoadingMenu);
+
+  const hasSearchAiRecommendations = searchAiRecommendationGroups.some((group) => group.recommendations.length > 0);
+  const hasCommunityAiRecommendations = communityAiRecommendationGroups.some((group) => group.recommendations.length > 0);
+  const hasAnySeparateAiRecommendations = hasSearchAiRecommendations || hasCommunityAiRecommendations;
 
   const [activeTab, setActiveTab] = useState<'search' | 'ai'>('search');
   const resultsSectionRef = useRef<HTMLDivElement>(null);
@@ -65,10 +79,21 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
   // 검색 결과 개수
   const searchCount = restaurants.length;
   // AI 추천 개수 (모든 그룹의 추천 합계)
-  const aiCount = aiRecommendationGroups.reduce((sum, group) => sum + group.recommendations.length, 0);
+  const legacyAiCount = aiRecommendationGroups.reduce((sum, group) => sum + group.recommendations.length, 0);
+  const searchAiCount = searchAiRecommendationGroups.reduce((sum, group) => sum + group.recommendations.length, 0);
+  const communityAiCount = communityAiRecommendationGroups.reduce((sum, group) => sum + group.recommendations.length, 0);
+  const aiCount = Math.max(legacyAiCount, searchAiCount + communityAiCount);
 
   // 선택된 메뉴가 있고 결과가 있을 때만 탭 표시
-  const hasResults = selectedMenu && (searchCount > 0 || hasAiRecommendations || isSearching || aiLoadingMenu);
+  const hasResults = selectedMenu && (
+    searchCount > 0 ||
+    hasAiRecommendations ||
+    hasAnySeparateAiRecommendations ||
+    isSearching ||
+    aiLoadingMenu ||
+    isSearchAiLoading ||
+    isCommunityAiLoading
+  );
   // 메뉴 추천을 눌러본 이후에만 빈 상태 안내를 노출
   const hasRequestedMenuRecommendation =
     menuRecommendations.length > 0 || isMenuRecommendationLoading;
@@ -205,7 +230,7 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
             )
           }
           aiContent={
-            hasAiRecommendations || aiLoadingMenu ? (
+            hasAiRecommendations || hasAnySeparateAiRecommendations || aiLoadingMenu || isSearchAiLoading || isCommunityAiLoading ? (
               <div ref={aiSectionRef}>
                 <AiPlaceRecommendations
                   activeMenuName={selectedMenu}
@@ -213,6 +238,12 @@ export const ResultsSection = forwardRef<ResultsSectionRef, ResultsSectionProps>
                   loadingMenuName={aiLoadingMenu}
                   onSelect={onSelectPlace}
                   onReset={onResetAiRecommendations}
+                  searchRecommendations={searchAiRecommendationGroups}
+                  communityRecommendations={communityAiRecommendationGroups}
+                  isSearchLoading={isSearchAiLoading}
+                  isCommunityLoading={isCommunityAiLoading}
+                  searchLoadingMenuName={searchAiLoadingMenu}
+                  communityLoadingMenuName={communityAiLoadingMenu}
                 />
               </div>
             ) : (

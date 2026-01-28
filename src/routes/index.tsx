@@ -29,10 +29,16 @@ const BugReportPage = lazy(() => import('@/pages/bug-report/BugReportPage').then
 const OAuthKakaoRedirect = lazy(() => import('@/pages/auth/oauth/OAuthKakaoRedirect').then(m => ({ default: m.OAuthKakaoRedirect })));
 const OAuthGoogleRedirect = lazy(() => import('@/pages/auth/oauth/OAuthGoogleRedirect').then(m => ({ default: m.OAuthGoogleRedirect })));
 
+// User Place pages
+const UserPlaceListPage = lazy(() => import('@/pages/user-place/UserPlaceListPage').then(m => ({ default: m.UserPlaceListPage })));
+const UserPlaceCreatePage = lazy(() => import('@/pages/user-place/UserPlaceCreatePage').then(m => ({ default: m.UserPlaceCreatePage })));
+const UserPlaceEditPage = lazy(() => import('@/pages/user-place/UserPlaceEditPage').then(m => ({ default: m.UserPlaceEditPage })));
+
 // Admin pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminUserListPage = lazy(() => import('@/pages/admin/users/AdminUserListPage').then(m => ({ default: m.AdminUserListPage })));
 const AdminUserDetailPage = lazy(() => import('@/pages/admin/users/AdminUserDetailPage').then(m => ({ default: m.AdminUserDetailPage })));
+const AdminUserPlaceListPage = lazy(() => import('@/pages/admin/user-places/AdminUserPlaceListPage').then(m => ({ default: m.AdminUserPlaceListPage })));
 const AdminBugReportListPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportListPage').then(m => ({ default: m.AdminBugReportListPage })));
 const AdminBugReportDetailPage = lazy(() => import('@/pages/admin/bug-reports/AdminBugReportDetailPage').then(m => ({ default: m.AdminBugReportDetailPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
@@ -191,6 +197,43 @@ const router = createBrowserRouter([
       </AppLayout>
     ),
   },
+  // User Place routes
+  {
+    path: '/user-places',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <UserPlaceListPage />
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/user-places/create',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <UserPlaceCreatePage />
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/user-places/:id/edit',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <UserPlaceEditPage />
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
   // Admin routes
   {
     path: '/admin',
@@ -232,6 +275,20 @@ const router = createBrowserRouter([
           <AdminRoute>
             <AdminLayout>
               <AdminUserDetailPage />
+            </AdminLayout>
+          </AdminRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/admin/user-places',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminRoute>
+            <AdminLayout>
+              <AdminUserPlaceListPage />
             </AdminLayout>
           </AdminRoute>
         </Suspense>

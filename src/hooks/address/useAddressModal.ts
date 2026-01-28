@@ -7,6 +7,7 @@ import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
+import type { Language } from '@/types/common';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,7 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
   const { addressesCount = 0, onAddressAdded } = options || {};
   const { handleError, handleSuccess } = useErrorHandler();
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // 주소 추가/수정 모달 관련 상태
   const [addressQuery, setAddressQuery] = useState('');
@@ -40,7 +41,8 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
     setIsSearching(true);
     setHasSearchedAddress(false);
     try {
-      const result = await userService.searchAddress(addressQuery);
+      const language: Language = (i18n.language === 'en' ? 'en' : 'ko');
+      const result = await userService.searchAddress(addressQuery, language);
       setSearchResults(result.addresses);
       setHasSearchedAddress(true);
     } catch (error: unknown) {
@@ -48,7 +50,7 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
     } finally {
       setIsSearching(false);
     }
-  }, [addressQuery, handleError]);
+  }, [addressQuery, i18n.language, handleError]);
 
   // 주소 선택
   const handleSelectAddress = useCallback((address: AddressSearchResult) => {

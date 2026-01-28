@@ -24,7 +24,7 @@ export const ImageUploader = ({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     // 파일 크기 검증
     if (file.size > BUG_REPORT.MAX_IMAGE_SIZE) {
       return t('bugReport.image.sizeLimit', { size: BUG_REPORT.MAX_IMAGE_SIZE / (1024 * 1024) });
@@ -34,7 +34,7 @@ export const ImageUploader = ({
       return t('bugReport.image.formatError');
     }
     return null;
-  };
+  }, [t]);
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
