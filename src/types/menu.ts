@@ -20,6 +20,8 @@ export interface PlaceRecommendationItem {
   name: string;
   reason: string;
   menuName?: string;
+  source?: 'GOOGLE' | 'USER'; // 추천 소스 (구글 검색 or 유저 등록 가게)
+  userPlaceId?: number; // UserPlace ID (source가 USER일 때만 존재)
 }
 
 export interface PlaceRecommendationResponse {
@@ -63,6 +65,9 @@ export interface PlaceHistoryPlace {
   photos: string[] | null;
   openNow: boolean | null;
   reviews: PlaceReview[] | null;
+  source?: 'GOOGLE' | 'USER';
+  phoneNumber?: string | null;
+  category?: string | null;
 }
 
 export interface PlaceHistoryMeta {
@@ -90,9 +95,16 @@ export interface PlaceDetail {
   rating: number | null;
   userRatingCount: number | null;
   priceLevel: string | null;
+  businessStatus?: string | null;
   photos: string[] | null;
   openNow: boolean | null;
   reviews: PlaceReview[] | null;
+  source?: 'GOOGLE' | 'USER';
+  phoneNumber?: string | null;
+  openingHours?: string | null;
+  menuTypes?: string[];
+  category?: string | null;
+  description?: string | null;
 }
 
 export interface PlaceDetailResponse {

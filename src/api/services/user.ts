@@ -25,10 +25,10 @@ import type {
 
 export const userService = {
   // 주소 검색
-  searchAddress: async (query: string): Promise<AddressSearchResponse> => {
+  searchAddress: async (query: string, language?: Language): Promise<AddressSearchResponse> => {
     const response = await apiClient.get<AddressSearchResponse>(
       ENDPOINTS.USER.ADDRESS_SEARCH,
-      { params: { query } }
+      { params: { query, language } }
     );
     return response.data;
   },

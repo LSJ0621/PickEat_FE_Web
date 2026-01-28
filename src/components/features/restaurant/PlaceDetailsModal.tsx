@@ -2,7 +2,6 @@ import { PlaceBlogsSection } from './PlaceBlogsSection';
 import { PlaceMiniMap } from './PlaceMiniMap';
 import { PlaceReviewsSection } from './PlaceReviewsSection';
 import { usePlaceDetails } from '@/hooks/place/usePlaceDetails';
-import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MAP_CONFIG, Z_INDEX } from '@/utils/constants';
@@ -136,7 +135,28 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <ModalCloseButton onClose={onClose} />
+        {/* 헤더: 가게 이름 + 닫기 버튼 */}
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <h3 className="text-xl font-bold text-white truncate">
+              {placeName ?? placeDetail?.name ?? t('place.selectedStore')}
+            </h3>
+            {placeDetail?.source === 'USER' && (
+              <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-300 border border-blue-500/30 whitespace-nowrap flex-shrink-0">
+                {t('place.communityRegistered')}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 transition hover:text-white flex-shrink-0"
+            aria-label={t('common.close')}
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
         {status === 'loading' && (
           <div className="flex items-center justify-center py-16">
@@ -152,35 +172,33 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
 
         {status === 'ready' && (
           <div className="space-y-6">
-            {/* 가게 이름 (제목) */}
-            <div>
-              <h3 className="text-2xl font-bold text-white">
-                {placeName ?? placeDetail?.name ?? t('place.selectedStore')}
-              </h3>
-              {placeDetail?.rating != null && (
-                <p className="mt-1 text-sm text-slate-300">
-                  {t('place.rating')} {placeDetail.rating.toFixed(1)} · {t('place.reviews')} {placeDetail.userRatingCount ?? 0}{t('place.reviewCount')}
-                </p>
-              )}
-              {placeDetail?.openNow !== null && placeDetail?.openNow !== undefined && (
-                <span
-                  className={`mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                    placeDetail.openNow
-                      ? 'border border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-                      : 'border border-rose-400/40 bg-rose-500/15 text-rose-200'
-                  }`}
-                >
-                  {placeDetail.openNow ? t('place.openNow') : t('place.closedNow')}
-                </span>
-              )}
-            </div>
+            {/* 평점 및 영업 상태 */}
+            {(placeDetail?.rating != null || placeDetail?.openNow !== null) && (
+              <div className="flex items-center gap-3 flex-wrap">
+                {placeDetail?.rating != null && (
+                  <p className="text-sm text-slate-300">
+                    {t('place.rating')} {placeDetail.rating.toFixed(1)} · {t('place.reviews')} {placeDetail.userRatingCount ?? 0}{t('place.reviewCount')}
+                  </p>
+                )}
+                {placeDetail?.openNow !== null && placeDetail?.openNow !== undefined && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      placeDetail.openNow
+                        ? 'border border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
+                        : 'border border-rose-400/40 bg-rose-500/15 text-rose-200'
+                    }`}
+                  >
+                    {placeDetail.openNow ? t('place.openNow') : t('place.closedNow')}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* 사진 슬라이드 */}
             {placeDetail?.photos && placeDetail.photos.length > 0 && (
               <div>
-                <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.photos')}</h4>
                 <div className="relative">
-                  <div className="relative h-64 w-full overflow-hidden rounded-xl bg-slate-800">
+                  <div className="relative h-80 w-full overflow-hidden rounded-2xl bg-slate-800/50">
                     <img
                       src={placeDetail.photos[currentPhotoIndex]}
                       alt={`${placeDetail?.name ?? placeName ?? t('place.storePhoto')} ${currentPhotoIndex + 1}`}
@@ -190,14 +208,14 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                       loading="lazy"
                     />
                     {/* 사진 카운터 */}
-                    <div className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
+                    <div className="absolute right-4 top-4 rounded-full bg-black/70 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-md border border-white/10">
                       {currentPhotoIndex + 1} / {placeDetail.photos.length}
                     </div>
                     {/* 이전 버튼 */}
                     {placeDetail.photos.length > 1 && (
                       <button
                         onClick={handlePreviousPhoto}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-3 text-white transition-all hover:bg-black/90 hover:scale-110 backdrop-blur-md border border-white/10"
                         aria-label={t('place.previousPhoto')}
                       >
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +227,7 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                     {placeDetail.photos.length > 1 && (
                       <button
                         onClick={handleNextPhoto}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/70 p-3 text-white transition-all hover:bg-black/90 hover:scale-110 backdrop-blur-md border border-white/10"
                         aria-label={t('place.nextPhoto')}
                       >
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,11 +237,57 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
                     )}
                   </div>
                   {placeDetail.photos.length > 1 && (
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <p className="mt-2 text-center text-xs text-slate-500">
                       {t('place.photoNavTip')}
                     </p>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* 커뮤니티 가게 추가 정보 */}
+            {placeDetail?.source === 'USER' && (
+              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-blue-200">
+                  {t('place.communityInfo')}
+                </h4>
+
+                {placeDetail.phoneNumber && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-white/60">{t('place.phoneNumber')}</p>
+                    <p className="text-sm text-white">{placeDetail.phoneNumber}</p>
+                  </div>
+                )}
+
+                {placeDetail.openingHours && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-white/60">{t('place.openingHoursLabel')}</p>
+                    <p className="text-sm text-white whitespace-pre-line">{placeDetail.openingHours}</p>
+                  </div>
+                )}
+
+                {placeDetail.menuTypes && placeDetail.menuTypes.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-white/60">{t('place.menuTypesLabel')}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {placeDetail.menuTypes.map((menu, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center rounded-lg bg-slate-700/60 px-3 py-1.5 text-xs text-slate-200"
+                        >
+                          {menu}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {placeDetail.description && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-white/60">{t('fields.description')}</p>
+                    <p className="text-sm text-white whitespace-pre-line">{placeDetail.description}</p>
+                  </div>
+                )}
               </div>
             )}
 

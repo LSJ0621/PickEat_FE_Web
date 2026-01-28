@@ -21,27 +21,38 @@ interface AgentState {
   menuRecommendationRequestAddress: string | null;
   menuRecommendationReason: string | null;
   isMenuRecommendationLoading: boolean;
-  
+
   // 메뉴 선택 관련
   selectedMenu: string | null;
   menuHistoryId: number | null;
   menuRequestAddress: string | null;
-  
+
   // 네이버 검색 결과
   restaurants: Restaurant[];
   isSearching: boolean;
-  
-  // AI 추천 결과
+
+  // AI 추천 결과 - 검색 기반 (Google Places)
+  searchAiRecommendationGroups: MenuPlaceRecommendationGroup[];
+  isSearchAiLoading: boolean;
+  searchAiLoadingMenu: string | null;
+
+  // AI 추천 결과 - 커뮤니티 기반 (UserPlace)
+  communityAiRecommendationGroups: MenuPlaceRecommendationGroup[];
+  isCommunityAiLoading: boolean;
+  communityAiLoadingMenu: string | null;
+
+  // 레거시 AI 추천 결과 (하위 호환성 유지)
+  // @deprecated - searchAiRecommendationGroups 사용 권장
   aiRecommendationGroups: MenuPlaceRecommendationGroup[];
   isAiLoading: boolean;
   aiLoadingMenu: string | null;
-  
+
   // 선택된 장소
   selectedPlace: PlaceRecommendationItem | null;
-  
+
   // UI 상태
   showConfirmCard: boolean;
-  
+
   // 메뉴 선택 완료 여부 (선택 완료 시 버튼 숨김용)
   hasMenuSelectionCompleted: boolean;
 }
@@ -58,6 +69,12 @@ const initialState: AgentState = {
   menuRequestAddress: null,
   restaurants: [],
   isSearching: false,
+  searchAiRecommendationGroups: [],
+  isSearchAiLoading: false,
+  searchAiLoadingMenu: null,
+  communityAiRecommendationGroups: [],
+  isCommunityAiLoading: false,
+  communityAiLoadingMenu: null,
   aiRecommendationGroups: [],
   isAiLoading: false,
   aiLoadingMenu: null,
@@ -137,7 +154,64 @@ const agentSlice = createSlice({
       state.isSearching = action.payload;
     },
     
-    // AI 추천 관련
+    // AI 추천 관련 - 검색 기반 (Google Places)
+    upsertSearchAiRecommendations: (
+      state,
+      action: PayloadAction<{ menuName: string; recommendations: PlaceRecommendationItem[] }>
+    ) => {
+      const { menuName, recommendations } = action.payload;
+      const existingIndex = state.searchAiRecommendationGroups.findIndex(
+        (group) => group.menuName === menuName
+      );
+
+      if (existingIndex >= 0) {
+        state.searchAiRecommendationGroups[existingIndex] = { menuName, recommendations };
+      } else {
+        state.searchAiRecommendationGroups.push({ menuName, recommendations });
+      }
+    },
+
+    setSearchAiLoading: (state, action: PayloadAction<{ isLoading: boolean; menuName: string | null }>) => {
+      state.isSearchAiLoading = action.payload.isLoading;
+      state.searchAiLoadingMenu = action.payload.menuName;
+    },
+
+    clearSearchAiRecommendations: (state) => {
+      state.searchAiRecommendationGroups = [];
+      state.searchAiLoadingMenu = null;
+      state.isSearchAiLoading = false;
+    },
+
+    // AI 추천 관련 - 커뮤니티 기반 (UserPlace)
+    upsertCommunityAiRecommendations: (
+      state,
+      action: PayloadAction<{ menuName: string; recommendations: PlaceRecommendationItem[] }>
+    ) => {
+      const { menuName, recommendations } = action.payload;
+      const existingIndex = state.communityAiRecommendationGroups.findIndex(
+        (group) => group.menuName === menuName
+      );
+
+      if (existingIndex >= 0) {
+        state.communityAiRecommendationGroups[existingIndex] = { menuName, recommendations };
+      } else {
+        state.communityAiRecommendationGroups.push({ menuName, recommendations });
+      }
+    },
+
+    setCommunityAiLoading: (state, action: PayloadAction<{ isLoading: boolean; menuName: string | null }>) => {
+      state.isCommunityAiLoading = action.payload.isLoading;
+      state.communityAiLoadingMenu = action.payload.menuName;
+    },
+
+    clearCommunityAiRecommendations: (state) => {
+      state.communityAiRecommendationGroups = [];
+      state.communityAiLoadingMenu = null;
+      state.isCommunityAiLoading = false;
+    },
+
+    // 레거시 AI 추천 관련 (하위 호환성 유지)
+    // @deprecated - upsertSearchAiRecommendations 사용 권장
     upsertAiRecommendations: (
       state,
       action: PayloadAction<{ menuName: string; recommendations: PlaceRecommendationItem[] }>
@@ -146,23 +220,43 @@ const agentSlice = createSlice({
       const existingIndex = state.aiRecommendationGroups.findIndex(
         (group) => group.menuName === menuName
       );
-      
+
       if (existingIndex >= 0) {
         state.aiRecommendationGroups[existingIndex] = { menuName, recommendations };
       } else {
         state.aiRecommendationGroups.push({ menuName, recommendations });
       }
+      // 하위 호환성: searchAiRecommendationGroups에도 동기화
+      const searchExistingIndex = state.searchAiRecommendationGroups.findIndex(
+        (group) => group.menuName === menuName
+      );
+      if (searchExistingIndex >= 0) {
+        state.searchAiRecommendationGroups[searchExistingIndex] = { menuName, recommendations };
+      } else {
+        state.searchAiRecommendationGroups.push({ menuName, recommendations });
+      }
     },
-    
+
+    // @deprecated - setSearchAiLoading 사용 권장
     setAiLoading: (state, action: PayloadAction<{ isLoading: boolean; menuName: string | null }>) => {
       state.isAiLoading = action.payload.isLoading;
       state.aiLoadingMenu = action.payload.menuName;
+      // 하위 호환성: searchAiLoading에도 동기화
+      state.isSearchAiLoading = action.payload.isLoading;
+      state.searchAiLoadingMenu = action.payload.menuName;
     },
-    
+
+    // @deprecated - clearSearchAiRecommendations + clearCommunityAiRecommendations 사용 권장
     resetAiRecommendations: (state) => {
       state.aiRecommendationGroups = [];
       state.aiLoadingMenu = null;
       state.isAiLoading = false;
+      state.searchAiRecommendationGroups = [];
+      state.searchAiLoadingMenu = null;
+      state.isSearchAiLoading = false;
+      state.communityAiRecommendationGroups = [];
+      state.communityAiLoadingMenu = null;
+      state.isCommunityAiLoading = false;
       state.selectedPlace = null;
     },
     
@@ -194,6 +288,12 @@ export const {
   clearSelectedMenu,
   setRestaurants,
   setIsSearching,
+  upsertSearchAiRecommendations,
+  setSearchAiLoading,
+  clearSearchAiRecommendations,
+  upsertCommunityAiRecommendations,
+  setCommunityAiLoading,
+  clearCommunityAiRecommendations,
   upsertAiRecommendations,
   setAiLoading,
   resetAiRecommendations,
@@ -204,4 +304,18 @@ export const {
 } = agentSlice.actions;
 
 export default agentSlice.reducer;
+
+// Selectors
+export const selectSearchAiRecommendationGroups = (state: { agent: AgentState }) =>
+  state.agent.searchAiRecommendationGroups;
+export const selectCommunityAiRecommendationGroups = (state: { agent: AgentState }) =>
+  state.agent.communityAiRecommendationGroups;
+export const selectIsSearchAiLoading = (state: { agent: AgentState }) =>
+  state.agent.isSearchAiLoading;
+export const selectIsCommunityAiLoading = (state: { agent: AgentState }) =>
+  state.agent.isCommunityAiLoading;
+export const selectSearchAiLoadingMenu = (state: { agent: AgentState }) =>
+  state.agent.searchAiLoadingMenu;
+export const selectCommunityAiLoadingMenu = (state: { agent: AgentState }) =>
+  state.agent.communityAiLoadingMenu;
 

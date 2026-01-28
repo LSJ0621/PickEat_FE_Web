@@ -68,6 +68,10 @@ export const useHistoryAiHistory = (
         name: place.name ?? '이름 없는 가게',
         reason: place.reason ?? '',
         menuName: place.menuName,
+        source: place.source,
+        userPlaceId: place.source === 'USER' && place.placeId?.startsWith('user_place_')
+          ? Number(place.placeId.replace('user_place_', ''))
+          : undefined,
       }));
 
       setAiHistoryRecommendations(normalized);

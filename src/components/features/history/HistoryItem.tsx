@@ -22,6 +22,45 @@ interface HistoryItemProps {
   item: RecommendationHistoryItem;
 }
 
+/**
+ * Helper component for rendering individual place items
+ */
+interface PlaceListItemProps {
+  recommendation: PlaceRecommendationItem;
+  index: number;
+  sourceType: 'community' | 'search';
+  onSelect: (place: PlaceRecommendationItem) => void;
+}
+
+const PlaceListItem = ({ recommendation, index, sourceType, onSelect }: PlaceListItemProps) => {
+  const bgColorClass = sourceType === 'community' ? 'bg-blue-500/10' : 'bg-emerald-500/10';
+  const hoverBgClass = sourceType === 'community' ? 'hover:bg-blue-500/15' : 'hover:bg-emerald-500/15';
+  const numberBgClass = sourceType === 'community' ? 'bg-blue-500/20' : 'bg-emerald-500/20';
+  const numberTextClass = sourceType === 'community' ? 'text-blue-300' : 'text-emerald-300';
+
+  return (
+    <div
+      onClick={() => onSelect(recommendation)}
+      className={`group flex cursor-pointer items-center gap-3 rounded-lg p-3 transition ${bgColorClass} ${hoverBgClass}`}
+    >
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${numberBgClass} ${numberTextClass}`}>
+        {index + 1}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h5 className="truncate font-medium text-white group-hover:text-orange-200">
+          {recommendation.name}
+        </h5>
+        {recommendation.reason && (
+          <p className="mt-0.5 truncate text-xs text-slate-500">{recommendation.reason}</p>
+        )}
+      </div>
+      <svg className="h-4 w-4 shrink-0 text-slate-600 group-hover:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+  );
+};
+
 export const HistoryItem = ({ item }: HistoryItemProps) => {
   const { t } = useTranslation();
   const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
@@ -165,43 +204,69 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
               </div>
             ) : aiHistory.aiHistoryRecommendations.length > 0 ? (
               <div className="space-y-4">
-                {aiHistory.groupedAiHistory.map((group) => (
-                  <div
-                    key={group.menuName}
-                    className="rounded-xl border border-white/10 bg-white/5 p-3"
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/70">{t('history.menuLabel')}</p>
-                        <h4 className="text-lg font-semibold text-white">{group.menuName}</h4>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {group.recommendations.map((place, idx) => (
-                        <div
-                          key={`${group.menuName}-${place.placeId}-${idx}`}
-                          onClick={() => setSelectedPlace(place)}
-                          className="group flex cursor-pointer items-center gap-3 rounded-lg p-3 transition hover:bg-white/5"
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500/20 text-xs font-semibold text-orange-300">
-                            {idx + 1}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <h5 className="truncate font-medium text-white group-hover:text-orange-200">
-                              {place.name}
-                            </h5>
-                            {place.reason && (
-                              <p className="mt-0.5 truncate text-xs text-slate-500">{place.reason}</p>
-                            )}
-                          </div>
-                          <svg className="h-4 w-4 shrink-0 text-slate-600 group-hover:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                {aiHistory.groupedAiHistory.map((group) => {
+                  // Filter recommendations by source
+                  const communityPlaces = group.recommendations.filter(r => r.source === 'USER');
+                  const searchPlaces = group.recommendations.filter(r => r.source === 'GOOGLE');
+
+                  return (
+                    <div
+                      key={group.menuName}
+                      className="rounded-xl border border-white/10 bg-white/5 p-3"
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/70">{t('history.menuLabel')}</p>
+                          <h4 className="text-lg font-semibold text-white">{group.menuName}</h4>
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Community Section */}
+                      {communityPlaces.length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex-1 h-px bg-blue-500/30" />
+                            <span className="text-xs text-blue-400">{t('history.communityBadge')}</span>
+                            <div className="flex-1 h-px bg-blue-500/30" />
+                          </div>
+                          <div className="space-y-2">
+                            {communityPlaces.map((place, idx) => (
+                              <PlaceListItem
+                                key={`${group.menuName}-${place.placeId}-${idx}`}
+                                recommendation={place}
+                                index={idx}
+                                sourceType="community"
+                                onSelect={setSelectedPlace}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Search Section */}
+                      {searchPlaces.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex-1 h-px bg-emerald-500/30" />
+                            <span className="text-xs text-emerald-400">{t('history.searchBadge')}</span>
+                            <div className="flex-1 h-px bg-emerald-500/30" />
+                          </div>
+                          <div className="space-y-2">
+                            {searchPlaces.map((place, idx) => (
+                              <PlaceListItem
+                                key={`${group.menuName}-${place.placeId}-${idx}`}
+                                recommendation={place}
+                                index={idx}
+                                sourceType="search"
+                                onSelect={setSelectedPlace}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : null}
           </div>

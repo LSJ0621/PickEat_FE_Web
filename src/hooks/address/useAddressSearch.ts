@@ -6,7 +6,9 @@
 import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
+import type { Language } from '@/types/common';
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface UseAddressSearchReturn {
   addressQuery: string;
@@ -28,6 +30,7 @@ export const useAddressSearch = (): UseAddressSearchReturn => {
   const [hasSearchedAddress, setHasSearchedAddress] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
   const { handleError } = useErrorHandler();
+  const { i18n } = useTranslation();
 
   // 주소 검색
   const handleSearch = useCallback(async () => {
@@ -38,7 +41,9 @@ export const useAddressSearch = (): UseAddressSearchReturn => {
     setIsSearching(true);
     setHasSearchedAddress(false);
     try {
-      const result = await userService.searchAddress(addressQuery);
+      // i18n.language를 Language 타입으로 변환 (기본값: 'ko')
+      const language: Language = (i18n.language === 'en' ? 'en' : 'ko');
+      const result = await userService.searchAddress(addressQuery, language);
       setSearchResults(result.addresses);
       setHasSearchedAddress(true);
     } catch (error: unknown) {
@@ -46,7 +51,7 @@ export const useAddressSearch = (): UseAddressSearchReturn => {
     } finally {
       setIsSearching(false);
     }
-  }, [addressQuery, handleError]);
+  }, [addressQuery, i18n.language, handleError]);
 
   // 주소 선택
   const handleSelectAddress = useCallback((address: AddressSearchResult): SelectedAddress => {

@@ -10,6 +10,10 @@ import {
   setSelectedPlace,
   setShowConfirmCard,
   upsertAiRecommendations,
+  upsertSearchAiRecommendations,
+  upsertCommunityAiRecommendations,
+  setSearchAiLoading,
+  setCommunityAiLoading,
 } from '@/store/slices/agentSlice';
 import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
 import { isAxiosError } from 'axios';
@@ -20,7 +24,6 @@ interface UseAgentActionsProps {
   latitude: number | null;
   longitude: number | null;
   hasLocation: boolean;
-  address: string | null;
   resultsSectionRef: React.RefObject<ResultsSectionRef | null>;
 }
 
@@ -28,7 +31,6 @@ export function useAgentActions({
   latitude,
   longitude,
   hasLocation,
-  address,
   resultsSectionRef,
 }: UseAgentActionsProps) {
   const dispatch = useAppDispatch();
@@ -38,7 +40,6 @@ export function useAgentActions({
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
   const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
-  const menuRequestAddress = useAppSelector((state) => state.agent.menuRequestAddress);
   const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
 
   const handleMenuClick = useCallback(
@@ -165,57 +166,73 @@ export function useAgentActions({
       return;
     }
 
-    // 주소 우선순위: 현재 주소 > 요청에 저장된 주소 > 좌표
-    const normalizedAddress = address?.trim() || menuRequestAddress?.trim();
-    const locationFallback = latitude !== null && longitude !== null
-      ? `${latitude},${longitude}`
-      : null;
-    const queryBase = normalizedAddress || locationFallback;
-
-    if (!queryBase) {
+    // Validate that coordinates are available
+    if (latitude === null || longitude === null) {
       handleError(t('errors.agent.locationRequired'), 'Agent');
       return;
     }
 
-    const query = `${queryBase} ${selectedMenu}`.trim();
-
     dispatch(setShowConfirmCard(false));
     // AI 추천 탭으로 자동 전환
     resultsSectionRef.current?.switchToTab('ai');
-    dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
 
-    try {
-      const response = await menuService.recommendPlaces({
-        query,
-        historyId: menuHistoryId,
-        menuName: selectedMenu,
+    // Fire search API call independently
+    dispatch(setSearchAiLoading({ isLoading: true, menuName: selectedMenu }));
+    menuService.recommendSearchPlaces({
+      latitude: latitude!,
+      longitude: longitude!,
+      menuName: selectedMenu,
+      menuRecommendationId: menuHistoryId,
+    })
+      .then((response) => {
+        const normalized = (response.recommendations || []).map((item) => ({
+          ...item,
+          placeId: item.placeId.replace(/^places\//i, ''),
+          menuName: selectedMenu,
+        }));
+        dispatch(upsertSearchAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
+      })
+      .catch((error) => {
+        if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
+          loadStoredAiRecommendations(menuHistoryId, selectedMenu, { silent: true });
+        } else {
+          console.error('Search places error:', error);
+        }
+      })
+      .finally(() => {
+        dispatch(setSearchAiLoading({ isLoading: false, menuName: null }));
       });
-      const normalized = (response.recommendations || []).map((item) => ({
-        ...item,
-        placeId: item.placeId.replace(/^places\//i, ''),
-        menuName: selectedMenu,
-      }));
 
-      dispatch(upsertAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
-      if (normalized.length === 0) {
-        handleError(t('errors.agent.noAiResults'), 'Agent');
-      }
-    } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
-        await loadStoredAiRecommendations(menuHistoryId, selectedMenu);
-      } else {
-        handleError(error, 'Agent');
-      }
-    } finally {
-      dispatch(setAiLoading({ isLoading: false, menuName: null }));
-    }
+    // Fire community API call independently (runs in parallel)
+    dispatch(setCommunityAiLoading({ isLoading: true, menuName: selectedMenu }));
+    menuService.recommendCommunityPlaces({
+      latitude: latitude!,
+      longitude: longitude!,
+      menuName: selectedMenu,
+      menuRecommendationId: menuHistoryId,
+    })
+      .then((response) => {
+        const normalized = (response.recommendations || []).map((item) => ({
+          ...item,
+          placeId: item.placeId.replace(/^places\//i, ''),
+          menuName: selectedMenu,
+        }));
+        dispatch(upsertCommunityAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
+      })
+      .catch((error) => {
+        console.error('Community places error:', error);
+      })
+      .finally(() => {
+        dispatch(setCommunityAiLoading({ isLoading: false, menuName: null }));
+      });
+
+    // Maintain legacy behavior for backward compatibility
+    dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
   }, [
     isAuthenticated,
     selectedMenu,
     menuHistoryId,
     aiRecommendationGroups,
-    address,
-    menuRequestAddress,
     latitude,
     longitude,
     dispatch,
