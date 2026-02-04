@@ -12,7 +12,7 @@ import { useHistoryMenuActions } from '@/hooks/history/useHistoryMenuActions';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useAppSelector } from '@/store/hooks';
 import type { MenuPlaceRecommendationGroup } from '@/store/slices/agentSlice';
-import type { PlaceRecommendationItem } from '@/types/menu';
+import type { PlaceRecommendationItemV2 } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
 import { formatDateTimeKorean } from '@/utils/format';
 import { useEffect, useMemo, useState } from 'react';
@@ -26,10 +26,10 @@ interface HistoryItemProps {
  * Helper component for rendering individual place items
  */
 interface PlaceListItemProps {
-  recommendation: PlaceRecommendationItem;
+  recommendation: PlaceRecommendationItemV2;
   index: number;
   sourceType: 'community' | 'search';
-  onSelect: (place: PlaceRecommendationItem) => void;
+  onSelect: (place: PlaceRecommendationItemV2) => void;
 }
 
 const PlaceListItem = ({ recommendation, index, sourceType, onSelect }: PlaceListItemProps) => {
@@ -63,8 +63,8 @@ const PlaceListItem = ({ recommendation, index, sourceType, onSelect }: PlaceLis
 
 export const HistoryItem = ({ item }: HistoryItemProps) => {
   const { t } = useTranslation();
-  const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItem | null>(null);
-  const { latitude, longitude, hasLocation, address } = useUserLocation();
+  const [selectedPlace, setSelectedPlace] = useState<PlaceRecommendationItemV2 | null>(null);
+  const { hasLocation, address } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
 
   const menuActions = useHistoryMenuActions();
@@ -75,7 +75,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
     Boolean(
       item.requestAddress?.trim() ||
         address?.trim() ||
-        (latitude !== null && longitude !== null)
+        hasLocation
     );
 
   const handleMenuClickWithReset = (menu: string) => {
@@ -350,6 +350,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
               activeMenuName={menuActions.selectedMenu}
               recommendations={aiRecommendationGroups}
               loadingMenuName={aiRecommendations.aiLoadingMenu}
+              searchEntryPointHtml={aiRecommendations.searchEntryPointHtml}
               onSelect={(recommendation) => setSelectedPlace(recommendation)}
               onReset={() => {
                 aiRecommendations.resetAiRecommendations();
@@ -362,6 +363,9 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
       <PlaceDetailsModal
         placeId={selectedPlace?.placeId ?? null}
         placeName={selectedPlace?.name ?? null}
+        localizedName={selectedPlace?.localizedName ?? null}
+        searchName={selectedPlace?.searchName ?? null}
+        searchAddress={selectedPlace?.searchAddress ?? null}
         onClose={() => setSelectedPlace(null)}
       />
     </>

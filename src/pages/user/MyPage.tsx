@@ -2,6 +2,7 @@
  * 마이페이지
  */
 
+import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
 import { Button } from '@/components/common/Button';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
@@ -15,14 +16,19 @@ import {
     PreferencesEditModal,
     PreferencesSection,
 } from '@/components/features/user/preferences';
+import {
+    ProfileEditModal,
+    ProfileSection,
+} from '@/components/features/user/profile';
 import { useAddressList } from '@/hooks/address/useAddressList';
 import { useAddressModal } from '@/hooks/address/useAddressModal';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useToast } from '@/hooks/common/useToast';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { usePreferences } from '@/hooks/user/usePreferences';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logoutAsync } from '@/store/slices/authSlice';
+import { logoutAsync, updateUser } from '@/store/slices/authSlice';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
@@ -35,10 +41,12 @@ export const MyPage = () => {
   const user = useAppSelector((state) => state.auth?.user);
   const dispatch = useAppDispatch();
   const { handleError } = useErrorHandler();
+  const { success } = useToast();
 
   // 모달 상태
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showAddressListModal, setShowAddressListModal] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -49,6 +57,7 @@ export const MyPage = () => {
     initialLikes: user?.preferences?.likes,
     initialDislikes: user?.preferences?.dislikes,
     initialAnalysis: user?.preferences?.analysis ?? null,
+    initialAnalysisParagraphs: user?.preferences?.analysisParagraphs ?? null,
   });
   const addressList = useAddressList();
   const addressModal = useAddressModal({
@@ -139,6 +148,26 @@ export const MyPage = () => {
     preferences.resetPreferencesModal();
   };
 
+  const handleSaveProfile = async (data: {
+    birthYear?: number;
+    gender?: 'male' | 'female' | 'other';
+  }) => {
+    try {
+      const result = await authService.updateUser(data);
+      dispatch(
+        updateUser({
+          birthYear: result.birthYear,
+          gender: result.gender,
+        })
+      );
+      success(t('user.profile.saveSuccess'));
+      return true;
+    } catch (error: unknown) {
+      handleError(error, 'ProfileEditModal');
+      return false;
+    }
+  };
+
   const handleAddAddressFromList = () => {
     setShowAddressListModal(false);
     setShowAddressModal(true);
@@ -221,10 +250,17 @@ export const MyPage = () => {
               </div>
             </div>
 
+            <ProfileSection
+              birthYear={user?.birthYear}
+              gender={user?.gender}
+              onEditClick={() => setShowProfileModal(true)}
+            />
+
             <PreferencesSection
               likes={preferences.likes}
               dislikes={preferences.dislikes}
               analysis={preferences.analysis}
+              analysisParagraphs={preferences.analysisParagraphs}
               isLoading={preferences.isLoadingPreferences}
               onEditClick={handleOpenPreferencesModal}
             />
@@ -310,6 +346,14 @@ export const MyPage = () => {
           onAddDislike={preferences.handleAddDislike}
           onRemoveDislike={preferences.handleRemoveDislike}
           onSave={preferences.handleSavePreferences}
+        />
+
+        <ProfileEditModal
+          open={showProfileModal}
+          birthYear={user?.birthYear}
+          gender={user?.gender}
+          onClose={() => setShowProfileModal(false)}
+          onSave={handleSaveProfile}
         />
 
         {showDeleteAccountModal && (

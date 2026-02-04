@@ -12,9 +12,11 @@ import { useTranslation } from 'react-i18next';
 
 interface PlaceBlogsSectionProps {
   placeName: string | null | undefined;
+  searchName?: string | null | undefined;
+  searchAddress?: string | null | undefined;
 }
 
-export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
+export const PlaceBlogsSection = ({ placeName, searchName, searchAddress }: PlaceBlogsSectionProps) => {
   const { t } = useTranslation();
   const [blogs, setBlogs] = useState<RestaurantBlog[]>([]);
   const [blogsLoading, setBlogsLoading] = useState(false);
@@ -40,7 +42,7 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
     prevPlaceNameRef.current = placeName;
     prevUserAddressRef.current = userAddress;
 
-    const query = address ? `${address} ${name}` : name;
+    const query = (searchAddress || address) ? `${searchAddress || address} ${searchName || name}` : (searchName || name);
 
     // 이 실행의 고유 ID
     const executionId = Date.now();
@@ -53,7 +55,13 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
           setBlogsError(null);
         });
 
-        const response = await menuService.getRestaurantBlogs(query, name);
+        const response = await menuService.getRestaurantBlogs(
+          query,
+          name,
+          'ko',
+          searchName || undefined,
+          searchAddress || undefined
+        );
         
         // 새로운 실행이 시작되었는지 확인
         if (currentExecutionIdRef.current !== executionId) {
@@ -82,7 +90,7 @@ export const PlaceBlogsSection = ({ placeName }: PlaceBlogsSectionProps) => {
     return () => {
       // cleanup에서는 currentExecutionIdRef를 변경하지 않음
     };
-  }, [placeName, userAddress]);
+  }, [placeName, userAddress, searchName, searchAddress]);
 
   if (!placeName) {
     return null;

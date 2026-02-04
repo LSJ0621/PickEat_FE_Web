@@ -12,6 +12,7 @@ import type {
     PlaceDetailResponse,
     PlaceHistoryResponse,
     PlaceRecommendationResponse,
+    PlaceRecommendationV2Response,
     RestaurantBlogsResponse,
     UpdateMenuSelectionRequest,
     UpdateMenuSelectionResponse,
@@ -31,6 +32,24 @@ export const menuService = {
   },
   recommendPlaces: async (params: { query: string; historyId: number; menuName: string }): Promise<PlaceRecommendationResponse> => {
     const response = await apiClient.get<PlaceRecommendationResponse>(ENDPOINTS.MENU.RECOMMEND_PLACES, {
+      params,
+    });
+    return response.data;
+  },
+  /**
+   * V2 가게 추천 (Gemini 기반, 확장된 정보 포함)
+   * - rating, reviewCount, openingHours, address, location, photoUrl 포함
+   * - searchEntryPointHtml: Google ToS 렌더링 필요
+   */
+  recommendPlacesV2: async (params: {
+    menuName: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    menuRecommendationId: number;
+    language?: 'ko' | 'en';
+  }): Promise<PlaceRecommendationV2Response> => {
+    const response = await apiClient.get<PlaceRecommendationV2Response>(ENDPOINTS.MENU.RECOMMEND_PLACES_V2, {
       params,
     });
     return response.data;
@@ -67,13 +86,22 @@ export const menuService = {
     );
     return response.data;
   },
-  getRestaurantBlogs: async (query: string, restaurantName?: string): Promise<RestaurantBlogsResponse> => {
+  getRestaurantBlogs: async (
+    query: string,
+    restaurantName?: string,
+    language?: 'ko' | 'en' | 'ja' | 'zh',
+    searchName?: string,
+    searchAddress?: string
+  ): Promise<RestaurantBlogsResponse> => {
     const response = await apiClient.get<RestaurantBlogsResponse>(
       ENDPOINTS.MENU.RESTAURANT_BLOGS,
       {
         params: {
           query,
           ...(restaurantName && { restaurantName }),
+          ...(language && { language }),
+          ...(searchName && { searchName }),
+          ...(searchAddress && { searchAddress }),
         },
       }
     );

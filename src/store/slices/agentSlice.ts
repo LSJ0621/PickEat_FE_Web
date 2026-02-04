@@ -3,7 +3,7 @@
  * 에이전트 페이지의 상태를 전역으로 관리합니다.
  */
 
-import type { PlaceRecommendationItem } from '@/types/menu';
+import type { MenuRecommendationItemData, PlaceRecommendationItem } from '@/types/menu';
 import type { Restaurant } from '@/types/search';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
@@ -15,11 +15,12 @@ export interface MenuPlaceRecommendationGroup {
 
 interface AgentState {
   // 메뉴 추천 결과
-  menuRecommendations: string[];
+  menuRecommendations: MenuRecommendationItemData[];
   menuRecommendationHistoryId: number | null;
   menuRecommendationPrompt: string;
   menuRecommendationRequestAddress: string | null;
-  menuRecommendationReason: string | null;
+  menuRecommendationIntro: string | null;
+  menuRecommendationClosing: string | null;
   isMenuRecommendationLoading: boolean;
 
   // 메뉴 선택 관련
@@ -62,7 +63,8 @@ const initialState: AgentState = {
   menuRecommendationHistoryId: null,
   menuRecommendationPrompt: '',
   menuRecommendationRequestAddress: null,
-  menuRecommendationReason: null,
+  menuRecommendationIntro: null,
+  menuRecommendationClosing: null,
   isMenuRecommendationLoading: false,
   selectedMenu: null,
   menuHistoryId: null,
@@ -91,18 +93,20 @@ const agentSlice = createSlice({
     setMenuRecommendations: (
       state,
       action: PayloadAction<{
-        recommendations: string[];
+        recommendations: MenuRecommendationItemData[];
         historyId: number;
         prompt: string;
         requestAddress: string | null;
-        reason: string;
+        intro: string;
+        closing: string;
       }>
     ) => {
       state.menuRecommendations = action.payload.recommendations;
       state.menuRecommendationHistoryId = action.payload.historyId;
       state.menuRecommendationPrompt = action.payload.prompt;
       state.menuRecommendationRequestAddress = action.payload.requestAddress;
-      state.menuRecommendationReason = action.payload.reason;
+      state.menuRecommendationIntro = action.payload.intro;
+      state.menuRecommendationClosing = action.payload.closing;
       // 새 추천 받으면 선택 완료 상태 초기화
       state.hasMenuSelectionCompleted = false;
     },
@@ -116,7 +120,8 @@ const agentSlice = createSlice({
       state.menuRecommendationHistoryId = null;
       state.menuRecommendationPrompt = '';
       state.menuRecommendationRequestAddress = null;
-      state.menuRecommendationReason = null;
+      state.menuRecommendationIntro = null;
+      state.menuRecommendationClosing = null;
     },
     
     // 메뉴 선택 관련
@@ -226,15 +231,9 @@ const agentSlice = createSlice({
       } else {
         state.aiRecommendationGroups.push({ menuName, recommendations });
       }
-      // 하위 호환성: searchAiRecommendationGroups에도 동기화
-      const searchExistingIndex = state.searchAiRecommendationGroups.findIndex(
-        (group) => group.menuName === menuName
-      );
-      if (searchExistingIndex >= 0) {
-        state.searchAiRecommendationGroups[searchExistingIndex] = { menuName, recommendations };
-      } else {
-        state.searchAiRecommendationGroups.push({ menuName, recommendations });
-      }
+      // searchAiRecommendationGroups 동기화 코드 제거
+      // 검색 추천(searchAiRecommendationGroups)과 저장된 추천(aiRecommendationGroups)은 별도로 관리되어야 함
+      // 검색 추천은 upsertSearchAiRecommendations를 통해서만 업데이트되어야 함
     },
 
     // @deprecated - setSearchAiLoading 사용 권장

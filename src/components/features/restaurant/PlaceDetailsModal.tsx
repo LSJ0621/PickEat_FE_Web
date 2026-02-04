@@ -2,6 +2,7 @@ import { PlaceBlogsSection } from './PlaceBlogsSection';
 import { PlaceMiniMap } from './PlaceMiniMap';
 import { PlaceReviewsSection } from './PlaceReviewsSection';
 import { usePlaceDetails } from '@/hooks/place/usePlaceDetails';
+import { formatMultilingualName } from '@/utils/format';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MAP_CONFIG, Z_INDEX } from '@/utils/constants';
@@ -10,10 +11,20 @@ import { useTranslation } from 'react-i18next';
 interface PlaceDetailsModalProps {
   placeId: string | null;
   placeName?: string | null;
+  localizedName?: string | null;
+  searchName?: string | null;
+  searchAddress?: string | null;
   onClose: () => void;
 }
 
-export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsModalProps) => {
+export const PlaceDetailsModal = ({
+  placeId,
+  placeName,
+  localizedName,
+  searchName,
+  searchAddress,
+  onClose
+}: PlaceDetailsModalProps) => {
   const { t } = useTranslation();
   const { status, errorMessage, placeDetail } = usePlaceDetails(placeId);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -139,7 +150,10 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <h3 className="text-xl font-bold text-white truncate">
-              {placeName ?? placeDetail?.name ?? t('place.selectedStore')}
+              {formatMultilingualName(
+                placeName ?? placeDetail?.name ?? t('place.selectedStore'),
+                localizedName
+              )}
             </h3>
             {placeDetail?.source === 'USER' && (
               <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-300 border border-blue-500/30 whitespace-nowrap flex-shrink-0">
@@ -304,7 +318,11 @@ export const PlaceDetailsModal = ({ placeId, placeName, onClose }: PlaceDetailsM
             )}
 
             {/* 블로그 섹션 */}
-            <PlaceBlogsSection placeName={placeName} />
+            <PlaceBlogsSection
+              placeName={placeName}
+              searchName={searchName}
+              searchAddress={searchAddress}
+            />
           </div>
         )}
       </div>

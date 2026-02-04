@@ -44,10 +44,17 @@ export interface SetAddressResponse {
   updatedAt: string; // ISO 8601 string (API 응답에서 Date는 string으로 직렬화됨)
 }
 
+export interface AnalysisParagraphs {
+  paragraph1: string;
+  paragraph2: string;
+  paragraph3: string;
+}
+
 export interface Preferences {
   likes: string[];
   dislikes: string[];
   analysis?: string | null;
+  analysisParagraphs?: AnalysisParagraphs | null;
 }
 
 export interface GetPreferencesResponse {

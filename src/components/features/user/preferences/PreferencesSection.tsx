@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
+import type { AnalysisParagraphs } from '@/types/user';
 
 interface PreferencesSectionProps {
   likes: string[];
   dislikes: string[];
   analysis: string | null;
+  analysisParagraphs: AnalysisParagraphs | null;
   isLoading: boolean;
   onEditClick: () => void;
 }
@@ -13,6 +15,7 @@ export const PreferencesSection = ({
   likes,
   dislikes,
   analysis,
+  analysisParagraphs,
   isLoading,
   onEditClick,
 }: PreferencesSectionProps) => {
@@ -60,13 +63,21 @@ export const PreferencesSection = ({
                   </div>
                 </div>
               )}
-              {analysis && (
+              {(analysisParagraphs || analysis) && (
                 <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4">
                   <p className="mb-2 text-xs font-medium text-purple-200">{t('user.preferences.aiReport')}</p>
-                  <p className="text-sm leading-relaxed text-slate-100">{analysis}</p>
+                  {analysisParagraphs ? (
+                    <div className="space-y-3">
+                      <p className="text-sm leading-relaxed text-slate-100">{analysisParagraphs.paragraph1}</p>
+                      <p className="text-sm leading-relaxed text-slate-100">{analysisParagraphs.paragraph2}</p>
+                      <p className="text-sm leading-relaxed text-slate-100">{analysisParagraphs.paragraph3}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-slate-100">{analysis}</p>
+                  )}
                 </div>
               )}
-              {likes.length === 0 && dislikes.length === 0 && !analysis && (
+              {likes.length === 0 && dislikes.length === 0 && !analysisParagraphs && !analysis && (
                 <p className="text-sm text-slate-400">{t('user.preferences.noPreferences')}</p>
               )}
             </div>

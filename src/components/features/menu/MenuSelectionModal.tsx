@@ -6,7 +6,7 @@
 import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
-import type { MenuSlot } from '@/types/menu';
+import type { MenuRecommendationItemData, MenuSlot } from '@/types/menu';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 interface MenuSelectionModalProps {
   open: boolean;
-  recommendations: string[];
+  recommendations: MenuRecommendationItemData[];
   historyId: number | null;
   onClose: () => void;
   onComplete: () => void;
@@ -152,22 +152,22 @@ export const MenuSelectionModal = ({
           </div>
 
           <div className="max-h-96 space-y-2 overflow-y-auto custom-scroll">
-            {recommendations.map((menu, index) => {
-              const isSelected = selectedMenus.has(menu);
+            {recommendations.map((item, index) => {
+              const isSelected = selectedMenus.has(item.menu);
               return (
                 <button
                   key={index}
-                  onClick={() => handleToggleMenu(menu)}
+                  onClick={() => handleToggleMenu(item.menu)}
                   className={`w-full rounded-xl border p-4 text-left transition ${
                     isSelected
                       ? 'border-orange-400/60 bg-orange-500/20'
                       : 'border-white/10 bg-white/5 hover:border-white/30'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div
                       data-testid={isSelected ? 'selected-indicator' : undefined}
-                      className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${
                         isSelected
                           ? 'border-orange-400 bg-orange-400'
                           : 'border-slate-400 bg-transparent'
@@ -179,7 +179,10 @@ export const MenuSelectionModal = ({
                         </svg>
                       )}
                     </div>
-                    <span className="flex-1 font-medium text-white" data-testid="selected-menu-name">{menu}</span>
+                    <div className="flex-1">
+                      <span className="font-medium text-white" data-testid="selected-menu-name">{item.menu}</span>
+                      <p className="mt-1 text-xs text-slate-400">{item.condition}</p>
+                    </div>
                   </div>
                 </button>
               );

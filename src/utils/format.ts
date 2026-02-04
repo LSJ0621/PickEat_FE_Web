@@ -114,3 +114,59 @@ export const getDateRange = (type: 'today' | 'week' | 'month'): { start: string;
   return { start: '', end: '' };
 };
 
+/**
+ * 다국어 가게 이름 포맷팅
+ * localizedName이 있고 원래 이름과 다를 경우 "원래이름(번역이름)" 형식으로 반환
+ *
+ * @param name - 원래 가게 이름
+ * @param localizedName - 번역된 가게 이름 (선택)
+ * @returns 포맷팅된 가게 이름
+ *
+ * @example
+ * formatMultilingualName("McDonald's", "맥도날드") // "McDonald's(맥도날드)"
+ * formatMultilingualName("맥도날드", null) // "맥도날드"
+ * formatMultilingualName("맥도날드", "맥도날드") // "맥도날드"
+ */
+export const formatMultilingualName = (name: string, localizedName?: string | null): string => {
+  if (!localizedName || localizedName === name) {
+    return name;
+  }
+  return `${name}(${localizedName})`;
+};
+
+/**
+ * 다국어 주소 포맷팅
+ * localizedAddress가 있고 원래 주소와 다를 경우 "localizedAddress(address)" 형식으로 반환
+ *
+ * @param address - 원본 주소 (Google에서 제공하는 현지 언어)
+ * @param localizedAddress - 번역된 주소 (사용자 언어)
+ * @returns 포맷팅된 주소 문자열
+ *
+ * @example
+ * formatMultilingualAddress("123 Teheran-ro", "서울시 강남구 테헤란로") // "서울시 강남구 테헤란로(123 Teheran-ro)"
+ * formatMultilingualAddress("서울시 강남구", null) // "서울시 강남구"
+ * formatMultilingualAddress(null, "서울시 강남구") // "서울시 강남구"
+ */
+export const formatMultilingualAddress = (
+  address?: string | null,
+  localizedAddress?: string | null
+): string => {
+  // localizedAddress만 있는 경우
+  if (localizedAddress && !address) {
+    return localizedAddress;
+  }
+
+  // address만 있는 경우
+  if (address && !localizedAddress) {
+    return address;
+  }
+
+  // 둘 다 있고 다른 경우
+  if (localizedAddress && address && localizedAddress !== address) {
+    return `${localizedAddress}(${address})`;
+  }
+
+  // 둘 다 같거나 localizedAddress만 있는 경우
+  return localizedAddress || address || '';
+};
+

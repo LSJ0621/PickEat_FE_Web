@@ -180,6 +180,7 @@
       "noLocationData": "위치 정보가 없습니다. 주소를 등록해주세요.",
       "savedResultNotFound": "이미 추천받은 이력이 있지만 저장된 결과를 찾지 못했습니다.",
       "locationRequired": "AI 추천을 사용하려면 주소 또는 위치 정보를 등록해주세요.",
+      "addressRequired": "AI 추천을 사용하려면 주소를 등록해주세요.",
       "noAiResults": "AI 추천 결과가 없습니다."
     },
     "history": {
@@ -303,6 +304,19 @@
       "loading": "로딩 중...",
       "noPreferences": "등록된 취향 정보가 없습니다.",
       "aiReport": "AI 리포트"
+    },
+    "profile": {
+      "title": "프로필 정보",
+      "birthYear": "출생연도",
+      "gender": "성별",
+      "genderMale": "남성",
+      "genderFemale": "여성",
+      "genderOther": "기타",
+      "notSet": "미설정",
+      "edit": "수정",
+      "save": "저장",
+      "saving": "저장 중...",
+      "saveSuccess": "프로필이 저장되었습니다"
     },
     "address": {
       "title": "주소 관리",
@@ -501,6 +515,8 @@
     "rating": "평점",
     "reviews": "리뷰",
     "reviewCount": "개",
+    "open": "영업 중",
+    "closed": "영업 종료",
     "openNow": "현재 영업 중",
     "closedNow": "현재 영업 종료",
     "photos": "사진",

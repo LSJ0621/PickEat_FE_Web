@@ -119,8 +119,9 @@ export function useAgentActions({
         const response = await menuService.getPlaceRecommendationsByHistoryId(historyId);
         const normalized = (response.places || [])
           .filter((place) => place.menuName === menuName)
+          .filter((place) => place.placeId != null)
           .map((place) => ({
-            placeId: place.placeId.replace(/^places\//i, ''),
+            placeId: place.placeId!.replace(/^places\//i, ''),
             name: place.name ?? '이름 없는 가게',
             reason: place.reason ?? '',
             menuName: place.menuName,
@@ -185,11 +186,13 @@ export function useAgentActions({
       menuRecommendationId: menuHistoryId,
     })
       .then((response) => {
-        const normalized = (response.recommendations || []).map((item) => ({
-          ...item,
-          placeId: item.placeId.replace(/^places\//i, ''),
-          menuName: selectedMenu,
-        }));
+        const normalized = (response.recommendations || [])
+          .filter((item) => item.placeId != null)
+          .map((item) => ({
+            ...item,
+            placeId: item.placeId!.replace(/^places\//i, ''),
+            menuName: selectedMenu,
+          }));
         dispatch(upsertSearchAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
       })
       .catch((error) => {
@@ -212,11 +215,13 @@ export function useAgentActions({
       menuRecommendationId: menuHistoryId,
     })
       .then((response) => {
-        const normalized = (response.recommendations || []).map((item) => ({
-          ...item,
-          placeId: item.placeId.replace(/^places\//i, ''),
-          menuName: selectedMenu,
-        }));
+        const normalized = (response.recommendations || [])
+          .filter((item) => item.placeId != null)
+          .map((item) => ({
+            ...item,
+            placeId: item.placeId!.replace(/^places\//i, ''),
+            menuName: selectedMenu,
+          }));
         dispatch(upsertCommunityAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
       })
       .catch((error) => {

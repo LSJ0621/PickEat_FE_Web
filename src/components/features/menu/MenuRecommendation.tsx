@@ -41,7 +41,8 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
   const recommendations = useAppSelector((state) => state.agent.menuRecommendations);
   const menuHistoryId = useAppSelector((state) => state.agent.menuRecommendationHistoryId);
   const requestAddress = useAppSelector((state) => state.agent.menuRecommendationRequestAddress);
-  const reason = useAppSelector((state) => state.agent.menuRecommendationReason);
+  const intro = useAppSelector((state) => state.agent.menuRecommendationIntro);
+  const closing = useAppSelector((state) => state.agent.menuRecommendationClosing);
   const loading = useAppSelector((state) => state.agent.isMenuRecommendationLoading);
   const hasMenuSelectionCompleted = useAppSelector((state) => state.agent.hasMenuSelectionCompleted);
   
@@ -53,7 +54,7 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
 
   // 로딩이 완료되고 새로운 메뉴 추천이 나타나면 애니메이션 트리거
   useEffect(() => {
-    const currentRecommendationsKey = recommendations.join('|');
+    const currentRecommendationsKey = recommendations.map(r => r.menu).join('|');
     const isLoadingCompleted = previousLoadingRef.current && !loading;
     const hasNewRecommendations = previousRecommendationsRef.current !== currentRecommendationsKey && recommendations.length > 0;
 
@@ -99,7 +100,8 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
           historyId: result.id,
           prompt,
           requestAddress: result.requestAddress ?? null,
-          reason: result.reason,
+          intro: result.intro,
+          closing: result.closing,
         })
       );
     } catch (error) {
@@ -131,8 +133,9 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            onKeyPress={(e) => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !loading) {
+                e.preventDefault();
                 handleRecommend();
               }
             }}
@@ -183,29 +186,45 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
               )}
             </div>
             <div className="mt-3 space-y-3 sm:mt-4">
-              {reason && (
+              {/* 통합 설명 블록 */}
+              {(intro || closing) && (
                 <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-transparent p-4 text-sm text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.45)] sm:p-5 sm:text-base">
-                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80 sm:text-[13px]">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500/80 to-rose-500/80 text-[11px] text-white shadow-sm shadow-orange-500/30">i</span>
-                    {t('menu.recommendation.reason')}
-                  </div>
-                  <p className="leading-relaxed text-slate-200">{reason}</p>
+                  {/* Intro */}
+                  {intro && <p className="leading-relaxed whitespace-pre-line">{intro}</p>}
+
+                  {/* Condition/Menu 목록 */}
+                  {recommendations.length > 0 && (
+                    <ul className="mt-4 space-y-1.5">
+                      {recommendations.map((item, index) => (
+                        <li key={index} className="text-slate-300">
+                          • {item.condition} → <span className="font-medium text-white">{item.menu}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Closing */}
+                  {closing && <p className="mt-4 leading-relaxed">{closing}</p>}
                 </div>
               )}
-              <div className="grid max-h-64 grid-cols-1 gap-3 overflow-y-auto pr-1 pt-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-                {recommendations.map((menu, index) => {
+
+              {/* 메뉴 카드 그리드 - 메뉴명만 */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {recommendations.map((item, index) => {
                   const shouldAnimate = animatedMenus.has(index);
-                  const isSelected = selectedMenu === menu;
+                  const isSelected = selectedMenu === item.menu;
                   return (
                     <button
                       key={index}
                       onClick={() =>
                         menuHistoryId &&
-                        onMenuSelect?.(menu, menuHistoryId, {
+                        onMenuSelect?.(item.menu, menuHistoryId, {
                           requestAddress,
                         })
                       }
-                      className={`group relative flex items-start gap-3 overflow-hidden rounded-2xl border px-4 py-4 text-left shadow-lg shadow-black/20 transition hover:-translate-y-0.5 sm:px-5 ${
+                      aria-label={`${item.menu} 선택`}
+                      aria-pressed={isSelected}
+                      className={`group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border px-4 py-5 shadow-lg shadow-black/20 transition hover:-translate-y-0.5 sm:py-6 ${
                         isSelected
                           ? 'border-orange-400/70 bg-gradient-to-r from-orange-500/15 via-rose-500/10 to-purple-500/10 hover:border-orange-300/80'
                           : 'border-white/10 bg-gradient-to-r from-white/10 via-white/5 to-white/0 hover:border-white/30 hover:bg-white/5'
@@ -221,32 +240,26 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
                             : 'bg-gradient-to-b from-white/15 via-white/10 to-white/5'
                         }`}
                       />
-                      <div
-                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] text-[11px] font-semibold sm:h-8 sm:w-8 sm:text-xs ${
-                          isSelected
-                            ? 'bg-gradient-to-br from-orange-400 to-rose-500 text-white shadow-sm shadow-orange-500/30'
-                            : 'bg-white/8 text-white/80 ring-1 ring-white/10'
-                        }`}
-                      >
-                        {index + 1}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5">
-                          <p className={`text-sm font-semibold sm:text-base ${isSelected ? 'text-orange-50' : 'text-white'}`}>
-                            {menu}
-                          </p>
-                          {isSelected && (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-[10px] text-orange-50">
-                              ✓
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] text-slate-400 sm:text-xs">{t('menu.recommendation.aiLabel')}</span>
+
+                      {/* 숫자 */}
+                      <span className="text-xs text-slate-400 sm:text-sm" aria-hidden="true">{index + 1}</span>
+
+                      {/* 메뉴명 */}
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <p className={`text-base font-semibold sm:text-lg ${isSelected ? 'text-orange-50' : 'text-white'}`}>
+                          {item.menu}
+                        </p>
+                        {isSelected && (
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-[10px] text-orange-50">
+                            ✓
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
                 })}
               </div>
+
               <p className="text-center text-xs text-slate-400 sm:text-sm">
                 {t('menu.recommendation.clickHint')}
               </p>

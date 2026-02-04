@@ -179,6 +179,7 @@
       "noLocationData": "No location data. Please register your address.",
       "savedResultNotFound": "You already received this recommendation but saved results were not found.",
       "locationRequired": "Please register your address or location to use AI recommendations.",
+      "addressRequired": "Please register your address to use AI recommendations.",
       "noAiResults": "No AI recommendations available."
     },
     "history": {
@@ -302,6 +303,19 @@
       "loading": "Loading...",
       "noPreferences": "No preferences registered.",
       "aiReport": "AI Report"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "birthYear": "Birth Year",
+      "gender": "Gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other",
+      "notSet": "Not set",
+      "edit": "Edit",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveSuccess": "Profile saved successfully"
     },
     "address": {
       "title": "Address Management",
@@ -500,6 +514,8 @@
     "rating": "Rating",
     "reviews": "Reviews",
     "reviewCount": "items",
+    "open": "Open",
+    "closed": "Closed",
     "openNow": "Open Now",
     "closedNow": "Closed",
     "photos": "Photos",

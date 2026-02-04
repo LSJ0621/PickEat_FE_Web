@@ -40,8 +40,13 @@ export function createMockMenuRecommendation(
 ): MenuRecommendationResponse {
   return {
     id: 1,
-    recommendations: ['김치찌개', '불고기', '비빔밥'],
-    reason: '한식 중심의 건강한 메뉴를 추천드립니다.',
+    recommendations: [
+      { condition: '매콤달콤한 맛을 원한다면', menu: '김치찌개' },
+      { condition: '고소하고 담백한 맛을 원한다면', menu: '불고기' },
+      { condition: '건강한 한 끼를 원한다면', menu: '비빔밥' },
+    ],
+    intro: '한식 중심의 건강한 메뉴를 추천드립니다. 오늘 같은 날씨에는 따뜻한 국물 요리가 좋을 것 같아요.',
+    closing: '지금 가장 끌리는 조건을 떠올려 보시고 선택해 보세요.',
     recommendedAt: new Date().toISOString(),
     requestAddress: '서울시 강남구 테헤란로 123',
     ...overrides,
@@ -167,7 +172,13 @@ export function createMockPlaceHistory(
       id: 1,
       type: 'MENU',
       prompt: '점심 메뉴 추천해줘',
-      reason: '한식 중심의 건강한 메뉴를 추천드립니다.',
+      intro: '한식 중심의 건강한 메뉴를 추천드립니다.',
+      recommendations: [
+        { condition: '매콤한 맛을 원한다면', menu: '김치찌개' },
+        { condition: '고소하고 담백한 맛을 원한다면', menu: '불고기' },
+        { condition: '가볍게 한 끼를 먹고 싶다면', menu: '비빔밥' },
+      ],
+      closing: '맛있는 식사 되세요!',
       recommendedAt: '2024-01-15T12:00:00.000Z',
       requestAddress: '서울시 강남구 테헤란로 123',
       hasPlaceRecommendations: true,

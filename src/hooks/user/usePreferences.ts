@@ -2,12 +2,14 @@ import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
+import type { AnalysisParagraphs } from '@/types/user';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface UsePreferencesOptions {
   initialLikes?: string[];
   initialDislikes?: string[];
   initialAnalysis?: string | null;
+  initialAnalysisParagraphs?: AnalysisParagraphs | null;
 }
 
 export const usePreferences = (options?: UsePreferencesOptions) => {
@@ -18,10 +20,16 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
   const [analysis, setAnalysis] = useState<string | null>(
     options?.initialAnalysis ?? null,
   );
+  const [analysisParagraphs, setAnalysisParagraphs] = useState<AnalysisParagraphs | null>(
+    options?.initialAnalysisParagraphs ?? null,
+  );
   const prevInitialLikesRef = useRef<string[] | undefined>(options?.initialLikes);
   const prevInitialDislikesRef = useRef<string[] | undefined>(options?.initialDislikes);
   const prevInitialAnalysisRef = useRef<string | null | undefined>(
     options?.initialAnalysis,
+  );
+  const prevInitialAnalysisParagraphsRef = useRef<AnalysisParagraphs | null | undefined>(
+    options?.initialAnalysisParagraphs,
   );
   
   // 초기값이 변경되면 상태 업데이트 (Redux 상태 동기화)
@@ -30,9 +38,11 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
     const currentLikes = JSON.stringify(options?.initialLikes);
     const currentDislikes = JSON.stringify(options?.initialDislikes);
     const currentAnalysis = options?.initialAnalysis ?? null;
+    const currentAnalysisParagraphs = JSON.stringify(options?.initialAnalysisParagraphs);
     const prevLikes = JSON.stringify(prevInitialLikesRef.current);
     const prevDislikes = JSON.stringify(prevInitialDislikesRef.current);
     const prevAnalysis = prevInitialAnalysisRef.current ?? null;
+    const prevAnalysisParagraphs = JSON.stringify(prevInitialAnalysisParagraphsRef.current);
 
     if (currentLikes !== prevLikes && options?.initialLikes !== undefined) {
       setLikes(options.initialLikes);
@@ -46,7 +56,11 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       setAnalysis(currentAnalysis);
       prevInitialAnalysisRef.current = options.initialAnalysis ?? null;
     }
-  }, [options?.initialLikes, options?.initialDislikes, options?.initialAnalysis]);
+    if (currentAnalysisParagraphs !== prevAnalysisParagraphs && options?.initialAnalysisParagraphs !== undefined) {
+      setAnalysisParagraphs(options.initialAnalysisParagraphs ?? null);
+      prevInitialAnalysisParagraphsRef.current = options.initialAnalysisParagraphs ?? null;
+    }
+  }, [options?.initialLikes, options?.initialDislikes, options?.initialAnalysis, options?.initialAnalysisParagraphs]);
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
@@ -60,6 +74,7 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       setLikes(result.preferences.likes || []);
       setDislikes(result.preferences.dislikes || []);
       setAnalysis(result.preferences.analysis ?? null);
+      setAnalysisParagraphs(result.preferences.analysisParagraphs ?? null);
     } catch {
       // 취향 정보 조회 실패는 무시
     } finally {
@@ -134,6 +149,7 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
     likes,
     dislikes,
     analysis,
+    analysisParagraphs,
     newLike,
     newDislike,
     isLoadingPreferences,

@@ -7,7 +7,7 @@ import { menuService } from '@/api/services/menu';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppSelector } from '@/store/hooks';
-import type { PlaceRecommendationItem } from '@/types/menu';
+import type { PlaceRecommendationItemV2 } from '@/types/menu';
 import type { RecommendationHistoryItem } from '@/types/user';
 import { isAxiosError } from 'axios';
 import { useCallback, useState } from 'react';
@@ -18,7 +18,8 @@ interface UseHistoryAiRecommendationsOptions {
 }
 
 interface UseHistoryAiRecommendationsReturn {
-  aiRecommendations: PlaceRecommendationItem[];
+  aiRecommendations: PlaceRecommendationItemV2[];
+  searchEntryPointHtml: string | null;
   isAiLoading: boolean;
   aiLoadingMenu: string | null;
   handleAiRecommend: (selectedMenu: string) => Promise<void>;
@@ -33,13 +34,14 @@ export const useHistoryAiRecommendations = (
   options: UseHistoryAiRecommendationsOptions
 ): UseHistoryAiRecommendationsReturn => {
   const { historyItem } = options;
-  const [aiRecommendations, setAiRecommendations] = useState<PlaceRecommendationItem[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<PlaceRecommendationItemV2[]>([]);
+  const [searchEntryPointHtml, setSearchEntryPointHtml] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiLoadingMenu, setAiLoadingMenu] = useState<string | null>(null);
   const { latitude, longitude, address } = useUserLocation();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const { handleError, handleSuccess } = useErrorHandler();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const loadStoredAiRecommendations = useCallback(
     async (menuName: string, { silent }: { silent?: boolean } = {}) => {
@@ -52,6 +54,12 @@ export const useHistoryAiRecommendations = (
             name: place.name ?? '이름 없는 가게',
             reason: place.reason ?? '',
             menuName: place.menuName,
+            rating: place.rating ?? undefined,
+            reviewCount: place.userRatingCount ?? undefined,
+            isOpen: place.openNow ?? undefined,
+            address: place.address ?? undefined,
+            photoUrl: place.photos?.[0] ?? undefined,
+            source: place.source,
           }));
 
         setAiRecommendations(normalized);
@@ -79,28 +87,32 @@ export const useHistoryAiRecommendations = (
         return;
       }
 
-      const normalizedAddress = historyItem.requestAddress?.trim() || address?.trim();
-      const locationFallback = latitude !== null && longitude !== null
-        ? `${latitude},${longitude}`
-        : null;
-      const queryBase = normalizedAddress || locationFallback;
-
-      if (!queryBase) {
+      // Validate location data
+      if (latitude === null || longitude === null) {
         handleError(t('errors.agent.locationRequired'), 'HistoryAiRecommendations');
         return;
       }
 
-      const query = `${queryBase} ${selectedMenu}`.trim();
+      // Validate address
+      const normalizedAddress = historyItem.requestAddress?.trim() || address?.trim();
+      if (!normalizedAddress) {
+        handleError(t('errors.agent.addressRequired'), 'HistoryAiRecommendations');
+        return;
+      }
 
       setAiLoadingMenu(selectedMenu);
       setIsAiLoading(true);
 
       try {
-        const response = await menuService.recommendPlaces({
-          query,
-          historyId: historyItem.id,
+        const response = await menuService.recommendPlacesV2({
           menuName: selectedMenu,
+          address: normalizedAddress,
+          latitude,
+          longitude,
+          menuRecommendationId: historyItem.id,
+          language: i18n.language === 'en' ? 'en' : 'ko',
         });
+
         const normalized = (response.recommendations || []).map((item) => ({
           ...item,
           placeId: item.placeId.replace(/^places\//i, ''),
@@ -108,6 +120,8 @@ export const useHistoryAiRecommendations = (
         }));
 
         setAiRecommendations(normalized);
+        setSearchEntryPointHtml(response.searchEntryPointHtml ?? null);
+
         if (normalized.length === 0) {
           handleError(t('errors.agent.noAiResults'), 'HistoryAiRecommendations');
         }
@@ -122,7 +136,7 @@ export const useHistoryAiRecommendations = (
         setAiLoadingMenu(null);
       }
     },
-    [isAuthenticated, historyItem, address, latitude, longitude, loadStoredAiRecommendations, handleError, t]
+    [isAuthenticated, historyItem, address, latitude, longitude, loadStoredAiRecommendations, handleError, t, i18n.language]
   );
 
   const resetAiRecommendations = useCallback(() => {
@@ -132,6 +146,7 @@ export const useHistoryAiRecommendations = (
 
   return {
     aiRecommendations,
+    searchEntryPointHtml,
     isAiLoading,
     aiLoadingMenu,
     handleAiRecommend,

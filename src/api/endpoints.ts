@@ -29,6 +29,7 @@ export const ENDPOINTS = {
   MENU: {
     RECOMMEND: `${API_BASE}/menu/recommend`,
     RECOMMEND_PLACES: `${API_BASE}/menu/recommend/places`,
+    RECOMMEND_PLACES_V2: `${API_BASE}/menu/recommend/places/v2`,
     RECOMMEND_PLACES_SEARCH: `${API_BASE}/menu/recommend/places/search`,
     RECOMMEND_PLACES_COMMUNITY: `${API_BASE}/menu/recommend/places/community`,
     RESTAURANT_BLOGS: `${API_BASE}/menu/restaurant/blogs`,

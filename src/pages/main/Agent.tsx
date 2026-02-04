@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { shallowEqual } from 'react-redux';
 import { Button } from '@/components/common/Button';
 import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
 import { ResultsSection } from '@/components/features/agent/ResultsSection';
@@ -25,10 +26,13 @@ export const AgentPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
-  const userSetupInfo = useAppSelector((state) => ({
-    address: state.auth?.user?.address,
-    preferences: state.auth?.user?.preferences,
-  }));
+  const userSetupInfo = useAppSelector(
+    (state) => ({
+      address: state.auth?.user?.address,
+      preferences: state.auth?.user?.preferences,
+    }),
+    shallowEqual
+  );
   const toast = useToast();
   const { latitude, longitude, hasLocation, address } = useUserLocation();
 
@@ -221,6 +225,9 @@ export const AgentPage = () => {
         <PlaceDetailsModal
           placeId={selectedPlace?.placeId ?? null}
           placeName={selectedPlace?.name ?? null}
+          localizedName={selectedPlace?.localizedName ?? null}
+          searchName={selectedPlace?.searchName ?? null}
+          searchAddress={selectedPlace?.searchAddress ?? null}
           onClose={() => dispatch(setSelectedPlace(null))}
         />
       </Suspense>

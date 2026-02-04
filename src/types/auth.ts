@@ -3,6 +3,7 @@
  */
 
 import type { Language } from './common';
+import type { AnalysisParagraphs } from './user';
 
 export interface User {
   email: string;
@@ -14,10 +15,13 @@ export interface User {
     likes: string[];
     dislikes: string[];
     analysis?: string | null;
+    analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
   preferredLanguage: Language;
   role?: string;
   createdAt?: string;
+  birthYear?: number | null;
+  gender?: 'male' | 'female' | 'other' | null;
 }
 
 export interface LoginRequest {
@@ -50,6 +54,7 @@ export interface KakaoLoginResponse {
     likes: string[];
     dislikes: string[];
     analysis?: string | null;
+    analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
 }
 
@@ -64,15 +69,20 @@ export interface LoginResponse {
     likes: string[];
     dislikes: string[];
     analysis?: string | null;
+    analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
 }
 
 export interface UpdateUserRequest {
   name?: string;
+  birthYear?: number;
+  gender?: 'male' | 'female' | 'other';
 }
 
 export interface UpdateUserResponse {
   name: string | null;
+  birthYear?: number | null;
+  gender?: 'male' | 'female' | 'other' | null;
 }
 
 export interface RegisterResponse {
