@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { menuService } from '@/api/services/menu';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import {
   mockMenuRecommendation,
   mockPlaceRecommendations,

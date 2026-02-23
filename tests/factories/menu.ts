@@ -11,7 +11,7 @@ import type {
   MenuSelection,
   MenuPayload,
   PlaceReview,
-} from '@/types/menu';
+} from '@features/agent/types';
 
 /**
  * Creates a mock MenuRecommendationResponse with optional overrides

@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import type { UseEmailVerificationReturn } from '@/hooks/auth/useEmailVerification';
+import type { UseEmailVerificationReturn } from '@features/auth/hooks/useEmailVerification';
 
 /**
  * Creates a mock UseEmailVerificationReturn object for testing

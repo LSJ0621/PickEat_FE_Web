@@ -5,13 +5,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useGoogleMap } from '@/hooks/map/useGoogleMap';
-import * as googleMapLoader from '@/utils/googleMapLoader';
-import * as googleMapUtils from '@/utils/googleMap';
+import * as googleMapLoader from '@shared/utils/googleMapLoader';
+import * as googleMapUtils from '@shared/utils/googleMap';
 import type { Restaurant } from '@/types/search';
 import { createRef } from 'react';
 
-vi.mock('@/utils/googleMapLoader');
-vi.mock('@/utils/googleMap');
+vi.mock('@shared/utils/googleMapLoader');
+vi.mock('@shared/utils/googleMap');
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,

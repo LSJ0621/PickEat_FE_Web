@@ -1,6 +1,6 @@
-import type { User, LoginResponse } from '@/types/auth';
-import type { MenuRecommendationItemData } from '@/types/menu';
-import type { UserAddress, Preferences, RecommendationHistoryItem } from '@/types/user';
+import type { User, LoginResponse } from '@features/auth/types';
+import type { MenuRecommendationItemData } from '@features/agent/types';
+import type { UserAddress, Preferences, RecommendationHistoryItem } from '@features/user/types';
 
 /**
  * Creates a mock User object with optional overrides

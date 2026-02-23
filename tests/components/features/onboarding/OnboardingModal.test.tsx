@@ -86,7 +86,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@/utils/constants', () => ({
+vi.mock('@shared/utils/constants', () => ({
   Z_INDEX: {
     MODAL_BACKDROP: 1000,
     MODAL_CONTENT: 1001,

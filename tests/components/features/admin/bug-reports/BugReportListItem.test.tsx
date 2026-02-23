@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createMockBugReport, createMockBugReportWithImages } from '@tests/factories';
 import { BugReportListItem } from '@/components/features/admin/bug-reports/BugReportListItem';
-import { BUG_REPORT } from '@/utils/constants';
+import { BUG_REPORT } from '@shared/utils/constants';
 
 describe('BugReportListItem', () => {
   const mockOnClick = vi.fn();

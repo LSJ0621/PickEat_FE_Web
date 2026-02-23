@@ -3,7 +3,7 @@ import type {
   AddressSearchResponse,
   SelectedAddress,
   UserAddress,
-} from '@/types/user';
+} from '@features/user/types';
 
 /**
  * Creates a mock AddressSearchResult with optional overrides

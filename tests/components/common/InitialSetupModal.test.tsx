@@ -6,7 +6,7 @@ import { InitialSetupModal } from '@/components/common/InitialSetupModal';
 import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
 import { createMockAddressSearchResponse, createMockAddress } from '@tests/factories';
-import type { UserSetupStatus } from '@/utils/userSetup';
+import type { UserSetupStatus } from '@shared/utils/userSetup';
 
 // Mock API services
 vi.mock('@/api/services/auth', () => ({

@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useEmailVerification } from '@/hooks/auth/useEmailVerification';
 import type { UseEmailVerificationOptions } from '@/hooks/auth/useEmailVerification';
 import { authService } from '@/api/services/auth';
-import { ERROR_MESSAGES } from '@/utils/constants';
+import { ERROR_MESSAGES } from '@shared/utils/constants';
 
 vi.mock('@/api/services/auth');
 

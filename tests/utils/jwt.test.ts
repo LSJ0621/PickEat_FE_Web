@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { decodeJwt, getUserRoleFromToken } from '@/utils/jwt';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { decodeJwt, getUserRoleFromToken } from '@shared/utils/jwt';
+import { STORAGE_KEYS } from '@shared/utils/constants';
 
 describe('decodeJwt', () => {
   it('should decode a valid JWT token', () => {

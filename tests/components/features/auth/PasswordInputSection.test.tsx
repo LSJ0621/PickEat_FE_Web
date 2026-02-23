@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { PasswordInputSection } from '@/components/features/auth/PasswordInputSection';
-import { VALIDATION, ERROR_MESSAGES } from '@/utils/constants';
+import { VALIDATION, ERROR_MESSAGES } from '@shared/utils/constants';
 
 describe('PasswordInputSection', () => {
   const defaultProps = {

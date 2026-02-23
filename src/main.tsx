@@ -1,12 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
-import { store } from './store'
-import { ErrorBoundary } from './components/common/ErrorBoundary'
-import { ToastProvider } from './components/common/ToastProvider'
+import { store } from '@app/store'
+import { ErrorBoundary } from '@shared/components/ErrorBoundary'
+import { ToastProvider } from '@shared/components/ToastProvider'
 import './i18n/config'
 import './index.css'
-import Routes from './routes'
+import Routes from '@app/routes'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

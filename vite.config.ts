@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@shared': path.resolve(__dirname, './src/shared'),
+        '@features': path.resolve(__dirname, './src/features'),
+        '@app': path.resolve(__dirname, './src/app'),
       },
     },
     optimizeDeps: {
@@ -42,9 +45,8 @@ export default defineConfig(({ mode }) => {
           manualChunks(id) {
             // Admin 번들 분리 - admin 관련 페이지/컴포넌트를 별도 chunk로
             if (
-              id.includes('/pages/admin/') ||
-              id.includes('/components/features/admin/') ||
-              id.includes('/components/layout/AdminLayout')
+              id.includes('/features/admin/') ||
+              id.includes('/app/layouts/AdminLayout')
             ) {
               return 'admin';
             }

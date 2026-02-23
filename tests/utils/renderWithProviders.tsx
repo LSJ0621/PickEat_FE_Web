@@ -3,11 +3,11 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import type { ReactElement, PropsWithChildren } from 'react';
-import authReducer from '@/store/slices/authSlice';
-import agentReducer from '@/store/slices/agentSlice';
-import userDataReducer from '@/store/slices/userDataSlice';
-import type { RootState } from '@/store';
-import { ToastProvider } from '@/components/common/ToastProvider';
+import authReducer from '@app/store/slices/authSlice';
+import agentReducer from '@app/store/slices/agentSlice';
+import userDataReducer from '@app/store/slices/userDataSlice';
+import type { RootState } from '@app/store';
+import { ToastProvider } from '@shared/components/ToastProvider';
 
 // Create a test store with optional preloaded state
 export function setupStore(preloadedState?: Partial<RootState>) {

@@ -16,7 +16,7 @@ import authReducer, {
 import { setupStore } from '@tests/utils/renderWithProviders';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type { User } from '@/types/auth';
 
 const BASE_URL = 'http://localhost:3000';

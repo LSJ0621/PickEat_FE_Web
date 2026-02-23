@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Button } from './components/common/Button'
+import { Button } from '@shared/components/Button'
 
 const featureHighlights = [
   {

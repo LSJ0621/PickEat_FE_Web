@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { isCompactBounds, getBoundsCenter, getRestaurantMarkerIcon } from '@/utils/naverMap';
+import { isCompactBounds, getBoundsCenter, getRestaurantMarkerIcon } from '@shared/utils/naverMap';
 import { createMockBounds, type MockNaverMapsBounds } from '@tests/mocks/naverMaps';
 
 describe('naverMap utilities', () => {

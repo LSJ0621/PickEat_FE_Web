@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type {
   MenuRecommendationResponse,
   PlaceRecommendationResponse,
@@ -10,7 +10,7 @@ import type {
   GetMenuSelectionsResponse,
   UpdateMenuSelectionResponse,
   MenuSelection,
-} from '@/types/menu';
+} from '@features/agent/types';
 
 const BASE_URL = 'http://localhost:3000';
 

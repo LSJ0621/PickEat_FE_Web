@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useRatingPrompt } from '@/hooks/rating/useRatingPrompt';
 import { ratingService } from '@/api/services/rating';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { STORAGE_KEYS } from '@shared/utils/constants';
 
 vi.mock('@/api/services/rating');
 

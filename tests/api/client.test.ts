@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { apiClient } from '@/api/client';
-import { ENDPOINTS } from '@/api/endpoints';
+import { apiClient } from '@shared/api/client';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 

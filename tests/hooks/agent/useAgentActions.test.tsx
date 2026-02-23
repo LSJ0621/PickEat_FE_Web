@@ -8,7 +8,7 @@ import { createMockAgentState } from '@tests/factories/agent';
 import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
 import { http, HttpResponse } from 'msw';
 import { server } from '@tests/mocks/server';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 
 const BASE_URL = 'http://localhost:3000';
 

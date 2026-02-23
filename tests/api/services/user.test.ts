@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { userService } from '@/api/services/user';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type { SelectedAddress } from '@/types/user';
 
 const BASE_URL = 'http://localhost:3000';

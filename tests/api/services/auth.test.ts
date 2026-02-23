@@ -7,9 +7,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { authService } from '@/api/services/auth';
 import { server } from '@tests/mocks/server';
 import type { LoginRequest, RegisterRequest } from '@/types/auth';
-import { apiClient } from '@/api/client';
+import { apiClient } from '@shared/api/client';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 
 const BASE_URL = 'http://localhost:3000';
 

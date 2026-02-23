@@ -5,7 +5,7 @@ import type {
   CreateBugReportResponse,
   GetBugReportListResponse,
   GetBugReportDetailResponse,
-} from '@/types/bug-report';
+} from '@features/bug-report/types';
 
 /**
  * Creates a mock BugReport object with optional overrides

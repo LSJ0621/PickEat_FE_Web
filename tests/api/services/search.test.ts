@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { searchService } from '@/api/services/search';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type { SearchRestaurantsRequest } from '@/types/search';
 import { mockRestaurants } from '@tests/mocks/handlers/search';
 

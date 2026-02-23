@@ -3,7 +3,7 @@ import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { ImageUploader } from '@/components/features/bug-report/ImageUploader';
-import { BUG_REPORT } from '@/utils/constants';
+import { BUG_REPORT } from '@shared/utils/constants';
 
 describe('ImageUploader', () => {
   const defaultProps = {

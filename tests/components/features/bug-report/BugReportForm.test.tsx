@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { BugReportForm } from '@/components/features/bug-report/BugReportForm';
-import { BUG_REPORT } from '@/utils/constants';
+import { BUG_REPORT } from '@shared/utils/constants';
 import type { CreateBugReportRequest } from '@/types/bug-report';
 
 describe('BugReportForm', () => {

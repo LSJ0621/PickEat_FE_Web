@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { bugReportService } from '@/api/services/bug-report';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type { CreateBugReportRequest } from '@/types/bug-report';
 import { mockBugReports } from '@tests/mocks/handlers/bug-report';
 

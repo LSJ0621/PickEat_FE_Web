@@ -8,7 +8,7 @@ import {
   SUCCESS_MESSAGES,
   MAP_CONFIG,
   BUG_REPORT,
-} from '@/utils/constants';
+} from '@shared/utils/constants';
 
 describe('STORAGE_KEYS', () => {
   it('should have correct storage key values', () => {

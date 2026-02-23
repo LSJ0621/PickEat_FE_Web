@@ -14,7 +14,7 @@ import { userService } from '@/api/services/user';
 import authReducer, { setCredentials } from '@/store/slices/authSlice';
 import agentReducer from '@/store/slices/agentSlice';
 import i18n from '@/i18n/config';
-import type { Language } from '@/types/common';
+import type { Language } from '@shared/types/common';
 
 // Mock dependencies
 vi.mock('@/api/services/user', () => ({

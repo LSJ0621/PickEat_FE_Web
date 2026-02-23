@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 
 const BASE_URL = 'http://localhost:3000';
 

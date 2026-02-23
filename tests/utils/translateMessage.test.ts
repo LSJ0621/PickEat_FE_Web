@@ -10,7 +10,7 @@ import {
   translateMessage,
   getApiErrorMessage,
   getApiSuccessMessage,
-} from '@/utils/translateMessage';
+} from '@shared/utils/translateMessage';
 import i18n from '@/i18n/config';
 import { AxiosError } from 'axios';
 

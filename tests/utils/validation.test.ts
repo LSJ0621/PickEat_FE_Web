@@ -6,7 +6,7 @@ import {
   isValidPhone,
   isEmpty,
   validateBugReport,
-} from '@/utils/validation';
+} from '@shared/utils/validation';
 import type { CreateBugReportRequest } from '@/types/bug-report';
 
 describe('isValidEmail', () => {

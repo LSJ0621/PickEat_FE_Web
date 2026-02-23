@@ -76,13 +76,13 @@ vi.mock('@/types/user-place', async () => {
   };
 });
 
-vi.mock('@/utils/constants', () => ({
+vi.mock('@shared/utils/constants', () => ({
   USER_PLACE: {
     MAX_MENU_TYPES: 10,
   },
 }));
 
-vi.mock('@/utils/error', () => ({
+vi.mock('@shared/utils/error', () => ({
   extractErrorMessage: (error: any, fallback: string) => fallback,
 }));
 

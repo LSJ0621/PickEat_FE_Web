@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractErrorMessage } from '@/utils/error';
+import { extractErrorMessage } from '@shared/utils/error';
 
 describe('extractErrorMessage', () => {
   it('should return error string when error is a string', () => {

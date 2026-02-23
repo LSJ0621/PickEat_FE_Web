@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useOnboarding } from '@/hooks/onboarding/useOnboarding';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { STORAGE_KEYS } from '@shared/utils/constants';
 
 describe('useOnboarding', () => {
   beforeEach(() => {

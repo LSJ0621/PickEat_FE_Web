@@ -3,7 +3,7 @@ import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { InitialSetupModal } from '@/components/features/user/setup/InitialSetupModal';
-import type { UserSetupStatus } from '@/utils/userSetup';
+import type { UserSetupStatus } from '@shared/utils/userSetup';
 import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
 import { createMockSelectedAddress, createMockUserAddress } from '@tests/factories';

@@ -3,7 +3,7 @@
  * Agent Redux 상태 테스트를 위한 Factory 함수
  */
 
-import type { PlaceRecommendationItem } from '@/types/menu';
+import type { PlaceRecommendationItem } from '@features/agent/types';
 
 /**
  * MenuPlaceRecommendationGroup 인터페이스

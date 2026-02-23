@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { checkUserSetupStatus } from '@/utils/userSetup';
-import type { UserSetupStatus } from '@/utils/userSetup';
+import { checkUserSetupStatus } from '@shared/utils/userSetup';
+import type { UserSetupStatus } from '@shared/utils/userSetup';
 
 describe('checkUserSetupStatus', () => {
   describe('Complete user setup', () => {

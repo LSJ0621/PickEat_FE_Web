@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type {
   LoginResponse,
   RegisterResponse,
@@ -12,7 +12,7 @@ import type {
   ReRegisterSocialResponse,
   UpdateUserResponse,
   User,
-} from '@/types/auth';
+} from '@features/auth/types';
 
 const BASE_URL = 'http://localhost:3000';
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeHtml, isCompactBounds, getBoundsCenter, createRestaurantMarkerContent, getLatLngFromRestaurant } from '@/utils/googleMap';
+import { sanitizeHtml, isCompactBounds, getBoundsCenter, createRestaurantMarkerContent, getLatLngFromRestaurant } from '@shared/utils/googleMap';
 import { createMockBounds, type MockGoogleMapsBounds } from '@tests/mocks/googleMaps';
 
 describe('googleMap utilities', () => {

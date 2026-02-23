@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
+import { ENDPOINTS } from '@shared/api/endpoints';
 import type {
   AddressSearchResponse,
   DeleteAccountResponse,
@@ -10,9 +10,9 @@ import type {
   GetRecommendationHistoryResponse,
   DeleteAddressResponse,
   UserAddress,
-} from '@/types/user';
-import type { UpdateUserResponse } from '@/types/auth';
-import type { MenuRecommendationItemData } from '@/types/menu';
+} from '@features/user/types';
+import type { UpdateUserResponse } from '@features/auth/types';
+import type { MenuRecommendationItemData } from '@features/agent/types';
 
 const BASE_URL = 'http://localhost:3000';
 

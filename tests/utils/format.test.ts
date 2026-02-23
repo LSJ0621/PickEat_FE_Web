@@ -8,7 +8,7 @@ import {
   formatDateKorean,
   formatDateTimeKorean,
   formatSeconds,
-} from '@/utils/format';
+} from '@shared/utils/format';
 
 describe('formatDate', () => {
   it('should format date with default format (YYYY-MM-DD)', () => {

@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { adminService } from '@/api/services/admin';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
-import apiClient from '@/api/client';
+import { ENDPOINTS } from '@shared/api/endpoints';
+import apiClient from '@shared/api/client';
 import type {
   DashboardSummary,
   RecentActivities,
