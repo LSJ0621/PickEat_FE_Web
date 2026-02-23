@@ -20,9 +20,9 @@ export function PendingAlert({ unconfirmedCount, urgentCount }: PendingAlertProp
   }
 
   return (
-    <Card className="bg-yellow-950/20 border border-yellow-600">
+    <Card className="bg-yellow-50 border border-yellow-400">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-yellow-400 flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-yellow-600 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5" />
           미처리 현황
         </CardTitle>
@@ -31,16 +31,16 @@ export function PendingAlert({ unconfirmedCount, urgentCount }: PendingAlertProp
         <div className="space-y-2">
           {unconfirmedCount > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-300">미확인 버그 리포트</span>
-              <span className={cn('font-bold', unconfirmedCount > 10 ? 'text-red-400' : 'text-yellow-400')}>
+              <span className="text-text-secondary">미확인 버그 리포트</span>
+              <span className={cn('font-bold', unconfirmedCount > 10 ? 'text-red-500' : 'text-yellow-600')}>
                 {unconfirmedCount}건
               </span>
             </div>
           )}
           {urgentCount > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-slate-300">긴급 처리 필요 (3일 이상 미처리)</span>
-              <span className="font-bold text-red-400">{urgentCount}건</span>
+              <span className="text-text-secondary">긴급 처리 필요 (3일 이상 미처리)</span>
+              <span className="font-bold text-red-500">{urgentCount}건</span>
             </div>
           )}
         </div>

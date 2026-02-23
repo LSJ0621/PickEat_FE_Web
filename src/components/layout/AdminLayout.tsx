@@ -12,7 +12,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <div className="flex flex-1 bg-slate-950">
+    <div className="flex flex-1 bg-bg-primary">
       {/* 사이드바 */}
       <AdminSidebar />
 

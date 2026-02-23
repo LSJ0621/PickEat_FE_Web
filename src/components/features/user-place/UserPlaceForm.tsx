@@ -4,6 +4,10 @@
 
 import { Button } from '@/components/common/Button';
 import { UserPlaceImageUploader } from '@/components/features/user-place/UserPlaceImageUploader';
+import { UserPlaceAddressField } from '@/components/features/user-place/UserPlaceAddressField';
+import { UserPlaceMenuTypesField } from '@/components/features/user-place/UserPlaceMenuTypesField';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAddressSearch } from '@/hooks/address/useAddressSearch';
 import type { CreateUserPlaceRequest, UpdateUserPlaceRequest, UserPlace } from '@/types/user-place';
 import { USER_PLACE_CATEGORIES } from '@/types/user-place';
@@ -49,7 +53,6 @@ export function UserPlaceForm({
   const [newImages, setNewImages] = useState<File[]>([]);
   const [openingHours, setOpeningHours] = useState('');
 
-  // 초기 데이터 설정
   useEffect(() => {
     if (initialData) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -65,7 +68,7 @@ export function UserPlaceForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setExistingPhotos(initialData.photos || []);
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setNewImages([]); // 수정 모드 진입 시 새 이미지 초기화
+      setNewImages([]);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpeningHours(initialData.openingHours || '');
       setSelectedAddress({
@@ -81,10 +84,7 @@ export function UserPlaceForm({
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-
-      if (!selectedAddress) {
-        return;
-      }
+      if (!selectedAddress) return;
 
       const baseData = {
         name: name.trim(),
@@ -100,7 +100,6 @@ export function UserPlaceForm({
         openingHours: openingHours.trim() || undefined,
       };
 
-      // 수정 모드일 때 version 필드 포함
       if (initialData) {
         onSubmit({ ...baseData, version: initialData.version });
       } else {
@@ -140,117 +139,59 @@ export function UserPlaceForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 가게명 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.name')} <span className="text-red-400">*</span>
-        </label>
-        <input
+        </Label>
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+          className="rounded-2xl"
           placeholder={t('userPlace.namePlaceholder')}
           required
         />
       </div>
 
       {/* 주소 검색 */}
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
-          {t('userPlace.address')} <span className="text-red-400">*</span>
-        </label>
-        {selectedAddress ? (
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3">
-              <p className="text-sm font-medium text-green-300">
-                {selectedAddress.roadAddress || selectedAddress.address}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSelectedAddress(null);
-                clearSearch();
-              }}
-            >
-              {t('common.reset')}
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={addressQuery}
-                onChange={(e) => setAddressQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.nativeEvent.isComposing) return;
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    void handleSearch();
-                  }
-                }}
-                className="flex-1 rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
-                placeholder={t('userPlace.addressPlaceholder')}
-              />
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => void handleSearch()}
-                isLoading={isSearching}
-              >
-                {t('common.search')}
-              </Button>
-            </div>
-            {searchResults.length > 0 && (
-              <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-slate-800/50">
-                {searchResults.map((result, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleSelectAddress(result)}
-                    className="w-full border-b border-white/5 px-4 py-3 text-left transition-colors hover:bg-white/5 last:border-b-0"
-                  >
-                    <p className="text-sm font-medium text-white">
-                      {result.roadAddress || result.address}
-                    </p>
-                    {result.roadAddress && (
-                      <p className="mt-1 text-xs text-slate-400">{result.address}</p>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      <UserPlaceAddressField
+        selectedAddress={selectedAddress}
+        addressQuery={addressQuery}
+        searchResults={searchResults}
+        isSearching={isSearching}
+        onQueryChange={setAddressQuery}
+        onSearch={() => void handleSearch()}
+        onSelectAddress={handleSelectAddress}
+        onReset={() => {
+          setSelectedAddress(null);
+          clearSearch();
+        }}
+      />
 
       {/* 전화번호 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.phoneNumber')}
-        </label>
-        <input
+        </Label>
+        <Input
           type="tel"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           maxLength={20}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+          className="rounded-2xl"
           placeholder={t('userPlace.phoneNumberPlaceholder')}
         />
       </div>
 
       {/* 카테고리 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.category')}
-        </label>
+        </Label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+          className="w-full rounded-2xl border border-border-default bg-bg-secondary px-4 py-3 text-text-primary focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
         >
           <option value="">{t('userPlace.selectCategory')}</option>
           {USER_PLACE_CATEGORIES.map((cat) => (
@@ -263,96 +204,48 @@ export function UserPlaceForm({
 
       {/* 설명 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.description')}
-        </label>
+        </Label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={1000}
           rows={4}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+          className="w-full rounded-2xl border border-border-default bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
           placeholder={t('userPlace.descriptionPlaceholder')}
         />
       </div>
 
       {/* 메뉴 종류 */}
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
-          {t('userPlace.form.menuTypes')} <span className="text-red-400">*</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={menuInput}
-            onChange={(e) => setMenuInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.nativeEvent.isComposing) return;
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddMenu();
-              }
-            }}
-            maxLength={30}
-            className="flex-1 rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
-            placeholder={t('userPlace.form.menuTypesPlaceholder')}
-            disabled={menuTypes.length >= 10}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleAddMenu}
-            disabled={!menuInput.trim() || menuTypes.length >= 10}
-          >
-            {t('setup.preferences.add')}
-          </Button>
-        </div>
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-slate-400">
-            {t('userPlace.form.menuTypesHint')} ({menuTypes.length}/10)
-          </p>
-          {menuTypes.length === 0 && (
-            <p className="text-xs text-red-400">{t('userPlace.form.menuTypesRequired')}</p>
-          )}
-        </div>
-        {menuTypes.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {menuTypes.map((menu, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleRemoveMenu(idx)}
-                className="group flex items-center gap-1 rounded-full bg-orange-500/20 px-3 py-1 text-sm text-orange-300 transition-colors hover:bg-orange-500/30"
-              >
-                {menu}
-                <span className="text-orange-400 group-hover:text-orange-200">×</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <UserPlaceMenuTypesField
+        menuTypes={menuTypes}
+        menuInput={menuInput}
+        onMenuInputChange={setMenuInput}
+        onAddMenu={handleAddMenu}
+        onRemoveMenu={handleRemoveMenu}
+      />
 
       {/* 영업시간 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.form.openingHours')}
-        </label>
+        </Label>
         <textarea
           value={openingHours}
           onChange={(e) => setOpeningHours(e.target.value)}
           maxLength={200}
           rows={2}
-          className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+          className="w-full rounded-2xl border border-border-default bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
           placeholder={t('userPlace.form.openingHoursPlaceholder')}
         />
       </div>
 
       {/* 사진 업로드 */}
       <div>
-        <label className="mb-2 block text-sm font-semibold text-slate-200">
+        <Label className="mb-2 block text-sm font-semibold text-text-primary">
           {t('userPlace.form.photos')}
-        </label>
+        </Label>
         <UserPlaceImageUploader
           existingPhotos={existingPhotos}
           newImages={newImages}

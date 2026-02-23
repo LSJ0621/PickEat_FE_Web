@@ -42,7 +42,7 @@ export const HomeHighlights = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('home.highlights.badge')}</p>
+          <p className="text-sm uppercase tracking-[0.4em] text-orange-300">{t('home.highlights.badge')}</p>
           <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
             {t('home.highlights.title')}
           </h2>

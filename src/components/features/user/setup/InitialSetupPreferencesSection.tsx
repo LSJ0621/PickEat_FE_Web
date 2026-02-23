@@ -4,6 +4,8 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { RemovableBadge } from '@/components/common/RemovableBadge';
+import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,10 +26,10 @@ export const InitialSetupPreferencesSection = ({
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
 
-  // 취향 추가/삭제
   const handleAddLike = () => {
-    if (newLike.trim() && !likes.includes(newLike.trim())) {
-      onLikesChange([...likes, newLike.trim()]);
+    const trimmed = newLike.trim();
+    if (trimmed && !likes.includes(trimmed)) {
+      onLikesChange([...likes, trimmed]);
       setNewLike('');
     }
   };
@@ -37,8 +39,9 @@ export const InitialSetupPreferencesSection = ({
   };
 
   const handleAddDislike = () => {
-    if (newDislike.trim() && !dislikes.includes(newDislike.trim())) {
-      onDislikesChange([...dislikes, newDislike.trim()]);
+    const trimmed = newDislike.trim();
+    if (trimmed && !dislikes.includes(trimmed)) {
+      onDislikesChange([...dislikes, trimmed]);
       setNewDislike('');
     }
   };
@@ -48,26 +51,37 @@ export const InitialSetupPreferencesSection = ({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="rounded-2xl border border-border-default bg-bg-secondary p-5">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white">{t('setup.preferences.title')}</h3>
-        <p className="mt-1 text-sm text-slate-400">{t('setup.preferences.description')}</p>
+        <h3 className="text-base font-semibold text-text-primary">
+          {t('setup.preferences.title')}
+        </h3>
+        <p className="mt-1 text-xs text-text-tertiary">
+          {t('setup.preferences.description')}
+        </p>
       </div>
-      <div className="space-y-4">
+
+      <div className="space-y-5">
+        {/* 좋아요 섹션 */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-200">{t('setup.preferences.likes')}</label>
-          <div className="mb-2 flex gap-2">
-            <input
+          <label className="mb-2 block text-sm font-medium text-text-primary">
+            {t('setup.preferences.likes')}
+          </label>
+          <div className="mb-3 flex gap-2">
+            <Input
               type="text"
               value={newLike}
               onChange={(e) => setNewLike(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddLike();
-                }
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return;
+                if (e.key === 'Enter') handleAddLike();
               }}
               placeholder={t('setup.preferences.likesPlaceholder')}
-              className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+              aria-label={t('setup.preferences.likes')}
+              className="flex-1 rounded-xl border-border-default bg-bg-surface
+                text-text-primary placeholder-text-placeholder
+                focus-visible:ring-brand-primary/40 focus-visible:border-border-focus
+                h-10"
             />
             <Button onClick={handleAddLike} size="md">
               {t('setup.preferences.add')}
@@ -76,38 +90,40 @@ export const InitialSetupPreferencesSection = ({
           {likes.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {likes.map((like, index) => (
-                <span
+                <RemovableBadge
                   key={index}
                   data-testid="like-tag"
-                  className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-200"
-                >
-                  {like}
-                  <button
-                    onClick={() => handleRemoveLike(like)}
-                    className="text-green-300 hover:text-green-100"
-                  >
-                    ×
-                  </button>
-                </span>
+                  variant="like"
+                  label={like}
+                  onRemove={() => handleRemoveLike(like)}
+                  removeAriaLabel={`${like} ${t('common.remove')}`}
+                  className="text-sm px-3 py-1"
+                />
               ))}
             </div>
           )}
         </div>
 
+        {/* 싫어요 섹션 */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-200">{t('setup.preferences.dislikes')}</label>
-          <div className="mb-2 flex gap-2">
-            <input
+          <label className="mb-2 block text-sm font-medium text-text-primary">
+            {t('setup.preferences.dislikes')}
+          </label>
+          <div className="mb-3 flex gap-2">
+            <Input
               type="text"
               value={newDislike}
               onChange={(e) => setNewDislike(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddDislike();
-                }
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return;
+                if (e.key === 'Enter') handleAddDislike();
               }}
               placeholder={t('setup.preferences.dislikesPlaceholder')}
-              className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+              aria-label={t('setup.preferences.dislikes')}
+              className="flex-1 rounded-xl border-border-default bg-bg-surface
+                text-text-primary placeholder-text-placeholder
+                focus-visible:ring-brand-primary/40 focus-visible:border-border-focus
+                h-10"
             />
             <Button onClick={handleAddDislike} size="md">
               {t('setup.preferences.add')}
@@ -116,19 +132,15 @@ export const InitialSetupPreferencesSection = ({
           {dislikes.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {dislikes.map((dislike, index) => (
-                <span
+                <RemovableBadge
                   key={index}
                   data-testid="dislike-tag"
-                  className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200"
-                >
-                  {dislike}
-                  <button
-                    onClick={() => handleRemoveDislike(dislike)}
-                    className="text-red-300 hover:text-red-100"
-                  >
-                    ×
-                  </button>
-                </span>
+                  variant="dislike"
+                  label={dislike}
+                  onRemove={() => handleRemoveDislike(dislike)}
+                  removeAriaLabel={`${dislike} ${t('common.remove')}`}
+                  className="text-sm px-3 py-1"
+                />
               ))}
             </div>
           )}
@@ -137,4 +149,3 @@ export const InitialSetupPreferencesSection = ({
     </div>
   );
 };
-

@@ -4,7 +4,6 @@
  */
 
 import type { MenuRecommendationItemData, PlaceRecommendationItem } from '@/types/menu';
-import type { Restaurant } from '@/types/search';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -28,19 +27,17 @@ interface AgentState {
   menuHistoryId: number | null;
   menuRequestAddress: string | null;
 
-  // 네이버 검색 결과
-  restaurants: Restaurant[];
-  isSearching: boolean;
-
   // AI 추천 결과 - 검색 기반 (Google Places)
   searchAiRecommendationGroups: MenuPlaceRecommendationGroup[];
   isSearchAiLoading: boolean;
   searchAiLoadingMenu: string | null;
+  searchAiRetrying: boolean;
 
   // AI 추천 결과 - 커뮤니티 기반 (UserPlace)
   communityAiRecommendationGroups: MenuPlaceRecommendationGroup[];
   isCommunityAiLoading: boolean;
   communityAiLoadingMenu: string | null;
+  communityAiRetrying: boolean;
 
   // 레거시 AI 추천 결과 (하위 호환성 유지)
   // @deprecated - searchAiRecommendationGroups 사용 권장
@@ -69,14 +66,14 @@ const initialState: AgentState = {
   selectedMenu: null,
   menuHistoryId: null,
   menuRequestAddress: null,
-  restaurants: [],
-  isSearching: false,
   searchAiRecommendationGroups: [],
   isSearchAiLoading: false,
   searchAiLoadingMenu: null,
+  searchAiRetrying: false,
   communityAiRecommendationGroups: [],
   isCommunityAiLoading: false,
   communityAiLoadingMenu: null,
+  communityAiRetrying: false,
   aiRecommendationGroups: [],
   isAiLoading: false,
   aiLoadingMenu: null,
@@ -145,20 +142,9 @@ const agentSlice = createSlice({
       state.selectedMenu = null;
       state.menuHistoryId = null;
       state.menuRequestAddress = null;
-      // clearSelectedMenu는 사용자가 검색 결과를 닫을 때만 호출되므로 검색 결과는 유지
-      // (다른 메뉴를 선택하면 setSelectedMenu가 호출되고, 새로운 검색을 하면 setRestaurants가 호출됨)
       state.selectedPlace = null;
     },
-    
-    // 네이버 검색 관련
-    setRestaurants: (state, action: PayloadAction<Restaurant[]>) => {
-      state.restaurants = action.payload;
-    },
-    
-    setIsSearching: (state, action: PayloadAction<boolean>) => {
-      state.isSearching = action.payload;
-    },
-    
+
     // AI 추천 관련 - 검색 기반 (Google Places)
     upsertSearchAiRecommendations: (
       state,
@@ -185,6 +171,11 @@ const agentSlice = createSlice({
       state.searchAiRecommendationGroups = [];
       state.searchAiLoadingMenu = null;
       state.isSearchAiLoading = false;
+      state.searchAiRetrying = false;
+    },
+
+    setSearchAiRetrying: (state, action: PayloadAction<boolean>) => {
+      state.searchAiRetrying = action.payload;
     },
 
     // AI 추천 관련 - 커뮤니티 기반 (UserPlace)
@@ -213,6 +204,11 @@ const agentSlice = createSlice({
       state.communityAiRecommendationGroups = [];
       state.communityAiLoadingMenu = null;
       state.isCommunityAiLoading = false;
+      state.communityAiRetrying = false;
+    },
+
+    setCommunityAiRetrying: (state, action: PayloadAction<boolean>) => {
+      state.communityAiRetrying = action.payload;
     },
 
     // 레거시 AI 추천 관련 (하위 호환성 유지)
@@ -253,9 +249,11 @@ const agentSlice = createSlice({
       state.searchAiRecommendationGroups = [];
       state.searchAiLoadingMenu = null;
       state.isSearchAiLoading = false;
+      state.searchAiRetrying = false;
       state.communityAiRecommendationGroups = [];
       state.communityAiLoadingMenu = null;
       state.isCommunityAiLoading = false;
+      state.communityAiRetrying = false;
       state.selectedPlace = null;
     },
     
@@ -285,14 +283,14 @@ export const {
   clearMenuRecommendations,
   setSelectedMenu,
   clearSelectedMenu,
-  setRestaurants,
-  setIsSearching,
   upsertSearchAiRecommendations,
   setSearchAiLoading,
   clearSearchAiRecommendations,
+  setSearchAiRetrying,
   upsertCommunityAiRecommendations,
   setCommunityAiLoading,
   clearCommunityAiRecommendations,
+  setCommunityAiRetrying,
   upsertAiRecommendations,
   setAiLoading,
   resetAiRecommendations,

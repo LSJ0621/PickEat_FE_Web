@@ -1,8 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
+import { RemovableBadge } from '@/components/common/RemovableBadge';
 import { createPortal } from 'react-dom';
-import { useEffect, useState } from 'react';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useEscapeKey } from '@/hooks/common/useEscapeKey';
+import { useFocusTrap } from '@/hooks/common/useFocusTrap';
+import { Z_INDEX } from '@/utils/constants';
 
 interface PreferencesEditModalProps {
   open: boolean;
@@ -38,65 +43,63 @@ export const PreferencesEditModal = ({
   onSave,
 }: PreferencesEditModalProps) => {
   const { t } = useTranslation();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
+  const { isAnimating, shouldRender } = useModalAnimation(open);
+  useModalScrollLock(open);
+  const focusTrapRef = useFocusTrap(open);
 
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
+  useEscapeKey(onClose, open);
 
-  if (!shouldRender) {
-    return null;
-  }
+  if (!shouldRender) return null;
 
   const handleSave = async () => {
     const success = await onSave();
-    if (success) {
-      onClose();
-    }
+    if (success) onClose();
   };
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="preferences-edit-title"
+      className={[
+        'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
+        'items-end sm:items-center',
+        `z-[${Z_INDEX.MODAL_BACKDROP}]`,
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+      ].join(' ')}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div 
-        className={`relative w-full max-w-2xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+      <div
+        ref={focusTrapRef}
+        className={[
+          'relative w-full max-w-2xl mx-auto bg-bg-surface border border-border-default shadow-2xl',
+          'rounded-t-2xl sm:rounded-2xl',
+          'p-6 sm:p-8 max-h-[90vh] overflow-y-auto',
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+        ].join(' ')}
       >
         <ModalCloseButton onClose={onClose} />
-        <h2 className="mb-6 text-2xl font-bold text-white">{t('user.preferences.edit')}</h2>
+        <h2 id="preferences-edit-title" className="mb-6 text-2xl font-bold text-text-primary">
+          {t('user.preferences.edit')}
+        </h2>
 
         <div className="space-y-6">
+          {/* Likes */}
           <div>
-            <label className="mb-3 block text-sm font-medium text-slate-200">{t('setup.preferences.likes')}</label>
+            <label className="mb-3 block text-sm font-medium text-text-primary">
+              {t('setup.preferences.likes')}
+            </label>
             <div className="mb-3 flex gap-2">
               <input
                 type="text"
                 value={newLike}
                 onChange={(e) => onNewLikeChange(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    onAddLike();
-                  }
+                onKeyDown={(e) => {
+                  if (e.nativeEvent.isComposing) return;
+                  if (e.key === 'Enter') { e.preventDefault(); onAddLike(); }
                 }}
                 placeholder={t('setup.preferences.likesPlaceholder')}
-                className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                className="flex-1 rounded-2xl border border-border-default bg-bg-secondary px-4 py-2 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
               />
               <Button onClick={onAddLike} size="md">
                 {t('setup.preferences.add')}
@@ -105,38 +108,36 @@ export const PreferencesEditModal = ({
             {likes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {likes.map((like, index) => (
-                  <span
+                  <RemovableBadge
                     key={index}
                     data-testid="like-tag"
-                    className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-200"
-                  >
-                    {like}
-                    <button
-                      onClick={() => onRemoveLike(like)}
-                      className="text-green-300 hover:text-green-100"
-                    >
-                      ×
-                    </button>
-                  </span>
+                    variant="like"
+                    label={like}
+                    onRemove={() => onRemoveLike(like)}
+                    removeAriaLabel={`${like} ${t('common.remove')}`}
+                    className="text-sm px-3 py-1"
+                  />
                 ))}
               </div>
             )}
           </div>
 
+          {/* Dislikes */}
           <div>
-            <label className="mb-3 block text-sm font-medium text-slate-200">{t('setup.preferences.dislikes')}</label>
+            <label className="mb-3 block text-sm font-medium text-text-primary">
+              {t('setup.preferences.dislikes')}
+            </label>
             <div className="mb-3 flex gap-2">
               <input
                 type="text"
                 value={newDislike}
                 onChange={(e) => onNewDislikeChange(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    onAddDislike();
-                  }
+                onKeyDown={(e) => {
+                  if (e.nativeEvent.isComposing) return;
+                  if (e.key === 'Enter') { e.preventDefault(); onAddDislike(); }
                 }}
                 placeholder={t('setup.preferences.dislikesPlaceholder')}
-                className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                className="flex-1 rounded-2xl border border-border-default bg-bg-secondary px-4 py-2 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
               />
               <Button onClick={onAddDislike} size="md">
                 {t('setup.preferences.add')}
@@ -145,19 +146,15 @@ export const PreferencesEditModal = ({
             {dislikes.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {dislikes.map((dislike, index) => (
-                  <span
+                  <RemovableBadge
                     key={index}
                     data-testid="dislike-tag"
-                    className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm text-red-200"
-                  >
-                    {dislike}
-                    <button
-                      onClick={() => onRemoveDislike(dislike)}
-                      className="text-red-300 hover:text-red-100"
-                    >
-                      ×
-                    </button>
-                  </span>
+                    variant="dislike"
+                    label={dislike}
+                    onRemove={() => onRemoveDislike(dislike)}
+                    removeAriaLabel={`${dislike} ${t('common.remove')}`}
+                    className="text-sm px-3 py-1"
+                  />
                 ))}
               </div>
             )}
@@ -167,7 +164,7 @@ export const PreferencesEditModal = ({
             onClick={handleSave}
             isLoading={isSaving}
             size="lg"
-            className="w-full"
+            className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-text-inverse shadow-md shadow-orange-500/30"
           >
             {t('user.preferences.save')}
           </Button>
@@ -177,4 +174,3 @@ export const PreferencesEditModal = ({
     document.body
   );
 };
-

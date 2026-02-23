@@ -29,7 +29,7 @@ export const ModalCloseButton = ({
     <button
       data-testid="modal-close-button"
       onClick={onClose}
-      className={`absolute right-6 top-6 text-slate-400 transition hover:text-white ${className}`}
+      className={`absolute right-6 top-6 text-text-tertiary transition hover:text-text-primary ${className}`}
       aria-label={ariaLabel || t('common.close')}
     >
       <svg className={sizeClasses[size]} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,4 +38,3 @@ export const ModalCloseButton = ({
     </button>
   );
 };
-

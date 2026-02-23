@@ -1,13 +1,16 @@
-import { authService } from '@/api/services/auth';
-import { Button } from '@/components/common/Button';
-import { StatusPopupCard } from '@/components/common/StatusPopupCard';
-import { getApiSuccessMessage, getApiErrorMessage } from '@/utils/translateMessage';
-import { isEmpty } from '@/utils/validation';
-import { ERROR_MESSAGES } from '@/utils/constants';
-import { isAxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isAxiosError } from 'axios';
+import { authService } from '@/api/services/auth';
+import { Button } from '@/components/common/Button';
+import { PageContainer } from '@/components/common/PageContainer';
+import { StatusPopupCard } from '@/components/common/StatusPopupCard';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { getApiSuccessMessage, getApiErrorMessage } from '@/utils/translateMessage';
+import { isEmpty } from '@/utils/validation';
+import { ERROR_MESSAGES } from '@/utils/constants';
 
 const RESET_EMAIL_STORAGE_KEY = 'resetPasswordEmail';
 
@@ -46,9 +49,7 @@ export const PasswordResetRequestPage = () => {
 
   const formattedCooldown = useMemo(() => {
     if (cooldownRemaining <= 0) return '';
-    const minutes = Math.floor(cooldownRemaining / 60)
-      .toString()
-      .padStart(2, '0');
+    const minutes = Math.floor(cooldownRemaining / 60).toString().padStart(2, '0');
     const seconds = (cooldownRemaining % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   }, [cooldownRemaining]);
@@ -58,7 +59,6 @@ export const PasswordResetRequestPage = () => {
       setErrors((prev) => ({ ...prev, email: ERROR_MESSAGES.EMAIL_REQUIRED }));
       return;
     }
-
     setErrors((prev) => ({ ...prev, email: undefined }));
     setInfoMessage(null);
     setSendingCode(true);
@@ -68,8 +68,8 @@ export const PasswordResetRequestPage = () => {
       setInfoMessage(
         getApiSuccessMessage(
           response,
-          response.remainCount !== undefined ? { count: response.remainCount } : undefined
-        )
+          response.remainCount !== undefined ? { count: response.remainCount } : undefined,
+        ),
       );
       if (typeof response.retryAfter === 'number') {
         setCooldownRemaining(Math.ceil(response.retryAfter));
@@ -87,19 +87,10 @@ export const PasswordResetRequestPage = () => {
           setInfoMessage(message);
           const retryAfter = error.response.data?.retryAfter;
           const remain = error.response.data?.remainCount;
-          if (typeof retryAfter === 'number') {
-            setCooldownRemaining(Math.ceil(retryAfter));
-          }
-          if (typeof remain === 'number') {
-            setRemainCount(remain);
-          }
+          if (typeof retryAfter === 'number') setCooldownRemaining(Math.ceil(retryAfter));
+          if (typeof remain === 'number') setRemainCount(remain);
         } else {
-          setPopup({
-            open: true,
-            title: t('passwordReset.request.sendCodeFailed'),
-            message,
-            variant: 'error',
-          });
+          setPopup({ open: true, title: t('passwordReset.request.sendCodeFailed'), message, variant: 'error' });
         }
       } else {
         setPopup({
@@ -123,7 +114,6 @@ export const PasswordResetRequestPage = () => {
       setErrors((prev) => ({ ...prev, code: ERROR_MESSAGES.VERIFICATION_CODE_REQUIRED }));
       return;
     }
-
     setErrors((prev) => ({ ...prev, code: undefined }));
     setVerifying(true);
     try {
@@ -132,7 +122,10 @@ export const PasswordResetRequestPage = () => {
         sessionStorage.setItem(RESET_EMAIL_STORAGE_KEY, email.trim());
         navigate(`/password/reset?email=${encodeURIComponent(email.trim())}`);
       } else {
-        setErrors((prev) => ({ ...prev, code: getApiErrorMessage(response, t('passwordReset.request.error.verifyFailed')) }));
+        setErrors((prev) => ({
+          ...prev,
+          code: getApiErrorMessage(response, t('passwordReset.request.error.verifyFailed')),
+        }));
       }
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {
@@ -141,12 +134,7 @@ export const PasswordResetRequestPage = () => {
         if (status === 400) {
           setErrors((prev) => ({ ...prev, code: message }));
         } else {
-          setPopup({
-            open: true,
-            title: t('passwordReset.request.verifyFailed'),
-            message,
-            variant: 'error',
-          });
+          setPopup({ open: true, title: t('passwordReset.request.verifyFailed'), message, variant: 'error' });
         }
       } else {
         setPopup({
@@ -167,7 +155,7 @@ export const PasswordResetRequestPage = () => {
     sendingCode || cooldownRemaining > 0 || (remainCount !== null && remainCount <= 0);
 
   return (
-    <div className="relative min-h-screen bg-slate-950 px-4 py-12 text-white">
+    <PageContainer maxWidth="max-w-md" className="flex min-h-screen flex-col items-center justify-center py-12">
       <StatusPopupCard
         open={popup.open}
         title={popup.title}
@@ -175,31 +163,30 @@ export const PasswordResetRequestPage = () => {
         variant={popup.variant}
         onConfirm={closePopup}
       />
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
-        <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-400/20 to-transparent blur-3xl animate-gradient" />
-      </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-xl">
-        <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40 backdrop-blur">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-2xl font-bold text-slate-950 shadow-lg shadow-orange-500/30">
-              P
-            </div>
-            <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">Password Reset</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{t('passwordReset.request.title')}</h1>
-            <p className="mt-2 text-sm text-slate-300">
-              {t('passwordReset.request.description')}
-            </p>
+      <div className="w-full">
+        {/* Brand Header */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 text-3xl font-bold text-white shadow-lg shadow-orange-500/30">
+            P
           </div>
+          <p className="text-xs uppercase tracking-widest text-brand-primary">Password Reset</p>
+          <h1 className="mt-2 text-2xl font-bold text-text-primary">
+            {t('passwordReset.request.title')}
+          </h1>
+          <p className="mt-1 text-sm text-text-secondary">{t('passwordReset.request.description')}</p>
+        </div>
 
+        {/* Card */}
+        <div className="rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg sm:p-8">
           <div className="space-y-5">
+            {/* Email */}
             <div>
-              <label htmlFor="reset-email" className="mb-2 block text-sm font-medium text-slate-200">
+              <Label htmlFor="reset-email" className="mb-1.5 block text-text-primary">
                 {t('passwordReset.request.email.label')}
-              </label>
+              </Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   id="reset-email"
                   type="email"
                   value={email}
@@ -208,9 +195,9 @@ export const PasswordResetRequestPage = () => {
                     setErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   placeholder={t('passwordReset.request.email.placeholder')}
-                  className={`flex-1 rounded-2xl border ${
-                    errors.email ? 'border-red-500/60' : 'border-white/15'
-                  } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
+                  className={`flex-1 rounded-xl border ${
+                    errors.email ? 'border-red-500/60' : 'border-border-default'
+                  } bg-bg-primary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-0`}
                 />
                 <Button
                   onClick={handleSendCode}
@@ -229,18 +216,21 @@ export const PasswordResetRequestPage = () => {
                 </Button>
               </div>
               {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
-              {infoMessage && <p className="mt-2 text-sm text-emerald-200">{infoMessage}</p>}
+              {infoMessage && <p className="mt-2 text-sm text-emerald-600">{infoMessage}</p>}
               {remainCount !== null && remainCount <= 0 && (
-                <p className="mt-1 text-sm text-red-400">{t('passwordReset.request.error.limitReached')}</p>
+                <p className="mt-1 text-sm text-red-400">
+                  {t('passwordReset.request.error.limitReached')}
+                </p>
               )}
             </div>
 
+            {/* Code */}
             <div>
-              <label htmlFor="reset-code" className="mb-2 block text-sm font-medium text-slate-200">
+              <Label htmlFor="reset-code" className="mb-1.5 block text-text-primary">
                 {t('passwordReset.request.code.label')}
-              </label>
+              </Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   id="reset-code"
                   type="text"
                   inputMode="numeric"
@@ -251,9 +241,9 @@ export const PasswordResetRequestPage = () => {
                     setErrors((prev) => ({ ...prev, code: undefined }));
                   }}
                   placeholder={t('passwordReset.request.code.placeholder')}
-                  className={`flex-1 rounded-2xl border ${
-                    errors.code ? 'border-red-500/60' : 'border-white/15'
-                  } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
+                  className={`flex-1 rounded-xl border ${
+                    errors.code ? 'border-red-500/60' : 'border-border-default'
+                  } bg-bg-primary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-0`}
                 />
                 <Button
                   onClick={handleVerifyCode}
@@ -265,24 +255,24 @@ export const PasswordResetRequestPage = () => {
                   {t('passwordReset.request.button.verify')}
                 </Button>
               </div>
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 text-xs text-text-tertiary">
                 {t('passwordReset.request.code.hint')}
               </p>
               {errors.code && <p className="mt-1 text-sm text-red-400">{errors.code}</p>}
             </div>
 
-            <div className="text-center text-sm text-slate-300">
+            <p className="text-center text-sm text-text-secondary">
               {t('passwordReset.request.loginHint')}{' '}
               <button
                 onClick={() => navigate('/login')}
-                className="font-semibold text-white transition hover:text-orange-200"
+                className="font-semibold text-brand-primary transition hover:text-orange-600"
               >
                 {t('passwordReset.request.backToLogin')}
               </button>
-            </div>
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };

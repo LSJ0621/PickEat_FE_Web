@@ -6,6 +6,8 @@ import type { UserPlace, UserPlaceStatus } from '@/types/user-place';
 import { UserPlaceCard } from './UserPlaceCard';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
+import { Input } from '@/components/ui/input';
+import { MapPin, Search } from 'lucide-react';
 
 interface UserPlaceListProps {
   places: UserPlace[];
@@ -37,59 +39,51 @@ export function UserPlaceList({
   return (
     <div className="space-y-6">
       {/* 필터 및 검색 */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* 상태 필터 */}
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant={status === undefined ? 'primary' : 'ghost'}
-            onClick={() => onStatusFilter(undefined)}
-          >
-            {t('common.all')}
-          </Button>
-          <Button
-            size="sm"
-            variant={status === 'PENDING' ? 'primary' : 'ghost'}
-            onClick={() => onStatusFilter('PENDING')}
-          >
-            {t('userPlace.status.PENDING')}
-          </Button>
-          <Button
-            size="sm"
-            variant={status === 'APPROVED' ? 'primary' : 'ghost'}
-            onClick={() => onStatusFilter('APPROVED')}
-          >
-            {t('userPlace.status.APPROVED')}
-          </Button>
-          <Button
-            size="sm"
-            variant={status === 'REJECTED' ? 'primary' : 'ghost'}
-            onClick={() => onStatusFilter('REJECTED')}
-          >
-            {t('userPlace.status.REJECTED')}
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          {([undefined, 'PENDING', 'APPROVED', 'REJECTED'] as (UserPlaceStatus | undefined)[]).map(
+            (s) => (
+              <button
+                key={s ?? 'all'}
+                onClick={() => onStatusFilter(s)}
+                className={[
+                  'rounded-full px-4 py-1.5 text-sm font-medium transition-all',
+                  status === s
+                    ? 'bg-brand-primary text-text-inverse shadow-sm'
+                    : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover',
+                ].join(' ')}
+              >
+                {s === undefined
+                  ? t('common.all')
+                  : t(`userPlace.status.${s}`)}
+              </button>
+            )
+          )}
         </div>
 
         {/* 검색 */}
-        <div className="flex-1 sm:max-w-xs">
-          <input
+        <div className="relative flex-1 sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Input
             type="text"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder={t('userPlace.searchPlaceholder')}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-sm text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+            className="rounded-2xl pl-9"
           />
         </div>
       </div>
 
       {/* 목록 */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-slate-400">{t('common.loading')}</p>
+        <div className="flex items-center justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
         </div>
       ) : places.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="mb-4 text-lg text-slate-400">{t('userPlace.noPlaces')}</p>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border-default bg-bg-secondary py-16">
+          <MapPin className="mb-3 h-10 w-10 text-text-tertiary" />
+          <p className="text-base font-medium text-text-tertiary">{t('userPlace.noPlaces')}</p>
         </div>
       ) : (
         <>
@@ -114,7 +108,7 @@ export function UserPlaceList({
               >
                 {t('common.previous')}
               </Button>
-              <span className="px-4 text-sm text-slate-300">
+              <span className="px-4 text-sm text-text-secondary">
                 {page} / {totalPages}
               </span>
               <Button

@@ -1,7 +1,8 @@
 import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
+import { fetchPreferences, invalidatePreferences } from '@/store/slices/userDataSlice';
 import type { AnalysisParagraphs } from '@/types/user';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
@@ -15,24 +16,34 @@ interface UsePreferencesOptions {
 export const usePreferences = (options?: UsePreferencesOptions) => {
   const dispatch = useAppDispatch();
   const { handleError, handleSuccess } = useErrorHandler();
-  const [likes, setLikes] = useState<string[]>(options?.initialLikes || []);
-  const [dislikes, setDislikes] = useState<string[]>(options?.initialDislikes || []);
-  const [analysis, setAnalysis] = useState<string | null>(
-    options?.initialAnalysis ?? null,
-  );
+
+  // Redux에서 취향 정보 가져오기
+  const reduxPreferences = useAppSelector((state) => state.userData.preferences.data);
+  const isLoadingFromRedux = useAppSelector((state) => state.userData.preferences.isLoading);
+
+  // 초기값 결정: options > Redux > 빈 배열
+  const initialLikes = options?.initialLikes ?? reduxPreferences?.likes ?? [];
+  const initialDislikes = options?.initialDislikes ?? reduxPreferences?.dislikes ?? [];
+  const initialAnalysis = options?.initialAnalysis ?? reduxPreferences?.analysis ?? null;
+  const initialAnalysisParagraphs =
+    options?.initialAnalysisParagraphs ?? reduxPreferences?.analysisParagraphs ?? null;
+
+  const [likes, setLikes] = useState<string[]>(initialLikes);
+  const [dislikes, setDislikes] = useState<string[]>(initialDislikes);
+  const [analysis, setAnalysis] = useState<string | null>(initialAnalysis);
   const [analysisParagraphs, setAnalysisParagraphs] = useState<AnalysisParagraphs | null>(
-    options?.initialAnalysisParagraphs ?? null,
+    initialAnalysisParagraphs
   );
+
   const prevInitialLikesRef = useRef<string[] | undefined>(options?.initialLikes);
   const prevInitialDislikesRef = useRef<string[] | undefined>(options?.initialDislikes);
-  const prevInitialAnalysisRef = useRef<string | null | undefined>(
-    options?.initialAnalysis,
-  );
+  const prevInitialAnalysisRef = useRef<string | null | undefined>(options?.initialAnalysis);
   const prevInitialAnalysisParagraphsRef = useRef<AnalysisParagraphs | null | undefined>(
-    options?.initialAnalysisParagraphs,
+    options?.initialAnalysisParagraphs
   );
-  
-  // 초기값이 변경되면 상태 업데이트 (Redux 상태 동기화)
+  const prevReduxPreferencesRef = useRef(reduxPreferences);
+
+  // 초기값이 변경되면 상태 업데이트 (options 또는 Redux 동기화)
   useEffect(() => {
     // 배열 참조 비교를 피하기 위해 JSON.stringify 사용 (간단한 배열이므로 안전)
     const currentLikes = JSON.stringify(options?.initialLikes);
@@ -56,31 +67,48 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
       setAnalysis(currentAnalysis);
       prevInitialAnalysisRef.current = options.initialAnalysis ?? null;
     }
-    if (currentAnalysisParagraphs !== prevAnalysisParagraphs && options?.initialAnalysisParagraphs !== undefined) {
+    if (
+      currentAnalysisParagraphs !== prevAnalysisParagraphs &&
+      options?.initialAnalysisParagraphs !== undefined
+    ) {
       setAnalysisParagraphs(options.initialAnalysisParagraphs ?? null);
       prevInitialAnalysisParagraphsRef.current = options.initialAnalysisParagraphs ?? null;
     }
-  }, [options?.initialLikes, options?.initialDislikes, options?.initialAnalysis, options?.initialAnalysisParagraphs]);
+
+    // Redux 상태 변경 감지 (options가 없을 때)
+    if (!options && reduxPreferences !== prevReduxPreferencesRef.current) {
+      if (reduxPreferences) {
+        setLikes(reduxPreferences.likes ?? []);
+        setDislikes(reduxPreferences.dislikes ?? []);
+        setAnalysis(reduxPreferences.analysis ?? null);
+        setAnalysisParagraphs(reduxPreferences.analysisParagraphs ?? null);
+      }
+      prevReduxPreferencesRef.current = reduxPreferences;
+    }
+  }, [
+    options,
+    options?.initialLikes,
+    options?.initialDislikes,
+    options?.initialAnalysis,
+    options?.initialAnalysisParagraphs,
+    reduxPreferences,
+  ]);
+
   const [newLike, setNewLike] = useState('');
   const [newDislike, setNewDislike] = useState('');
-  const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
 
-  // 취향 정보 로드
+  // 취향 정보 로드 (Redux thunk 사용)
   const loadPreferences = useCallback(async () => {
-    setIsLoadingPreferences(true);
-    try {
-      const result = await userService.getPreferences();
-      setLikes(result.preferences.likes || []);
-      setDislikes(result.preferences.dislikes || []);
-      setAnalysis(result.preferences.analysis ?? null);
-      setAnalysisParagraphs(result.preferences.analysisParagraphs ?? null);
-    } catch {
-      // 취향 정보 조회 실패는 무시
-    } finally {
-      setIsLoadingPreferences(false);
+    const resultAction = await dispatch(fetchPreferences());
+    // Unwrap result to sync local state
+    if (fetchPreferences.fulfilled.match(resultAction) && resultAction.payload) {
+      setLikes(resultAction.payload.likes || []);
+      setDislikes(resultAction.payload.dislikes || []);
+      setAnalysis(resultAction.payload.analysis ?? null);
+      setAnalysisParagraphs(resultAction.payload.analysisParagraphs ?? null);
     }
-  }, []);
+  }, [dispatch]);
 
   // 좋아하는 것 추가
   const handleAddLike = useCallback(() => {
@@ -116,16 +144,19 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
         likes: likes,
         dislikes: dislikes,
       });
-      
-      // Redux 상태도 업데이트 (화면 반영을 위해 필수)
-      dispatch(updateUser({
-        preferences: {
-          likes,
-          dislikes,
-        },
-      }));
-      
-      // 로컬 상태도 업데이트 (analysis 포함)
+
+      // Redux auth 상태도 업데이트 (화면 반영을 위해 필수)
+      dispatch(
+        updateUser({
+          preferences: {
+            likes,
+            dislikes,
+          },
+        })
+      );
+
+      // Redux 캐시 무효화 후 재로드 (analysis 포함)
+      dispatch(invalidatePreferences());
       await loadPreferences();
 
       handleSuccess('toast.preferences.saved');
@@ -152,7 +183,7 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
     analysisParagraphs,
     newLike,
     newDislike,
-    isLoadingPreferences,
+    isLoadingPreferences: isLoadingFromRedux,
     isSavingPreferences,
     // 상태 설정 함수
     setLikes,

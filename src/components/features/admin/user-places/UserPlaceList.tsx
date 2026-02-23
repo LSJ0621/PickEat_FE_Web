@@ -16,9 +16,9 @@ export function UserPlaceList({ places, onItemClick }: UserPlaceListProps) {
 
   if (places.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-slate-700 bg-slate-900/50 py-12">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-border-default bg-bg-primary py-12">
         <svg
-          className="mb-4 h-12 w-12 text-slate-500"
+          className="mb-4 h-12 w-12 text-text-placeholder"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -30,7 +30,7 @@ export function UserPlaceList({ places, onItemClick }: UserPlaceListProps) {
             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
           />
         </svg>
-        <p className="text-slate-400">{t('admin.userPlaces.list.empty')}</p>
+        <p className="text-text-tertiary">{t('admin.userPlaces.list.empty')}</p>
       </div>
     );
   }

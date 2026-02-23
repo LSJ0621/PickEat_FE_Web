@@ -20,7 +20,7 @@ export const LanguageSelector = ({ className = '' }: LanguageSelectorProps) => {
   };
 
   return (
-    <div className={`inline-flex items-center rounded-full border border-white/10 bg-white/5 p-1 ${className}`}>
+    <div className={`inline-flex items-center rounded-full border border-border-default bg-bg-secondary p-1 ${className}`}>
       {/* Korean Button */}
       <button
         onClick={() => handleLanguageChange('ko')}
@@ -28,8 +28,8 @@ export const LanguageSelector = ({ className = '' }: LanguageSelectorProps) => {
           inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200
           ${
             isKorean
-              ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-text-inverse shadow-md shadow-orange-500/30'
+              : 'text-text-tertiary hover:text-text-secondary'
           }
         `}
         aria-label="Switch to Korean"
@@ -45,8 +45,8 @@ export const LanguageSelector = ({ className = '' }: LanguageSelectorProps) => {
           inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200
           ${
             isEnglish
-              ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-text-inverse shadow-md shadow-orange-500/30'
+              : 'text-text-tertiary hover:text-text-secondary'
           }
         `}
         aria-label="Switch to English"

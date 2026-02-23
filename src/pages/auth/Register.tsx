@@ -2,16 +2,43 @@
  * 회원가입 페이지
  */
 
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '@/api/services/auth';
 import { Button } from '@/components/common/Button';
+import { PageContainer } from '@/components/common/PageContainer';
 import { EmailVerificationSection, PasswordInputSection } from '@/components/features/auth';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useEmailVerification } from '@/hooks/auth/useEmailVerification';
 import { isEmpty, isValidEmail, isValidPassword, isPasswordMatch } from '@/utils/validation';
 import { ERROR_MESSAGES } from '@/utils/constants';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+
+// Step indicator
+interface StepIndicatorProps {
+  currentStep: number;
+  totalSteps: number;
+}
+
+function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
+  const { t } = useTranslation();
+  return (
+    <div className="mb-6" aria-label={t('auth.stepProgress', { current: currentStep, total: totalSteps })}>
+      <div className="mb-1.5 flex items-center justify-between text-xs text-text-tertiary">
+        <span>{t('auth.step', { step: currentStep, total: totalSteps })}</span>
+        <span>{Math.round((currentStep / totalSteps) * 100)}%</span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-secondary">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-500"
+          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export const RegisterPage = () => {
   const { t } = useTranslation();
@@ -32,7 +59,6 @@ export const RegisterPage = () => {
   const [reRegisterEmail, setReRegisterEmail] = useState('');
   const [reRegisterMessage, setReRegisterMessage] = useState('');
 
-  // 이메일 인증 Hook 사용
   const emailVerification = useEmailVerification({
     onReRegister: (email, message) => {
       setReRegisterEmail(email);
@@ -41,16 +67,19 @@ export const RegisterPage = () => {
     },
   });
 
-  // 회원가입 처리
+  // Derive current step for progress (1=name, 2=email+verify, 3=password)
+  const currentStep = (() => {
+    if (emailVerification.isEmailVerified) return 3;
+    if (emailVerification.emailAvailable === true) return 2;
+    return 1;
+  })();
+
   const handleRegister = async () => {
     const newErrors: typeof errors = {};
-    
-    // 이름 검증 (필수)
+
     if (isEmpty(name)) {
       newErrors.name = ERROR_MESSAGES.NAME_REQUIRED;
     }
-
-    // 이메일 검증
     if (isEmpty(emailVerification.email)) {
       newErrors.email = ERROR_MESSAGES.EMAIL_REQUIRED;
     } else if (!isValidEmail(emailVerification.email)) {
@@ -60,15 +89,11 @@ export const RegisterPage = () => {
     } else if (!emailVerification.isEmailVerified) {
       newErrors.verificationCode = ERROR_MESSAGES.EMAIL_VERIFICATION_REQUIRED;
     }
-
-    // 비밀번호 검증
     if (isEmpty(password)) {
       newErrors.password = ERROR_MESSAGES.PASSWORD_REQUIRED;
     } else if (!isValidPassword(password)) {
       newErrors.password = ERROR_MESSAGES.PASSWORD_TOO_SHORT;
     }
-
-    // 비밀번호 확인
     if (isEmpty(confirmPassword)) {
       newErrors.confirmPassword = ERROR_MESSAGES.CONFIRM_PASSWORD_REQUIRED;
     } else if (!isPasswordMatch(password, confirmPassword)) {
@@ -85,7 +110,7 @@ export const RegisterPage = () => {
       await authService.register({
         email: emailVerification.email,
         password,
-        name: name.trim() // 이름은 필수이므로 항상 포함
+        name: name.trim(),
       });
       handleSuccess(t('messages.registerSuccess'));
       navigate('/login');
@@ -97,29 +122,29 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-400/40 via-pink-500/30 to-purple-600/30 blur-3xl animate-gradient" />
-        <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-400/20 to-transparent blur-3xl animate-gradient" />
-      </div>
-      <div className="relative z-10 w-full max-w-md">
-        <div className="rounded-[32px] border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40 backdrop-blur">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-fuchsia-600 text-2xl font-bold text-slate-950 shadow-lg shadow-orange-500/30">
-              P
-            </div>
-            <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('auth.registerSignUp')}</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{t('auth.registerTitle')}</h1>
-            <p className="mt-2 text-sm text-slate-300">{t('auth.registerSubtitle')}</p>
+    <PageContainer maxWidth="max-w-md" className="flex min-h-screen flex-col items-center justify-center py-12">
+      <div className="w-full">
+        {/* Brand Header */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 text-3xl font-bold text-white shadow-lg shadow-orange-500/30">
+            P
           </div>
+          <p className="text-xs uppercase tracking-widest text-brand-primary">{t('auth.registerSignUp')}</p>
+          <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('auth.registerTitle')}</h1>
+          <p className="mt-1 text-sm text-text-secondary">{t('auth.registerSubtitle')}</p>
+        </div>
+
+        {/* Register Card */}
+        <div className="rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg sm:p-8">
+          <StepIndicator currentStep={currentStep} totalSteps={3} />
 
           <div className="space-y-4">
             {/* 이름 입력 */}
             <div>
-              <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-200">
+              <Label htmlFor="name" className="mb-1.5 block text-text-primary">
                 {t('auth.name')}
-              </label>
-              <input
+              </Label>
+              <Input
                 id="name"
                 type="text"
                 value={name}
@@ -128,13 +153,11 @@ export const RegisterPage = () => {
                   setErrors({ ...errors, name: undefined });
                 }}
                 placeholder={t('auth.namePlaceholder')}
-                className={`w-full rounded-2xl border ${
-                  errors.name ? 'border-red-500/60' : 'border-white/15'
-                } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
+                className={`w-full rounded-xl border ${
+                  errors.name ? 'border-red-500/60' : 'border-border-default'
+                } bg-bg-primary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-0`}
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-400">{errors.name}</p>
-              )}
+              {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
             </div>
 
             {/* 이메일 인증 섹션 */}
@@ -142,12 +165,8 @@ export const RegisterPage = () => {
               emailVerification={emailVerification}
               emailError={errors.email}
               verificationCodeError={errors.verificationCode}
-              onEmailChange={() => {
-                setErrors({ ...errors, email: undefined });
-              }}
-              onVerificationCodeChange={() => {
-                setErrors({ ...errors, verificationCode: undefined });
-              }}
+              onEmailChange={() => setErrors({ ...errors, email: undefined })}
+              onVerificationCodeChange={() => setErrors({ ...errors, verificationCode: undefined })}
             />
 
             {/* 비밀번호 입력 섹션 */}
@@ -164,7 +183,7 @@ export const RegisterPage = () => {
                 setConfirmPassword(newConfirmPassword);
                 setErrors({ ...errors, confirmPassword: undefined });
               }}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' && !registerLoading) {
                   handleRegister();
                 }
@@ -177,33 +196,33 @@ export const RegisterPage = () => {
               isLoading={registerLoading}
               disabled={registerLoading || !emailVerification.isEmailVerified}
               size="lg"
-              className="w-full mt-6"
+              className="mt-2 w-full"
             >
               {t('auth.register')}
             </Button>
           </div>
 
-          {/* 로그인 페이지로 이동 */}
-          <div className="mt-6 text-center text-sm text-slate-300">
+          {/* 로그인으로 */}
+          <p className="mt-5 text-center text-sm text-text-secondary">
             {t('auth.haveAccount')}{' '}
             <button
               onClick={() => navigate('/login')}
-              className="font-semibold text-white hover:text-orange-200 transition-colors"
+              className="font-semibold text-brand-primary transition hover:text-orange-600"
             >
               {t('auth.login')}
             </button>
-          </div>
+          </p>
         </div>
       </div>
 
       {/* 재가입 안내 모달 */}
       {showReRegisterModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl shadow-black/50 backdrop-blur">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl border border-border-default bg-bg-surface p-8 shadow-2xl shadow-black/20">
             <div className="space-y-4">
               <div className="text-center">
-                <p className="text-xl font-semibold text-white">{t('auth.reRegisterTitle')}</p>
-                <p className="mt-3 text-base text-slate-200 leading-relaxed">
+                <p className="text-xl font-semibold text-text-primary">{t('auth.reRegisterTitle')}</p>
+                <p className="mt-3 text-base leading-relaxed text-text-secondary">
                   {reRegisterMessage}
                 </p>
               </div>
@@ -231,6 +250,6 @@ export const RegisterPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 };

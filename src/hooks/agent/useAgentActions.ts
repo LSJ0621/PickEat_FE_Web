@@ -1,11 +1,8 @@
 import { menuService } from '@/api/services/menu';
-import { searchService } from '@/api/services/search';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   setAiLoading,
-  setIsSearching,
-  setRestaurants,
   setSelectedMenu,
   setSelectedPlace,
   setShowConfirmCard,
@@ -14,8 +11,11 @@ import {
   upsertCommunityAiRecommendations,
   setSearchAiLoading,
   setCommunityAiLoading,
+  setSearchAiRetrying,
+  setCommunityAiRetrying,
 } from '@/store/slices/agentSlice';
-import type { ResultsSectionRef } from '@/components/features/agent/ResultsSection';
+import type { PlaceRecommendationResponse } from '@/types/menu';
+import { extractErrorMessage } from '@/utils/error';
 import { isAxiosError } from 'axios';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,15 +23,11 @@ import { useTranslation } from 'react-i18next';
 interface UseAgentActionsProps {
   latitude: number | null;
   longitude: number | null;
-  hasLocation: boolean;
-  resultsSectionRef: React.RefObject<ResultsSectionRef | null>;
 }
 
 export function useAgentActions({
   latitude,
   longitude,
-  hasLocation,
-  resultsSectionRef,
 }: UseAgentActionsProps) {
   const dispatch = useAppDispatch();
   const { handleError, handleSuccess } = useErrorHandler();
@@ -60,50 +56,6 @@ export function useAgentActions({
     },
     [dispatch]
   );
-
-  const handleSearch = useCallback(async () => {
-    if (!isAuthenticated) {
-      handleError(t('toast.auth.loginRequired'), 'Agent');
-      return;
-    }
-
-    if (!hasLocation || latitude === null || longitude === null) {
-      handleError(t('errors.agent.noLocationData'), 'Agent');
-      return;
-    }
-
-    if (!selectedMenu) {
-      return;
-    }
-
-    dispatch(setShowConfirmCard(false));
-    // 일반 검색 탭으로 자동 전환
-    resultsSectionRef.current?.switchToTab('search');
-    dispatch(setIsSearching(true));
-    try {
-      const result = await searchService.restaurants({
-        menuName: selectedMenu,
-        latitude,
-        longitude,
-        includeRoadAddress: false,
-      });
-      dispatch(setRestaurants(result.restaurants));
-    } catch (error) {
-      handleError(error, 'Agent');
-    } finally {
-      dispatch(setIsSearching(false));
-    }
-  }, [
-    isAuthenticated,
-    hasLocation,
-    latitude,
-    longitude,
-    selectedMenu,
-    dispatch,
-    resultsSectionRef,
-    handleError,
-    t,
-  ]);
 
   const handleCancel = useCallback(() => {
     dispatch(setShowConfirmCard(false));
@@ -161,8 +113,6 @@ export function useAgentActions({
     );
     if (alreadyRecommended) {
       dispatch(setShowConfirmCard(false));
-      // 이미 추천받은 메뉴도 AI 탭으로 전환
-      resultsSectionRef.current?.switchToTab('ai');
       handleSuccess('toast.ai.showingSavedRecommendation');
       return;
     }
@@ -174,61 +124,95 @@ export function useAgentActions({
     }
 
     dispatch(setShowConfirmCard(false));
-    // AI 추천 탭으로 자동 전환
-    resultsSectionRef.current?.switchToTab('ai');
 
-    // Fire search API call independently
+    // Fire search API call independently with SSE streaming
     dispatch(setSearchAiLoading({ isLoading: true, menuName: selectedMenu }));
-    menuService.recommendSearchPlaces({
-      latitude: latitude!,
-      longitude: longitude!,
-      menuName: selectedMenu,
-      menuRecommendationId: menuHistoryId,
-    })
-      .then((response) => {
-        const normalized = (response.recommendations || [])
-          .filter((item) => item.placeId != null)
-          .map((item) => ({
-            ...item,
-            placeId: item.placeId!.replace(/^places\//i, ''),
-            menuName: selectedMenu,
-          }));
-        dispatch(upsertSearchAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
-      })
+    dispatch(setSearchAiRetrying(false));
+    menuService.recommendSearchPlacesStream(
+      {
+        latitude: latitude!,
+        longitude: longitude!,
+        menuName: selectedMenu,
+        menuRecommendationId: menuHistoryId,
+      },
+      {
+        onEvent: (event) => {
+          if (event.type === 'retrying') {
+            dispatch(setSearchAiRetrying(true));
+          } else if (event.type === 'status') {
+            dispatch(setSearchAiRetrying(false));
+          } else if (event.type === 'result' && event.data) {
+            const response = event.data as PlaceRecommendationResponse;
+            const normalized = (response.recommendations || [])
+              .filter((item) => item.placeId != null)
+              .map((item) => ({
+                ...item,
+                placeId: item.placeId!.replace(/^places\//i, ''),
+                menuName: selectedMenu,
+              }));
+            dispatch(upsertSearchAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
+            dispatch(setSearchAiRetrying(false));
+          } else if (event.type === 'error') {
+            dispatch(setSearchAiRetrying(false));
+            handleError(event.message || 'Search places streaming error', 'Agent');
+          }
+        },
+      }
+    )
       .catch((error) => {
         if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
           loadStoredAiRecommendations(menuHistoryId, selectedMenu, { silent: true });
         } else {
-          console.error('Search places error:', error);
+          const errorMessage = extractErrorMessage(error, 'Search places streaming failed');
+          handleError(errorMessage, 'Agent');
         }
       })
       .finally(() => {
         dispatch(setSearchAiLoading({ isLoading: false, menuName: null }));
+        dispatch(setSearchAiRetrying(false));
       });
 
-    // Fire community API call independently (runs in parallel)
+    // Fire community API call independently with SSE streaming (runs in parallel)
     dispatch(setCommunityAiLoading({ isLoading: true, menuName: selectedMenu }));
-    menuService.recommendCommunityPlaces({
-      latitude: latitude!,
-      longitude: longitude!,
-      menuName: selectedMenu,
-      menuRecommendationId: menuHistoryId,
-    })
-      .then((response) => {
-        const normalized = (response.recommendations || [])
-          .filter((item) => item.placeId != null)
-          .map((item) => ({
-            ...item,
-            placeId: item.placeId!.replace(/^places\//i, ''),
-            menuName: selectedMenu,
-          }));
-        dispatch(upsertCommunityAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
-      })
+    dispatch(setCommunityAiRetrying(false));
+    menuService.recommendCommunityPlacesStream(
+      {
+        latitude: latitude!,
+        longitude: longitude!,
+        menuName: selectedMenu,
+        menuRecommendationId: menuHistoryId,
+      },
+      {
+        onEvent: (event) => {
+          if (event.type === 'retrying') {
+            dispatch(setCommunityAiRetrying(true));
+          } else if (event.type === 'status') {
+            dispatch(setCommunityAiRetrying(false));
+          } else if (event.type === 'result' && event.data) {
+            const response = event.data as PlaceRecommendationResponse;
+            const normalized = (response.recommendations || [])
+              .filter((item) => item.placeId != null)
+              .map((item) => ({
+                ...item,
+                placeId: item.placeId!.replace(/^places\//i, ''),
+                menuName: selectedMenu,
+              }));
+            dispatch(upsertCommunityAiRecommendations({ menuName: selectedMenu, recommendations: normalized }));
+            dispatch(setCommunityAiRetrying(false));
+          } else if (event.type === 'error') {
+            dispatch(setCommunityAiRetrying(false));
+            handleError(event.message || 'Community places streaming error', 'Agent');
+          }
+        },
+      }
+    )
       .catch((error) => {
-        console.error('Community places error:', error);
+        const errorMessage = extractErrorMessage(error, 'Community places streaming failed');
+        handleError(errorMessage, 'Agent');
       })
       .finally(() => {
         dispatch(setCommunityAiLoading({ isLoading: false, menuName: null }));
+        dispatch(setCommunityAiRetrying(false));
       });
 
     // Maintain legacy behavior for backward compatibility
@@ -241,7 +225,6 @@ export function useAgentActions({
     latitude,
     longitude,
     dispatch,
-    resultsSectionRef,
     handleError,
     handleSuccess,
     loadStoredAiRecommendations,
@@ -250,7 +233,6 @@ export function useAgentActions({
 
   return {
     handleMenuClick,
-    handleSearch,
     handleCancel,
     handleAiRecommendation,
   };

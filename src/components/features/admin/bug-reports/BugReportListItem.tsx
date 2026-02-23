@@ -5,6 +5,7 @@
 import type { BugReport } from '@/types/bug-report';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDateTimeKorean } from '@/utils/format';
 
 interface BugReportListItemProps {
   bugReport: BugReport;
@@ -16,36 +17,25 @@ interface BugReportListItemProps {
 export const BugReportListItem = memo(
   ({ bugReport, onClick, selected = false, onSelectionChange }: BugReportListItemProps) => {
     const { t } = useTranslation();
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    };
-
     const getStatusBadge = (status: BugReport['status']) => {
       const badges: Record<BugReport['status'], React.ReactElement> = {
         UNCONFIRMED: (
-          <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-400">
+          <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-600">
             {t('bugReport.status.unconfirmed')}
           </span>
         ),
         CONFIRMED: (
-          <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-orange-400">
+          <span className="rounded-full bg-orange-500/20 px-3 py-1 text-xs font-medium text-brand-primary">
             {t('bugReport.status.confirmed')}
           </span>
         ),
         FIXED: (
-          <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400">
+          <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-600">
             {t('bugReport.status.fixed')}
           </span>
         ),
         CLOSED: (
-          <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400">
+          <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-600">
             {t('bugReport.status.closed')}
           </span>
         ),
@@ -55,10 +45,10 @@ export const BugReportListItem = memo(
 
     return (
       <div
-        className={`flex items-start gap-3 rounded-lg border bg-slate-900/50 p-4 transition ${
+        className={`flex items-start gap-3 rounded-lg border bg-bg-surface p-4 transition ${
           selected
-            ? 'border-pink-500 bg-pink-500/10'
-            : 'border-slate-700 hover:border-slate-600 hover:bg-slate-900/70'
+            ? 'border-brand-primary bg-brand-primary/5'
+            : 'border-border-default hover:border-border-focus hover:bg-bg-hover'
         }`}
       >
         {/* 체크박스 */}
@@ -71,7 +61,7 @@ export const BugReportListItem = memo(
               type="checkbox"
               checked={selected}
               onChange={(e) => onSelectionChange(e.target.checked)}
-              className="h-5 w-5 cursor-pointer rounded border-slate-600 bg-slate-800 text-pink-500 focus:ring-2 focus:ring-pink-500/20"
+              className="h-5 w-5 cursor-pointer rounded border-border-default bg-bg-surface text-brand-primary focus:ring-2 focus:ring-brand-primary/20"
             />
           </label>
         )}
@@ -81,15 +71,15 @@ export const BugReportListItem = memo(
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-text-tertiary">
                   {t(`bugReport.categories.${bugReport.category.toLowerCase()}`)}
                 </span>
                 {getStatusBadge(bugReport.status)}
               </div>
-              <h3 className="font-semibold text-white">{bugReport.title}</h3>
-              <p className="line-clamp-2 text-sm text-slate-400">{bugReport.description}</p>
-              <div className="flex items-center gap-4 text-xs text-slate-500">
-                <span>{formatDate(bugReport.createdAt)}</span>
+              <h3 className="font-semibold text-text-primary">{bugReport.title}</h3>
+              <p className="line-clamp-2 text-sm text-text-tertiary">{bugReport.description}</p>
+              <div className="flex items-center gap-4 text-xs text-text-placeholder">
+                <span>{formatDateTimeKorean(bugReport.createdAt)}</span>
                 {bugReport.images && bugReport.images.length > 0 && (
                   <span className="flex items-center gap-1">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +96,7 @@ export const BugReportListItem = memo(
               </div>
             </div>
             <svg
-              className="h-5 w-5 flex-shrink-0 text-slate-400"
+              className="h-5 w-5 flex-shrink-0 text-text-tertiary"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -119,4 +109,3 @@ export const BugReportListItem = memo(
     );
   }
 );
-

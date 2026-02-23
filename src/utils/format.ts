@@ -115,6 +115,61 @@ export const getDateRange = (type: 'today' | 'week' | 'month'): { start: string;
 };
 
 /**
+ * 생년월일 포맷팅 (YYYY-MM-DD 문자열 → 로케일 맞춤 날짜 표시)
+ *
+ * @param dateStr - YYYY-MM-DD 형식의 날짜 문자열
+ * @param lang - 현재 언어 코드 ('ko' | 'en' 등)
+ * @returns 로케일에 맞게 포맷팅된 날짜 문자열
+ *
+ * @example
+ * formatBirthDate('1990-05-15', 'ko') // "1990년 5월 15일"
+ * formatBirthDate('1990-05-15', 'en') // "May 15, 1990"
+ */
+export const formatBirthDate = (dateStr: string, lang: string): string => {
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+/**
+ * 상대적 날짜 포맷팅 (예: "5분 전", "3시간 전", "2일 전")
+ * 7일 초과 시 formatDateStandard 결과 반환
+ */
+export const formatDateRelative = (date: string | Date): string => {
+  const d = new Date(date);
+  const now = new Date();
+  const diffInMs = now.getTime() - d.getTime();
+  const diffInMinutes = Math.floor(diffInMs / 60000);
+  const diffInHours = Math.floor(diffInMs / 3600000);
+  const diffInDays = Math.floor(diffInMs / 86400000);
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}분 전`;
+  }
+  if (diffInHours < 24) {
+    return `${diffInHours}시간 전`;
+  }
+  if (diffInDays < 7) {
+    return `${diffInDays}일 전`;
+  }
+  return formatDateStandard(d);
+};
+
+/**
+ * 월/일 포맷팅 (예: "1/15")
+ */
+export const formatMonthDay = (date: string | Date): string => {
+  const d = new Date(date);
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  return `${month}/${day}`;
+};
+
+/**
  * 다국어 가게 이름 포맷팅
  * localizedName이 있고 원래 이름과 다를 경우 "원래이름(번역이름)" 형식으로 반환
  *

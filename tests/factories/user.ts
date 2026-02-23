@@ -1,4 +1,5 @@
 import type { User, LoginResponse } from '@/types/auth';
+import type { MenuRecommendationItemData } from '@/types/menu';
 import type { UserAddress, Preferences, RecommendationHistoryItem } from '@/types/user';
 
 /**
@@ -93,7 +94,11 @@ export function createMockRecommendationHistory(
 ): RecommendationHistoryItem {
   return {
     id: 1,
-    recommendations: ['김치찌개', '불고기', '비빔밥'],
+    recommendations: [
+      { menu: '김치찌개', condition: '한식이 당긴다면' },
+      { menu: '불고기', condition: '달콤한 맛이 좋다면' },
+      { menu: '비빔밥', condition: '건강하게 먹고 싶다면' },
+    ],
     prompt: '점심 메뉴 추천해줘',
     reason: '한식 중심의 건강한 메뉴를 추천드립니다.',
     recommendedAt: '2024-01-15T12:00:00.000Z',
@@ -115,12 +120,32 @@ export function createMockRecommendationHistories(count: number): Recommendation
     '간단한 아침 메뉴',
   ];
 
-  const menus = [
-    ['김치찌개', '불고기', '비빔밥'],
-    ['파스타', '피자', '리조또'],
-    ['초밥', '라멘', '우동'],
-    ['샐러드', '닭가슴살', '아보카도'],
-    ['토스트', '시리얼', '요거트'],
+  const menus: MenuRecommendationItemData[][] = [
+    [
+      { menu: '김치찌개', condition: '한식이 당긴다면' },
+      { menu: '불고기', condition: '달콤한 맛이 좋다면' },
+      { menu: '비빔밥', condition: '건강하게 먹고 싶다면' },
+    ],
+    [
+      { menu: '파스타', condition: '이탈리안이 땡긴다면' },
+      { menu: '피자', condition: '간편하게 먹고 싶다면' },
+      { menu: '리조또', condition: '크리미한 음식이 좋다면' },
+    ],
+    [
+      { menu: '초밥', condition: '신선한 해산물을 원한다면' },
+      { menu: '라멘', condition: '따뜻한 국물이 필요하다면' },
+      { menu: '우동', condition: '담백하게 먹고 싶다면' },
+    ],
+    [
+      { menu: '샐러드', condition: '다이어트 중이라면' },
+      { menu: '닭가슴살', condition: '단백질이 필요하다면' },
+      { menu: '아보카도', condition: '건강한 지방을 원한다면' },
+    ],
+    [
+      { menu: '토스트', condition: '간단한 아침을 원한다면' },
+      { menu: '시리얼', condition: '빠르게 먹고 싶다면' },
+      { menu: '요거트', condition: '가볍게 먹고 싶다면' },
+    ],
   ];
 
   return Array.from({ length: count }, (_, index) =>

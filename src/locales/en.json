@@ -88,81 +88,57 @@
     }
   },
   "home": {
-    "title": "AI Menu Recommendation",
-    "subtitle": "We recommend the best menu by combining your team's preferences and weather data",
-    "ctaButton": "Get AI Menu Recommendation",
-    "loginPrompt": "Log in to see personalized menus prepared by our AI agent",
+    "greeting": {
+      "morning": "Good morning!",
+      "lunch": "It's lunchtime!",
+      "evening": "What's for dinner?",
+      "night": "Late night cravings!",
+      "subtext": "What should we eat today?",
+      "subtextGuest": "AI recommends menus based on your mood and situation",
+      "socialHint": "Quick start with Kakao · Google",
+      "ctaAuthenticated": "Get AI menu recommendation",
+      "ctaGuest": "Get started for free",
+      "heroSection": "Hero section"
+    },
     "hero": {
-      "badge": "PickEat OS",
-      "title": "What should we eat today?",
-      "titleHighlight": "AI Agent",
-      "titleSuffix": "will help you decide",
-      "description": "PickEat is an AI-powered recommendation OS that automates menu suggestions and restaurant discovery.",
-      "descriptionContinued": "Sign in and experience your own personalized dining flow.",
-      "loginButton": "Get Started with Sign In",
-      "previewButton": "Preview AI Agent",
-      "startButton": "Go to AI Agent",
-      "historyButton": "View Recent Recommendations"
+      "badge": "AI Menu Recommendation",
+      "headline": "Let AI pick\nyour next meal",
+      "subtext": "Tell us your situation and our AI agent will recommend the perfect menu",
+      "cta": "Get Recommendations",
+      "socialHint": "Quick start with Kakao · Google"
+    },
+    "recentHistory": {
+      "title": "Recent Recommendations",
+      "viewAll": "View All",
+      "viewDetail": "View Details",
+      "noDate": "No date"
+    },
+    "communityPlaces": {
+      "title": "Community Places",
+      "viewAll": "View All",
+      "register": "Register a Place",
+      "noImage": "No image"
     },
     "features": {
-      "badge": "Features",
-      "title": "Core Features",
-      "description": "Experience better choices with our AI-powered smart dining recommendation system.",
-      "cardBadge": "Feature",
-      "aiRecommendation": {
-        "title": "AI Menu Recommendation",
-        "description": "Real-time menu suggestions reflecting your mood, weather, and preferences."
-      },
-      "storeSearch": {
-        "title": "Menu-Based Store Search",
-        "description": "Select your desired menu and AI will curate nearby restaurant options."
-      },
-      "history": {
-        "title": "History Management",
-        "description": "View and re-explore your recommended menu and restaurant history at a glance."
-      }
+      "title": "What PickEat Offers",
+      "subtitle": "Everything you need to discover your next favorite meal",
+      "aiRecommendation": { "title": "AI Menu Recommendation", "description": "AI recommends personalized menus based on your situation and taste" },
+      "placeDiscovery": { "title": "Restaurant Discovery", "description": "AI finds nearby restaurants serving your recommended menu" },
+      "community": { "title": "Community Places", "description": "Share and discover local restaurants registered by users" },
+      "weather": { "title": "Taste Analysis", "description": "Analyzes your preferred flavors, ingredients, and eating habits for personalized recommendations" }
     },
     "howItWorks": {
-      "badge": "How it works",
-      "title": "AI Recommendation Flow",
-      "description": "Find your desired menu and restaurant in 3 simple steps.",
-      "step1": {
-        "title": "Tell the AI about your mood or situation today.",
-        "description": "A simple conversation helps understand your situation."
-      },
-      "step2": {
-        "title": "Choose from the recommended menu options.",
-        "description": "Simply select from the menus suggested by AI."
-      },
-      "step3": {
-        "title": "Get AI restaurant recommendations for your selected menu.",
-        "description": "We recommend nearby restaurants that serve your chosen menu."
-      }
-    },
-    "highlights": {
-      "badge": "Highlights",
-      "title": "Key Feature Highlights",
-      "description": "Experience smarter dining choices through PickEat's core features.",
-      "aiRecommendation": {
-        "title": "AI Recommendation",
-        "description": "Experience new choices daily with personalized menu recommendations."
-      },
-      "mapSearch": {
-        "title": "Map-Based Search",
-        "description": "Find actual location-based restaurants integrated with maps."
-      },
-      "personalized": {
-        "title": "Personalized Recommendations",
-        "description": "More accurate recommendations by learning your preferences and history."
-      }
+      "title": "Get Started in 3 Steps",
+      "subtitle": "Get personalized food recommendations in just a few steps",
+      "stepLabel": "Step {{number}}",
+      "step1": { "title": "Tell us your situation", "description": "Describe your current situation or specific requests in detail" },
+      "step2": { "title": "Pick a menu", "description": "Choose your favorite from AI-recommended menus" },
+      "step3": { "title": "Find restaurants", "description": "Instantly see nearby restaurants serving your choice" }
     },
     "cta": {
-      "title": "Start using PickEat right now",
-      "description": "Experience personalized recommendations and restaurant discovery prepared by our AI agent after logging in.",
-      "loginButton": "Sign in with Email",
-      "previewButton": "Preview Agent",
-      "startButton": "Go to Agent",
-      "mypageButton": "Open My Page"
+      "title": "Get Started Now",
+      "description": "Let AI find your perfect meal",
+      "button": "Get Free Recommendations"
     }
   },
   "errors": {
@@ -296,17 +272,38 @@
     "setDefaultAddress": "Set Default Address",
     "setDefaultAddressMessage": "Do you want to set this as your default address?",
     "honorific": "",
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "sections": {
+      "account": "Account",
+      "activity": "Activity",
+      "support": "Support",
+      "admin": "Admin"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "address": "Address",
+      "settings": "Settings"
+    },
     "preferences": {
       "title": "Preferences",
       "edit": "Edit Preferences",
       "save": "Save Preferences",
       "loading": "Loading...",
       "noPreferences": "No preferences registered.",
+      "noPreferencesSetup": "Set your preferences and AI will analyze them for you",
       "aiReport": "AI Report"
     },
     "profile": {
       "title": "Profile Information",
-      "birthYear": "Birth Year",
+      "birthDate": "Date of Birth",
+      "yearLabel": "Year",
+      "monthLabel": "Month",
+      "dayLabel": "Day",
       "gender": "Gender",
       "genderMale": "Male",
       "genderFemale": "Female",
@@ -334,7 +331,8 @@
       "selected": "Selected Address",
       "aliasPlaceholder": "Enter alias (e.g., Home, Office) - Optional",
       "clearSelection": "Clear Selection",
-      "addButton": "Add Address"
+      "addButton": "Add Address",
+      "default": "Default"
     }
   },
   "userPlace": {
@@ -457,38 +455,27 @@
     "menuSelectionUpdated": "Menu selection has been updated."
   },
   "agent": {
-    "title": "Recommendations based on mood, weather, and location",
+    "title": "AI menu recommendations that understand your situation",
     "subtitle": "Nearby restaurant discovery",
     "description": "Get AI recommendations from PickEat home and check nearby stores instantly.",
     "loginToGetRecommendation": "Sign in to get recommendations",
     "quickStartWithKakao": "Quick start with Kakao",
     "loginRequired": "Sign in to get personalized recommendations",
-    "loginRequiredDesc": "Once signed in, you can get mood-based recommendations and explore nearby restaurants on a single board.",
+    "loginRequiredDesc": "Log in to get personalized menu recommendations and explore nearby restaurants all in one board.",
     "goToLogin": "Go to Login Page",
-    "exploreOptions": "How would you like to explore?",
-    "normalSearch": "Normal Search",
-    "aiRecommendation": "View AI Recommendations",
-    "noLocationData": "No location data. Please register your address to search restaurants.",
+    "confirmAiRecommendation": " — Would you like to get AI recommendations?",
     "needsAddressForAi": "Address or location data is required to use AI recommendations.",
     "needsSetupRedirect": "Please register your preferences and address first.",
     "smartCompanion": "Smart Eatery Companion",
-    "tabs": {
-      "generalSearch": "General Search",
-      "aiRecommendation": "AI Recommendation"
-    },
     "results": {
       "selectMenu": "Please select a menu",
       "selectMenuHint": "Get a menu recommendation and make your choice.",
-      "noSearchResults": "No search results found.",
-      "trySearch": "Try running a general search.",
       "noAiResults": "No AI recommendations available.",
-      "tryAiRecommendation": "Try running an AI recommendation.",
-      "noResultsYet": "No results yet.",
-      "tryBothOptions": "Try running a general search or AI recommendation."
+      "tryAiRecommendation": "Try running an AI recommendation."
     }
   },
   "map": {
-    "title": "Naver Map",
+    "title": "Google Map",
     "stores": "stores",
     "totalStores": "Total {{count}} stores",
     "selected": "Selected",
@@ -497,13 +484,12 @@
     "refresh": "Refresh",
     "noLocationData": "No location data to display",
     "noLocationDataDesc": "Please search for nearby restaurants first, then click the map view button.",
-    "apiKeyMissing": "Naver Map API key is not set. Please add VITE_NAVER_MAP_CLIENT_ID to .env.",
     "noLocationError": "No location data to display. Please register your address or open the map from the restaurant list.",
-    "scriptLoadTimeout": "Naver Map script load timeout",
-    "scriptLoadFailed": "Failed to load Naver Map script",
-    "keyNotSet": "Naver Map key is not set.",
+    "scriptLoadTimeout": "Google Map script load timeout",
+    "scriptLoadFailed": "Failed to load Google Map script",
+    "keyNotSet": "Google Map key is not set.",
     "noStoresToDisplay": "No stores to display.",
-    "mapInitFailed": "Failed to initialize Naver Map object.",
+    "mapInitFailed": "Failed to initialize Google Map object.",
     "noCoordinates": "No coordinates to display.",
     "loadMapError": "An error occurred while loading the map.",
     "initFailed": "Failed to initialize map",
@@ -540,7 +526,9 @@
     "communityInfo": "Place Info",
     "phoneNumber": "Phone",
     "openingHoursLabel": "Hours",
-    "menuTypesLabel": "Menu Types"
+    "menuTypesLabel": "Menu Types",
+    "googlePlaceRatingNotSupported": "Rating is not supported for Google search places",
+    "selectSuccess": "Place selected. Leave a rating after your visit!"
   },
   "validation": {
     "required": "This field is required.",
@@ -710,7 +698,7 @@
     "searchResults": "{{menuName}} search results ({{count}} items)",
     "searchResultsTitle": "{{menuName}} search results",
     "close": "Close",
-    "viewMoreOnNaverMap": "View more results on Naver Map",
+    "viewMoreOnGoogleMap": "View more results on Google Map",
     "viewMap": "View Map",
     "viewSite": "View Site",
     "nearbyResults": "Nearby Restaurant Search Results",
@@ -733,7 +721,7 @@
     "aiRecommendation": "AI Recommendations",
     "close": "Close",
     "exploreOptions": "How would you like to explore {{menuName}}?",
-    "normalSearch": "Normal Search (Naver)",
+    "normalSearch": "Normal Search",
     "aiRecommendGet": "Get AI Recommendations",
     "noLocationWarning": "No location data. Please register your address to search restaurants.",
     "needsAddressForAi": "Address or location data is required to use AI recommendations.",
@@ -991,6 +979,26 @@
       "buttonProposal": "Get Proposal"
     }
   },
+  "rating": {
+    "placeRatingHistory": "Place Selection History",
+    "goToRate": "Rate Now",
+    "dismiss": "Skip",
+    "neverShowAgain": "Don't show again",
+    "statusRated": "Rated",
+    "statusSkipped": "Didn't visit",
+    "statusPending": "Pending",
+    "noHistory": "No place selection history",
+    "promptMessage": "How was your visit?",
+    "promptTitle": " — Did you visit?",
+    "didNotVisit": "Didn't visit",
+    "submit": "Submit",
+    "submitSuccess": "Rating submitted successfully",
+    "skipSuccess": "Marked as not visited",
+    "page": "Page",
+    "of": "/",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "admin": {
     "userPlaces": {
       "title": "User Place Management",
@@ -1021,5 +1029,48 @@
         "rejected": "Place has been rejected."
       }
     }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "prev": "Back",
+    "getStarted": "Get Started",
+    "step1": {
+      "title": "Welcome to PickEat!",
+      "subtitle": "AI recommends what to eat today",
+      "description": "Tell us your situation and AI will find the perfect menu and restaurants"
+    },
+    "step2": {
+      "title": "What We Offer",
+      "feature1Title": "AI Personalized Recommendations",
+      "feature1Desc": "AI picks menus that match your situation and taste",
+      "feature2Title": "Nearby Restaurant Discovery",
+      "feature2Desc": "Instantly find restaurants serving your recommended menu",
+      "feature3Title": "Taste Learning",
+      "feature3Desc": "The more you use it, the more accurate recommendations become"
+    },
+    "step3": {
+      "title": "How to Use",
+      "step1Title": "Set Your Address",
+      "step1Desc": "Register your address to find nearby restaurants",
+      "step2Title": "Enter Preferences",
+      "step2Desc": "Tell us what you like and dislike",
+      "step3Title": "Get AI Recommendations",
+      "step3Desc": "Tell us your situation and AI will recommend menus"
+    },
+    "step4": {
+      "title": "Initial Setup",
+      "subtitle": "Set up for better recommendations",
+      "skipNote": "You can also set this up later in My Page",
+      "alreadySetupTitle": "Setup Complete",
+      "alreadySetupDesc": "Your address and preferences are already registered."
+    },
+    "step5": {
+      "title": "All Set!",
+      "subtitle": "Start using PickEat now",
+      "description": "AI is ready to recommend menus just for you"
+    },
+    "guide": "User Guide",
+    "stepIndicator": "{{current}} / {{total}}"
   }
 }

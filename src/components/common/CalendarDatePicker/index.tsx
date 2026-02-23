@@ -8,7 +8,7 @@
  * - Month navigation with previous/next buttons
  * - Highlight today's date with orange border
  * - Selected date with orange gradient background
- * - Dark theme (slate-900 background, orange-500 accent)
+ * - White/orange theme (bg-bg-surface background, orange-500 accent)
  * - Min/max date range support
  * - Keyboard navigation (Escape to close)
  * - Responsive design
@@ -130,14 +130,14 @@ export function CalendarDatePicker({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm ${
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
       }`}
       onClick={handleBackdropClick}
     >
       {/* Bottom sheet content */}
       <div
-        className={`w-full max-w-lg rounded-t-[28px] border-t border-white/10 bg-slate-900/95 pb-safe shadow-2xl backdrop-blur-xl ${
+        className={`w-full max-w-lg rounded-t-[28px] border-t border-border-default bg-bg-surface pb-safe shadow-2xl ${
           isAnimating
             ? 'animate-slide-up-enter opacity-100'
             : 'animate-slide-down-exit opacity-0'
@@ -153,7 +153,7 @@ export function CalendarDatePicker({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] min-w-[60px] text-sm font-medium text-slate-400 transition-all hover:scale-105 hover:text-slate-200 active:scale-95"
+            className="min-h-[44px] min-w-[60px] text-sm font-medium text-text-tertiary transition-all hover:scale-105 hover:text-text-secondary active:scale-95"
           >
             Close
           </button>
@@ -161,7 +161,7 @@ export function CalendarDatePicker({
           <button
             type="button"
             onClick={handleToday}
-            className="min-h-[44px] min-w-[60px] text-sm font-semibold text-orange-400 transition-all hover:scale-105 hover:text-orange-300 active:scale-95"
+            className="min-h-[44px] min-w-[60px] text-sm font-semibold text-brand-primary transition-all hover:scale-105 hover:text-brand-secondary active:scale-95"
           >
             Today
           </button>

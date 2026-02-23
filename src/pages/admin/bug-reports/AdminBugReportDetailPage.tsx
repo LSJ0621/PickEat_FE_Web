@@ -92,10 +92,10 @@ export function AdminBugReportDetailPage() {
 
   const getStatusColor = (status: BugReportStatus): string => {
     const colors: Record<BugReportStatus, string> = {
-      UNCONFIRMED: 'text-yellow-400 bg-yellow-500/20',
-      CONFIRMED: 'text-orange-400 bg-orange-500/20',
-      FIXED: 'text-blue-400 bg-blue-500/20',
-      CLOSED: 'text-green-400 bg-green-500/20',
+      UNCONFIRMED: 'text-amber-700 bg-amber-500/20',
+      CONFIRMED: 'text-orange-700 bg-orange-500/20',
+      FIXED: 'text-blue-700 bg-blue-500/20',
+      CLOSED: 'text-green-700 bg-green-500/20',
     };
     return colors[status];
   };
@@ -115,7 +115,7 @@ export function AdminBugReportDetailPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
+    <div className="relative flex min-h-screen items-start justify-center bg-bg-primary px-4 pt-20 pb-10 text-text-primary">
       <AdminPageBackground />
 
       <div className="relative z-10 w-full max-w-5xl">
@@ -123,29 +123,29 @@ export function AdminBugReportDetailPage() {
         <div className="mb-6 flex items-center gap-4">
           <button
             onClick={() => navigate('/admin/bug-reports')}
-            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-secondary transition hover:bg-bg-hover"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             목록으로
           </button>
-          <h1 className="text-3xl font-bold text-white">버그 리포트 상세</h1>
+          <h1 className="text-3xl font-bold text-text-primary">버그 리포트 상세</h1>
         </div>
 
         {loading && (
           <div className="flex items-center justify-center py-16">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-pink-500" />
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-brand-primary" />
           </div>
         )}
 
         {!loading && bugReport && (
           <div className="space-y-6">
             {/* 기본 정보 카드 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
+            <div className="rounded-lg border border-border-default bg-bg-surface p-6 shadow-sm">
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
+                  <span className="rounded-full border border-border-default bg-bg-secondary px-3 py-1 text-xs font-medium text-text-secondary">
                     {t(`bugReport.categories.${bugReport.category.toLowerCase()}`)}
                   </span>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(bugReport.status)}`}>
@@ -154,11 +154,11 @@ export function AdminBugReportDetailPage() {
                 </div>
               </div>
 
-              <h2 className="mb-4 text-2xl font-bold text-white">{bugReport.title}</h2>
+              <h2 className="mb-4 text-2xl font-bold text-text-primary">{bugReport.title}</h2>
 
               <div className="mb-4">
-                <h3 className="mb-2 text-sm font-semibold text-slate-100">상세 내용</h3>
-                <p className="whitespace-pre-wrap rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-sm text-slate-300">
+                <h3 className="mb-2 text-sm font-semibold text-text-primary">상세 내용</h3>
+                <p className="whitespace-pre-wrap rounded-lg border border-border-default bg-bg-secondary p-4 text-sm text-text-secondary">
                   {bugReport.description}
                 </p>
               </div>
@@ -169,36 +169,36 @@ export function AdminBugReportDetailPage() {
             </div>
 
             {/* 작성자 정보 카드 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">작성자 정보</h3>
+            <div className="rounded-lg border border-border-default bg-bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold text-text-primary">작성자 정보</h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">사용자 ID</span>
+                  <span className="text-text-tertiary">사용자 ID</span>
                   <button
                     onClick={() => navigate(`/admin/users/${bugReport.user.id}`)}
-                    className="text-pink-400 transition hover:text-pink-300 hover:underline"
+                    className="text-brand-primary transition hover:text-orange-600 hover:underline"
                   >
                     {bugReport.user.id}
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">이메일</span>
-                  <span className="text-slate-300">{bugReport.user.email}</span>
+                  <span className="text-text-tertiary">이메일</span>
+                  <span className="text-text-secondary">{bugReport.user.email}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">이름</span>
-                  <span className="text-slate-300">{bugReport.user.name || 'N/A'}</span>
+                  <span className="text-text-tertiary">이름</span>
+                  <span className="text-text-secondary">{bugReport.user.name || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">가입일</span>
-                  <span className="text-slate-300">{formatDate(bugReport.user.createdAt)}</span>
+                  <span className="text-text-tertiary">가입일</span>
+                  <span className="text-text-secondary">{formatDate(bugReport.user.createdAt)}</span>
                 </div>
               </div>
             </div>
 
             {/* 상태 변경 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">상태 변경</h3>
+            <div className="rounded-lg border border-border-default bg-bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold text-text-primary">상태 변경</h3>
               <div className="flex flex-wrap gap-3">
                 {(['UNCONFIRMED', 'CONFIRMED', 'FIXED', 'CLOSED'] as BugReportStatus[]).map((status) => (
                   <button
@@ -208,7 +208,7 @@ export function AdminBugReportDetailPage() {
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                       bugReport.status === status
                         ? `${getStatusColor(status)} cursor-not-allowed`
-                        : 'border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        : 'border border-border-default bg-bg-secondary text-text-secondary hover:bg-bg-hover'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {getStatusLabel(status)}
@@ -218,16 +218,16 @@ export function AdminBugReportDetailPage() {
             </div>
 
             {/* 메타 정보 */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6">
-              <h3 className="mb-4 text-sm font-semibold text-slate-100">메타 정보</h3>
+            <div className="rounded-lg border border-border-default bg-bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold text-text-primary">메타 정보</h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">생성일</span>
-                  <span className="text-slate-300">{formatDate(bugReport.createdAt)}</span>
+                  <span className="text-text-tertiary">생성일</span>
+                  <span className="text-text-secondary">{formatDate(bugReport.createdAt)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">수정일</span>
-                  <span className="text-slate-300">{formatDate(bugReport.updatedAt)}</span>
+                  <span className="text-text-tertiary">수정일</span>
+                  <span className="text-text-secondary">{formatDate(bugReport.updatedAt)}</span>
                 </div>
               </div>
             </div>

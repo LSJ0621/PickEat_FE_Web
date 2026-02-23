@@ -28,21 +28,19 @@ export const ENDPOINTS = {
   // 메뉴 관련
   MENU: {
     RECOMMEND: `${API_BASE}/menu/recommend`,
+    RECOMMEND_STREAM: `${API_BASE}/menu/recommend/stream`,
     RECOMMEND_PLACES: `${API_BASE}/menu/recommend/places`,
     RECOMMEND_PLACES_V2: `${API_BASE}/menu/recommend/places/v2`,
     RECOMMEND_PLACES_SEARCH: `${API_BASE}/menu/recommend/places/search`,
     RECOMMEND_PLACES_COMMUNITY: `${API_BASE}/menu/recommend/places/community`,
+    PLACES_SEARCH_STREAM: `${API_BASE}/menu/recommend/places/search/stream`,
+    PLACES_COMMUNITY_STREAM: `${API_BASE}/menu/recommend/places/community/stream`,
     RESTAURANT_BLOGS: `${API_BASE}/menu/restaurant/blogs`,
     RECOMMENDATION_DETAIL: (id: number | string) => `${API_BASE}/menu/recommendations/${id}`,
     PLACE_DETAIL: (placeId: string) => `${API_BASE}/menu/places/${placeId}/detail`,
     SELECTIONS: `${API_BASE}/menu/selections`,
     SELECTIONS_HISTORY: `${API_BASE}/menu/selections/history`,
     SELECTION_UPDATE: (id: number) => `${API_BASE}/menu/selections/${id}`,
-  },
-  
-  // 검색 관련
-  SEARCH: {
-    RESTAURANTS: `${API_BASE}/search/restaurants`,
   },
   
   // 유저 관련
@@ -91,6 +89,16 @@ export const ENDPOINTS = {
       ADMINS: `${API_BASE}/admin/settings/admins`,
       ADMIN_DETAIL: (id: number | string) => `${API_BASE}/admin/settings/admins/${id}`,
     },
+  },
+
+  // 평점 관련
+  RATING: {
+    SELECT: `${API_BASE}/ratings/select`,
+    PENDING: `${API_BASE}/ratings/pending`,
+    SUBMIT: `${API_BASE}/ratings/submit`,
+    SKIP: `${API_BASE}/ratings/skip`,
+    HISTORY: `${API_BASE}/ratings/history`,
+    DISMISS: `${API_BASE}/ratings/dismiss`,
   },
 
   // 유저 맛집 관련

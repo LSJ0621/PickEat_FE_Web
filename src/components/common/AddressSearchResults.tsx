@@ -26,16 +26,16 @@ export const AddressSearchResults = ({
   const { t } = useTranslation();
   if (searchResults.length > 0) {
     return (
-      <div data-testid="address-search-results" className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4`}>
+      <div data-testid="address-search-results" className={`${maxHeight} space-y-2 overflow-y-auto rounded-xl border border-border-default bg-bg-secondary p-4`}>
         {searchResults.map((address) => (
           <button
             key={`${address.latitude}-${address.longitude}`}
             onClick={() => onSelectAddress(address)}
-            className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-left text-sm text-white transition hover:bg-white/10"
+            className="w-full rounded-lg border border-border-default bg-bg-surface p-3 text-left text-sm text-text-primary transition hover:bg-bg-hover"
           >
             <p className="font-medium">{address.roadAddress || address.address}</p>
             {address.roadAddress && (
-              <p className="mt-1 text-xs text-slate-400">{address.address}</p>
+              <p className="mt-1 text-xs text-text-tertiary">{address.address}</p>
             )}
           </button>
         ))}
@@ -44,9 +44,8 @@ export const AddressSearchResults = ({
   }
 
   if (!isSearching && hasSearchedAddress && searchResults.length === 0) {
-    return <p className="text-sm text-slate-400">{emptyMessage || t('setup.address.notFound')}</p>;
+    return <p className="text-sm text-text-tertiary">{emptyMessage || t('setup.address.notFound')}</p>;
   }
 
   return null;
 };
-

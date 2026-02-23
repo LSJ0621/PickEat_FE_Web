@@ -6,6 +6,7 @@ import { authService } from '@/api/services/auth';
 import { userService } from '@/api/services/user';
 import { extractErrorMessage } from '@/utils/error';
 import { decodeJwt } from '@/utils/jwt';
+import { STORAGE_KEYS } from '@/utils/constants';
 import type { User } from '@/types/auth';
 import type { Language } from '@/types/common';
 import type { PayloadAction } from '@reduxjs/toolkit';
@@ -23,7 +24,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  isAuthenticated: !!localStorage.getItem('token'),
+  isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.TOKEN),
   loading: false,
   error: null,
   language: 'ko',
@@ -85,15 +86,15 @@ const normalizeUserPartial = (user: Partial<User>): Partial<User> => {
 export const initializeAuth = createAsyncThunk(
   'auth/initialize',
   async (_, { rejectWithValue }) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     if (!token) {
       return null;
     }
 
     // JWT 토큰에서 role 추출
     const decodedToken = decodeJwt(token);
-    if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
-      localStorage.removeItem('token');
+    if (!decodedToken) {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
       return null;
     }
 
@@ -118,7 +119,7 @@ export const initializeAuth = createAsyncThunk(
         return { user: normalizeUser(mergedUser) };
       }
     } catch (error: unknown) {
-      localStorage.removeItem('token');
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
       return rejectWithValue(extractErrorMessage(error, '알 수 없는 오류가 발생했습니다.'));
     }
   }
@@ -136,7 +137,7 @@ const authSlice = createSlice({
       };
       state.user = normalizeUser(userWithRole);
       state.isAuthenticated = true;
-      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem(STORAGE_KEYS.TOKEN, action.payload.token);
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
@@ -147,7 +148,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;

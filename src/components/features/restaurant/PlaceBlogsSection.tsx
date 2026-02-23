@@ -26,25 +26,21 @@ export const PlaceBlogsSection = ({ placeName, searchName, searchAddress }: Plac
   const prevUserAddressRef = useRef<string | null | undefined>(null);
   const currentExecutionIdRef = useRef<number | null>(null);
 
-  // 블로그 검색
   useEffect(() => {
     const name = placeName?.trim();
     const address = userAddress?.trim();
 
-    if (!name) {
-      return;
-    }
+    if (!name) return;
 
-    // StrictMode 대응: placeName과 userAddress가 변경되지 않았으면 스킵
-    if (prevPlaceNameRef.current === placeName && prevUserAddressRef.current === userAddress) {
-      return;
-    }
+    if (prevPlaceNameRef.current === placeName && prevUserAddressRef.current === userAddress) return;
     prevPlaceNameRef.current = placeName;
     prevUserAddressRef.current = userAddress;
 
-    const query = (searchAddress || address) ? `${searchAddress || address} ${searchName || name}` : (searchName || name);
+    const query =
+      searchAddress || address
+        ? `${searchAddress || address} ${searchName || name}`
+        : searchName || name;
 
-    // 이 실행의 고유 ID
     const executionId = Date.now();
     currentExecutionIdRef.current = executionId;
 
@@ -62,21 +58,15 @@ export const PlaceBlogsSection = ({ placeName, searchName, searchAddress }: Plac
           searchName || undefined,
           searchAddress || undefined
         );
-        
-        // 새로운 실행이 시작되었는지 확인
-        if (currentExecutionIdRef.current !== executionId) {
-          return;
-        }
+
+        if (currentExecutionIdRef.current !== executionId) return;
 
         startTransition(() => {
           setBlogs(response.blogs ?? []);
           setBlogsLoading(false);
         });
       } catch (error) {
-        // 새로운 실행이 시작되었는지 확인
-        if (currentExecutionIdRef.current !== executionId) {
-          return;
-        }
+        if (currentExecutionIdRef.current !== executionId) return;
 
         startTransition(() => {
           setBlogsError(extractErrorMessage(error, t('place.blogSearchFailed')));
@@ -90,62 +80,60 @@ export const PlaceBlogsSection = ({ placeName, searchName, searchAddress }: Plac
     return () => {
       // cleanup에서는 currentExecutionIdRef를 변경하지 않음
     };
-  }, [placeName, userAddress, searchName, searchAddress]);
+  }, [placeName, userAddress, searchName, searchAddress, t]);
 
-  if (!placeName) {
-    return null;
-  }
+  if (!placeName) return null;
 
   return (
-    <div>
-      <h4 className="mb-3 text-sm font-semibold text-slate-100">{t('place.blogsTitle')}</h4>
-      <p className="mb-4 text-xs text-slate-400">
-        {t('place.blogsDescription', { placeName })}
-      </p>
+    <div className="space-y-3">
+      <div>
+        <h4 className="text-sm font-semibold text-text-primary">{t('place.blogsTitle')}</h4>
+        <p className="mt-1 text-xs text-text-tertiary">{t('place.blogsDescription', { placeName })}</p>
+      </div>
 
       {blogsLoading && (
         <div className="flex justify-center py-6">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
+          <div className="inline-block h-7 w-7 animate-spin rounded-full border-b-2 border-orange-500" />
         </div>
       )}
 
-      {!blogsLoading && blogsError && (
-        <p className="text-xs text-rose-300">{blogsError}</p>
-      )}
+      {!blogsLoading && blogsError && <p className="text-xs text-rose-300">{blogsError}</p>}
 
       {!blogsLoading && !blogsError && blogs.length === 0 && (
-        <p className="text-xs text-slate-400">{t('place.noBlogsFound')}</p>
+        <p className="text-xs text-text-tertiary">{t('place.noBlogsFound')}</p>
       )}
 
       {!blogsLoading && !blogsError && blogs.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {blogs.map((blog, index) => (
             <a
               key={`${blog.url ?? index}`}
               href={blog.url ?? undefined}
               target="_blank"
               rel="noreferrer"
-              className="flex gap-3 rounded-xl border border-white/10 bg-slate-900/80 p-3 text-left text-sm text-slate-100 transition hover:border-orange-400/60 hover:bg-slate-800/80"
+              className="flex gap-3 rounded-xl border border-border-default bg-bg-surface p-3 text-left text-sm text-text-primary transition-all duration-150 hover:border-brand-primary/40 hover:bg-bg-hover hover:shadow-sm"
             >
               {blog.thumbnailUrl && (
-                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-800">
+                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-bg-tertiary">
                   <img
                     src={blog.thumbnailUrl}
                     alt={blog.title ?? placeName}
                     className="h-full w-full object-cover"
                     loading="lazy"
+                    width={80}
+                    height={80}
                   />
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-1 text-xs font-medium text-slate-300">
+                <p className="line-clamp-1 text-xs font-medium text-text-secondary">
                   {blog.source ?? t('place.blogWebDoc')}
                 </p>
-                <p className="mt-0.5 line-clamp-2 text-sm font-semibold text-slate-50">
+                <p className="mt-0.5 line-clamp-2 text-sm font-semibold text-text-primary">
                   {blog.title ?? t('place.noTitle')}
                 </p>
                 {blog.snippet && (
-                  <p className="mt-1 line-clamp-2 text-xs text-slate-400">{blog.snippet}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-text-tertiary">{blog.snippet}</p>
                 )}
               </div>
             </a>
@@ -155,4 +143,3 @@ export const PlaceBlogsSection = ({ placeName, searchName, searchAddress }: Plac
     </div>
   );
 };
-

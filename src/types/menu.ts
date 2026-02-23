@@ -34,6 +34,7 @@ export interface PlaceRecommendationItem {
   menuName?: string;
   source?: 'GOOGLE' | 'USER' | 'GEMINI'; // 추천 소스 (구글 검색 / 유저 등록 가게 / Gemini AI)
   userPlaceId?: number; // UserPlace ID (source가 USER일 때만 존재)
+  reasonTags?: string[];
   // Multilingual support
   localizedName?: string; // UI 표시용 (사용자 언어)
   localizedAddress?: string; // UI 표시용 (사용자 언어)

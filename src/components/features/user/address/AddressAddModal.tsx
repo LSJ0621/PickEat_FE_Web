@@ -5,7 +5,10 @@ import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { AddressSearchResult, SelectedAddress, UserAddress } from '@/types/user';
 import { createPortal } from 'react-dom';
-import { useEffect, useState } from 'react';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useEscapeKey } from '@/hooks/common/useEscapeKey';
+import { Z_INDEX } from '@/utils/constants';
 
 interface AddressAddModalProps {
   open: boolean;
@@ -45,53 +48,50 @@ export const AddressAddModal = ({
   onClearSelection,
 }: AddressAddModalProps) => {
   const { t } = useTranslation();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
+  const { isAnimating, shouldRender } = useModalAnimation(open);
+  useModalScrollLock(open);
 
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
+  useEscapeKey(onClose, open);
 
-  if (!shouldRender) {
-    return null;
-  }
+  if (!shouldRender) return null;
 
   const handleAddAddress = async () => {
     const success = await onAddAddress();
-    if (success) {
-      onClose();
-    }
+    if (success) onClose();
   };
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="address-add-title"
+      className={[
+        'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
+        'items-end sm:items-center',
+        `z-[${Z_INDEX.MODAL_BACKDROP}]`,
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+      ].join(' ')}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div 
-        className={`relative w-full max-w-xl rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+      <div
+        className={[
+          'relative w-full max-w-xl mx-auto bg-bg-surface border border-border-default shadow-2xl',
+          'rounded-t-2xl sm:rounded-2xl',
+          'p-6 sm:p-8',
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+        ].join(' ')}
       >
         <ModalCloseButton onClose={onClose} />
-        <h2 className="mb-6 text-2xl font-bold text-white">{t('user.address.add')}</h2>
-        <p className="mb-4 text-sm text-slate-400">
-          {t('user.address.addModalDescription', { current: addresses.length, remaining: Math.max(0, 4 - addresses.length) })}
+        <h2 id="address-add-title" className="mb-2 text-2xl font-bold text-text-primary">
+          {t('user.address.add')}
+        </h2>
+        <p className="mb-6 text-sm text-text-tertiary">
+          {t('user.address.addModalDescription', {
+            current: addresses.length,
+            remaining: Math.max(0, 4 - addresses.length),
+          })}
           <br />
-          <span className="text-xs text-slate-500">{t('user.address.addModalNote')}</span>
+          <span className="text-xs text-text-placeholder">{t('user.address.addModalNote')}</span>
         </p>
 
         <div className="space-y-4">
@@ -110,16 +110,15 @@ export const AddressAddModal = ({
             maxHeight="max-h-60"
           />
 
-          {/* 선택한 주소 */}
           {selectedAddress && (
-            <div data-testid="selected-address" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <div data-testid="selected-address" className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
               <div className="mb-3">
-                <p className="text-xs text-emerald-200">{t('user.address.selected')}</p>
-                <p className="mt-1 text-white font-medium">
+                <p className="text-xs font-medium text-emerald-300">{t('user.address.selected')}</p>
+                <p className="mt-1 text-sm font-medium text-text-primary">
                   {selectedAddress.roadAddress || selectedAddress.address}
                 </p>
                 {selectedAddress.roadAddress && (
-                  <p className="mt-1 text-xs text-slate-400">{selectedAddress.address}</p>
+                  <p className="mt-0.5 text-xs text-text-tertiary">{selectedAddress.address}</p>
                 )}
               </div>
               <input
@@ -128,11 +127,11 @@ export const AddressAddModal = ({
                 onChange={(e) => onAddressAliasChange(e.target.value)}
                 placeholder={t('user.address.aliasPlaceholder')}
                 maxLength={20}
-                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                className="w-full rounded-xl border border-border-default bg-bg-secondary px-3 py-2 text-sm text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
               />
               <button
                 onClick={onClearSelection}
-                className="mt-2 text-xs text-red-400 hover:text-red-300"
+                className="mt-2 text-xs text-red-400 transition hover:text-red-300"
               >
                 {t('user.address.clearSelection')}
               </button>
@@ -145,7 +144,7 @@ export const AddressAddModal = ({
               variant="ghost"
               size="lg"
               disabled={isSaving}
-              className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+              className="flex-1 border border-border-default bg-bg-secondary text-text-primary hover:bg-bg-hover"
             >
               {t('common.cancel')}
             </Button>
@@ -153,7 +152,7 @@ export const AddressAddModal = ({
               onClick={handleAddAddress}
               isLoading={isSaving}
               disabled={!selectedAddress || addresses.length >= 4}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+              className="flex-1 bg-gradient-to-r from-brand-primary to-rose-500 text-text-inverse shadow-md shadow-brand-primary/30"
               size="lg"
               data-testid="address-add-submit"
             >
@@ -166,4 +165,3 @@ export const AddressAddModal = ({
     document.body
   );
 };
-

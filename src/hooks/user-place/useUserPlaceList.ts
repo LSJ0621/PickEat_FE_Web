@@ -6,6 +6,7 @@
 import { userPlaceService } from '@/api/services/user-place';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import type { UserPlace, UserPlaceStatus } from '@/types/user-place';
+import { extractErrorMessage } from '@/utils/error';
 import { useCallback, useEffect, useState } from 'react';
 
 export const useUserPlaceList = () => {
@@ -18,10 +19,12 @@ export const useUserPlaceList = () => {
   const [status, setStatus] = useState<UserPlaceStatus | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // 목록 로드
   const loadPlaces = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const result = await userPlaceService.getUserPlaces({
         page,
@@ -32,8 +35,10 @@ export const useUserPlaceList = () => {
       setPlaces(result.items);
       setTotal(result.total);
       setTotalPages(result.totalPages);
-    } catch (error: unknown) {
-      handleError(error, 'useUserPlaceList');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, '장소 목록을 불러오지 못했습니다');
+      setError(message);
+      handleError(err, 'useUserPlaceList');
     } finally {
       setIsLoading(false);
     }
@@ -41,10 +46,7 @@ export const useUserPlaceList = () => {
 
   // 페이지/필터 변경 시 재로드
   useEffect(() => {
-    loadPlaces().catch((error) => {
-      // 이미 hook에서 처리되지만 디버깅을 위해 로깅
-      console.error('Failed to load user places:', error);
-    });
+    void loadPlaces();
   }, [loadPlaces]);
 
   // 페이지 변경
@@ -66,9 +68,7 @@ export const useUserPlaceList = () => {
 
   // 목록 새로고침
   const refreshList = useCallback(() => {
-    loadPlaces().catch((error) => {
-      console.error('Failed to refresh user places:', error);
-    });
+    void loadPlaces();
   }, [loadPlaces]);
 
   return {
@@ -82,6 +82,7 @@ export const useUserPlaceList = () => {
     status,
     search,
     isLoading,
+    error,
     // 함수
     handlePageChange,
     handleStatusFilter,

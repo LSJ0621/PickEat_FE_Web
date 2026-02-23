@@ -1,55 +1,57 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
+import { formatBirthDate } from '@/utils/format';
 
 interface ProfileSectionProps {
-  birthYear?: number | null;
+  birthDate?: string | null;
   gender?: 'male' | 'female' | 'other' | null;
   onEditClick: () => void;
 }
 
+const getGenderLabel = (t: (key: string) => string, gender?: 'male' | 'female' | 'other' | null): string => {
+  if (!gender) return t('user.profile.notSet');
+  const map: Record<string, string> = {
+    male: t('user.profile.genderMale'),
+    female: t('user.profile.genderFemale'),
+    other: t('user.profile.genderOther'),
+  };
+  return map[gender] ?? t('user.profile.notSet');
+};
+
 export const ProfileSection = ({
-  birthYear,
+  birthDate,
   gender,
   onEditClick,
 }: ProfileSectionProps) => {
-  const { t } = useTranslation();
-
-  const getGenderLabel = (gender?: 'male' | 'female' | 'other' | null): string => {
-    if (!gender) return t('user.profile.notSet');
-    switch (gender) {
-      case 'male':
-        return t('user.profile.genderMale');
-      case 'female':
-        return t('user.profile.genderFemale');
-      case 'other':
-        return t('user.profile.genderOther');
-      default:
-        return t('user.profile.notSet');
-    }
-  };
+  const { t, i18n } = useTranslation();
 
   return (
-    <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
-      <div className="flex items-start justify-between">
+    <div className="rounded-[32px] border border-border-default bg-bg-surface p-6 shadow-2xl shadow-black/10">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
-          <p className="text-sm text-slate-400">{t('user.profile.title')}</p>
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">{t('user.profile.birthYear')}:</span>
-              <span className="text-sm text-slate-200">
-                {birthYear ? `${birthYear}년` : t('user.profile.notSet')}
-              </span>
+          <p className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
+            {t('user.profile.title')}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="rounded-xl bg-bg-secondary px-4 py-3">
+              <p className="text-xs text-text-tertiary">{t('user.profile.birthDate')}</p>
+              <p className="mt-1 text-sm font-semibold text-text-primary">
+                {birthDate ? formatBirthDate(birthDate, i18n.language) : t('user.profile.notSet')}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">{t('user.profile.gender')}:</span>
-              <span className="text-sm text-slate-200">{getGenderLabel(gender)}</span>
+            <div className="rounded-xl bg-bg-secondary px-4 py-3">
+              <p className="text-xs text-text-tertiary">{t('user.profile.gender')}</p>
+              <p className="mt-1 text-sm font-semibold text-text-primary">
+                {getGenderLabel(t, gender)}
+              </p>
             </div>
           </div>
         </div>
         <Button
           size="sm"
-          className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
+          className="shrink-0 bg-gradient-to-r from-brand-primary to-rose-500 px-5 text-text-inverse shadow-md shadow-brand-primary/30"
           onClick={onEditClick}
+          aria-label={t('user.profile.edit')}
         >
           {t('user.profile.edit')}
         </Button>

@@ -14,7 +14,7 @@ interface AdminListProps {
 export function AdminList({ admins, currentUserId, onRemove }: AdminListProps) {
   if (admins.length === 0) {
     return (
-      <div className="text-center py-8 text-slate-400">등록된 관리자가 없습니다.</div>
+      <div className="text-center py-8 text-text-tertiary">등록된 관리자가 없습니다.</div>
     );
   }
 

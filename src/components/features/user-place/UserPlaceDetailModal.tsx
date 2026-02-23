@@ -1,13 +1,19 @@
 /**
  * User Place 상세 정보 모달
+ * 모바일: Bottom Sheet / 데스크탑: Dialog
  */
 
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
+import { Badge } from '@/components/ui/badge';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
 import type { UserPlace } from '@/types/user-place';
+import { Z_INDEX } from '@/utils/constants';
+import { MapPin, Phone, Tag, Clock, Image } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
 import { UserPlaceStatusBadge } from './UserPlaceStatusBadge';
 
 interface UserPlaceDetailModalProps {
@@ -26,101 +32,116 @@ export function UserPlaceDetailModal({
   onDelete,
 }: UserPlaceDetailModalProps) {
   const { t } = useTranslation();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
+  const { isAnimating, shouldRender } = useModalAnimation(open && !!place);
+  useModalScrollLock(open && !!place);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    },
+    [onClose]
+  );
 
   useEffect(() => {
     if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [open]);
+  }, [open, handleKeyDown]);
 
-  if (!shouldRender || !place) {
-    return null;
-  }
+  if (!shouldRender || !place) return null;
 
   const canEdit = place.status === 'PENDING' || place.status === 'REJECTED';
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={place.name}
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
+      className={[
+        'fixed inset-0 flex items-end bg-black/40 backdrop-blur-sm sm:items-center sm:p-4',
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+      ].join(' ')}
+      onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+        style={{ zIndex: Z_INDEX.MODAL_CONTENT }}
+        className={[
+          'relative w-full max-h-[92vh] overflow-y-auto',
+          'rounded-t-2xl border border-border-default bg-bg-surface p-6 shadow-2xl',
+          'sm:mx-auto sm:max-w-2xl sm:rounded-2xl sm:p-8',
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+        ].join(' ')}
+        onClick={(e) => e.stopPropagation()}
       >
         <ModalCloseButton onClose={onClose} />
 
-        <div className="mb-6 pr-12">
-          <div className="mb-3 flex items-start justify-between">
-            <h2 className="text-2xl font-bold text-white">{place.name}</h2>
+        {/* 제목 + 상태 */}
+        <div className="mb-6 pr-10">
+          <div className="mb-2 flex flex-wrap items-start gap-2">
+            <h2 className="text-xl font-bold text-text-primary sm:text-2xl">{place.name}</h2>
             <UserPlaceStatusBadge status={place.status} />
           </div>
         </div>
 
         <div className="space-y-4">
           {/* 주소 */}
-          <div>
-            <h3 className="mb-2 text-sm font-semibold text-slate-400">
-              {t('userPlace.address')}
-            </h3>
-            <p className="text-slate-200">{place.address}</p>
+          <div className="flex items-start gap-2">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+            <div>
+              <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                {t('userPlace.address')}
+              </p>
+              <p className="text-sm text-text-primary">{place.address}</p>
+            </div>
           </div>
 
           {/* 전화번호 */}
           {place.phoneNumber && (
-            <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
-                {t('userPlace.phoneNumber')}
-              </h3>
-              <p className="text-slate-200">{place.phoneNumber}</p>
+            <div className="flex items-start gap-2">
+              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+              <div>
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t('userPlace.phoneNumber')}
+                </p>
+                <p className="text-sm text-text-primary">{place.phoneNumber}</p>
+              </div>
             </div>
           )}
 
           {/* 카테고리 */}
           {place.category && (
-            <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
-                {t('userPlace.category')}
-              </h3>
-              <p className="text-slate-200">{place.category}</p>
+            <div className="flex items-start gap-2">
+              <Tag className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+              <div>
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t('userPlace.category')}
+                </p>
+                <p className="text-sm text-text-primary">{place.category}</p>
+              </div>
             </div>
           )}
 
           {/* 설명 */}
           {place.description && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                 {t('userPlace.description')}
-              </h3>
-              <p className="text-slate-200">{place.description}</p>
+              </p>
+              <p className="text-sm text-text-primary">{place.description}</p>
             </div>
           )}
 
           {/* 메뉴 종류 */}
           {place.menuTypes && place.menuTypes.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                 {t('userPlace.form.menuTypes')}
-              </h3>
+              </p>
               <div className="flex flex-wrap gap-2">
                 {place.menuTypes.map((menu, idx) => (
-                  <span key={idx} className="rounded-full bg-orange-500/20 px-3 py-1 text-sm text-orange-300">
-                    {menu}
-                  </span>
+                  <Badge key={idx} variant="menu">{menu}</Badge>
                 ))}
               </div>
             </div>
@@ -128,27 +149,33 @@ export function UserPlaceDetailModal({
 
           {/* 영업시간 */}
           {place.openingHours && (
-            <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
-                {t('userPlace.form.openingHours')}
-              </h3>
-              <p className="whitespace-pre-line text-slate-200">{place.openingHours}</p>
+            <div className="flex items-start gap-2">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+              <div>
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t('userPlace.form.openingHours')}
+                </p>
+                <p className="whitespace-pre-line text-sm text-text-primary">{place.openingHours}</p>
+              </div>
             </div>
           )}
 
           {/* 사진 갤러리 */}
           {place.photos && place.photos.length > 0 && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-400">
-                {t('userPlace.form.photos')}
-              </h3>
+              <div className="mb-2 flex items-center gap-2">
+                <Image className="h-4 w-4 text-text-tertiary" />
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t('userPlace.form.photos')}
+                </p>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {place.photos.map((photo, idx) => (
                   <img
                     key={idx}
                     src={photo}
                     alt={`${place.name} ${idx + 1}`}
-                    className="h-20 w-full rounded-lg object-cover"
+                    className="h-20 w-full rounded-2xl object-cover"
                   />
                 ))}
               </div>
@@ -157,27 +184,23 @@ export function UserPlaceDetailModal({
 
           {/* 거절 사유 */}
           {place.status === 'REJECTED' && place.rejectionReason && (
-            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-              <h3 className="mb-2 text-sm font-semibold text-red-300">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+              <p className="mb-1 text-sm font-semibold text-red-300">
                 {t('userPlace.rejectionReason')}
-              </h3>
-              <p className="text-red-200">{place.rejectionReason}</p>
+              </p>
+              <p className="text-sm text-red-200">{place.rejectionReason}</p>
             </div>
           )}
 
           {/* 등록일시 */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 border-t border-border-default pt-4 text-xs">
             <div>
-              <h3 className="mb-1 text-slate-400">{t('userPlace.createdAt')}</h3>
-              <p className="text-slate-300">
-                {new Date(place.createdAt).toLocaleString()}
-              </p>
+              <p className="mb-1 text-text-tertiary">{t('userPlace.createdAt')}</p>
+              <p className="text-text-secondary">{new Date(place.createdAt).toLocaleString()}</p>
             </div>
             <div>
-              <h3 className="mb-1 text-slate-400">{t('userPlace.updatedAt')}</h3>
-              <p className="text-slate-300">
-                {new Date(place.updatedAt).toLocaleString()}
-              </p>
+              <p className="mb-1 text-text-tertiary">{t('userPlace.updatedAt')}</p>
+              <p className="text-text-secondary">{new Date(place.updatedAt).toLocaleString()}</p>
             </div>
           </div>
         </div>

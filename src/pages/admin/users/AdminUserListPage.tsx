@@ -118,13 +118,13 @@ export const AdminUserListPage = () => {
   }
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
+    <div className="relative flex min-h-screen items-start justify-center bg-bg-primary px-4 pt-20 pb-10 text-text-primary">
       <AdminPageBackground />
 
       <div className="relative z-10 w-full max-w-6xl">
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-white">사용자 관리</h1>
-          <p className="text-slate-400">등록된 사용자를 확인하고 관리하세요.</p>
+          <h1 className="mb-2 text-3xl font-bold text-text-primary">사용자 관리</h1>
+          <p className="text-text-tertiary">등록된 사용자를 확인하고 관리하세요.</p>
         </div>
 
         {/* 필터 */}
@@ -154,7 +154,7 @@ export const AdminUserListPage = () => {
             {/* 페이지네이션 */}
             {pageInfo.totalCount > 0 && (
               <div className="mt-6 flex items-center justify-between">
-                <div className="text-sm text-slate-400">
+                <div className="text-sm text-text-tertiary">
                   총 {pageInfo.totalCount}개 중 {pageInfo.page * pageInfo.limit - pageInfo.limit + 1}-
                   {Math.min(pageInfo.page * pageInfo.limit, pageInfo.totalCount)}개 표시
                 </div>
@@ -162,17 +162,17 @@ export const AdminUserListPage = () => {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-primary transition hover:bg-bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     이전
                   </button>
-                  <span className="flex items-center px-4 text-sm text-slate-300">
+                  <span className="flex items-center px-4 text-sm text-text-secondary">
                     {page} / {Math.ceil(pageInfo.totalCount / pageInfo.limit)}
                   </span>
                   <button
                     onClick={() => setPage((p) => p + 1)}
                     disabled={!pageInfo.hasNext}
-                    className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-primary transition hover:bg-bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     다음
                   </button>

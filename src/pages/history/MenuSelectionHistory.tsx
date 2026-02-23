@@ -6,6 +6,8 @@ import { menuService } from '@/api/services/menu';
 import { Button } from '@/components/common/Button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { DateFilterPanel } from '@/components/common/DateFilterPanel';
+import { PageContainer } from '@/components/common/PageContainer';
+import { PageHeader } from '@/components/common/PageHeader';
 import { useInitialDataLoad } from '@/hooks/common/useInitialDataLoad';
 import { useDateFilter } from '@/hooks/common/useDateFilter';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -15,6 +17,7 @@ import { formatDateStandard } from '@/utils/format';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { X, Pencil } from 'lucide-react';
 
 export const MenuSelectionHistory = () => {
   const { t } = useTranslation();
@@ -27,32 +30,18 @@ export const MenuSelectionHistory = () => {
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingSelectionId, setEditingSelectionId] = useState<number | null>(null);
   const [editingPayload, setEditingPayload] = useState<MenuPayload | null>(null);
-  const [cancelConfirm, setCancelConfirm] = useState<{ show: boolean; selectionId: number | null }>({
-    show: false,
-    selectionId: null,
-  });
+  const [cancelConfirm, setCancelConfirm] = useState<{ show: boolean; selectionId: number | null }>({ show: false, selectionId: null });
 
-  // Date filter hook
-  const {
-    selectedDate,
-    handleDateChange,
-  } = useDateFilter();
+  const { selectedDate, handleDateChange } = useDateFilter();
 
-  // loadSelections를 useCallback으로 안정화 (다른 곳에서도 사용되므로)
   const loadSelections = useCallback(async () => {
     setLoading(true);
     try {
-      // Single date filter: use selectedDate if set, otherwise fetch all
-      const dateParam = selectedDate || undefined;
-      const result = await menuService.getMenuSelections(dateParam);
-
-      // 취소된 메뉴(status가 CANCELLED이거나, 모든 slot이 비어있는 경우)는 프론트에서 필터링
+      const result = await menuService.getMenuSelections(selectedDate || undefined);
       const filtered = result.selections.filter((s) => {
         const { breakfast, lunch, dinner, etc } = s.menuPayload;
-        const allMenus = [...breakfast, ...lunch, ...dinner, ...etc];
-        return allMenus.some((name) => name.trim() !== '');
+        return [...breakfast, ...lunch, ...dinner, ...etc].some((name) => name.trim() !== '');
       });
-
       setSelections(filtered);
     } catch (error: unknown) {
       handleError(error, 'MenuSelectionHistory');
@@ -61,24 +50,14 @@ export const MenuSelectionHistory = () => {
     }
   }, [selectedDate, handleError]);
 
-  // 인증 확인 및 리다이렉트
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
+    if (!isAuthenticated) { navigate('/login'); }
   }, [isAuthenticated, navigate]);
 
-  // 데이터 로드 (StrictMode 대응)
-  useInitialDataLoad({
-    enabled: isAuthenticated,
-    loadFn: loadSelections,
-    dependencies: [selectedDate],
-  });
+  useInitialDataLoad({ enabled: isAuthenticated, loadFn: loadSelections, dependencies: [selectedDate] });
 
   const handleEdit = (selection: MenuSelection) => {
     setEditingSelectionId(selection.id);
-    // 현재 payload를 편집용으로 복사
     setEditingPayload({
       breakfast: [...selection.menuPayload.breakfast],
       lunch: [...selection.menuPayload.lunch],
@@ -87,60 +66,29 @@ export const MenuSelectionHistory = () => {
     });
   };
 
-  const handleEditCancel = () => {
-    setIsGlobalEditing(false);
-    setEditingSelectionId(null);
-    setEditingPayload(null);
-  };
+  const handleEditCancel = () => { setIsGlobalEditing(false); setEditingSelectionId(null); setEditingPayload(null); };
 
   const handleRemoveMenu = (slot: MenuSlot, index: number) => {
-    setEditingPayload((prev) => {
-      if (!prev) return prev;
-      const updatedSlotMenus = prev[slot].filter((_, i) => i !== index);
-      return {
-        ...prev,
-        [slot]: updatedSlotMenus,
-      };
-    });
+    setEditingPayload((prev) => prev ? { ...prev, [slot]: prev[slot].filter((_, i) => i !== index) } : prev);
   };
 
   const handleSave = async () => {
-    if (!editingSelectionId || !editingPayload) {
-      return;
-    }
-
+    if (!editingSelectionId || !editingPayload) return;
     setIsUpdating(editingSelectionId);
     try {
       const { breakfast, lunch, dinner, etc } = editingPayload;
-
-      // 네 slot을 한 번에 덮어쓰기
-      await menuService.updateMenuSelection(editingSelectionId, {
-        breakfast,
-        lunch,
-        dinner,
-        etc,
-      });
-
+      await menuService.updateMenuSelection(editingSelectionId, { breakfast, lunch, dinner, etc });
       handleSuccess(t('menu.menuSelectionSaved'));
       await loadSelections();
-      setEditingSelectionId(null);
-      setEditingPayload(null);
-      setIsGlobalEditing(false);
+      setEditingSelectionId(null); setEditingPayload(null); setIsGlobalEditing(false);
     } catch (error: unknown) {
       handleError(error, 'MenuSelectionHistory');
-    } finally {
-      setIsUpdating(null);
-    }
-  };
-
-  const handleCancelClick = (selectionId: number) => {
-    setCancelConfirm({ show: true, selectionId });
+    } finally { setIsUpdating(null); }
   };
 
   const handleCancelConfirm = async () => {
     const selectionId = cancelConfirm.selectionId;
     if (!selectionId) return;
-
     setCancelConfirm({ show: false, selectionId: null });
     setIsUpdating(selectionId);
     try {
@@ -149,220 +97,151 @@ export const MenuSelectionHistory = () => {
       await loadSelections();
     } catch (error: unknown) {
       handleError(error, 'MenuSelectionHistory');
-    } finally {
-      setIsUpdating(null);
-    }
+    } finally { setIsUpdating(null); }
   };
 
-  const handleCancelCancel = () => {
-    setCancelConfirm({ show: false, selectionId: null });
-  };
-
-
-  // 날짜별로 그룹핑
-  const groupedSelections = selections.reduce((acc, selection) => {
-    const date = selection.selectedDate;
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(selection);
+  const groupedSelections = selections.reduce((acc, s) => {
+    if (!acc[s.selectedDate]) acc[s.selectedDate] = [];
+    acc[s.selectedDate].push(s);
     return acc;
   }, {} as Record<string, MenuSelection[]>);
 
   const sortedDates = Object.keys(groupedSelections).sort((a, b) => b.localeCompare(a));
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  const slots: { key: MenuSlot; label: string }[] = [
+    { key: 'breakfast', label: t('menu.breakfast') },
+    { key: 'lunch', label: t('menu.lunch') },
+    { key: 'dinner', label: t('menu.dinner') },
+    { key: 'etc', label: t('menu.etc') },
+  ];
+
+  if (!isAuthenticated) return null;
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 right-0 h-[480px] w-[480px] rounded-full bg-gradient-to-br from-orange-400/40 via-rose-400/30 to-purple-500/30 blur-3xl animate-gradient" />
-        <div className="absolute -bottom-52 left-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-500/20 to-transparent blur-3xl animate-gradient" />
-      </div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">{t('menu.selectionHistory')}</h1>
-          <p className="mt-2 text-sm text-slate-400">{t('menu.selectionHistoryDesc')}</p>
-        </div>
-
-        {/* 날짜 필터 + 전체 편집 토글 (같은 행) */}
-        <div className="mb-6 flex items-center justify-between">
-          <DateFilterPanel
-            selectedDate={selectedDate}
-            onDateChange={handleDateChange}
-          />
-
+    <PageContainer>
+      <PageHeader
+        title={t('menu.selectionHistory')}
+        subtitle={t('menu.selectionHistoryDesc')}
+        action={
           <Button
             variant={isGlobalEditing ? 'ghost' : 'primary'}
             size="sm"
             onClick={() => {
-              if (isGlobalEditing) {
-                // 편집 종료
-                setIsGlobalEditing(false);
-                setEditingSelectionId(null);
-                setEditingPayload(null);
-              } else {
-                // 편집 모드 시작
-                setIsGlobalEditing(true);
-              }
+              if (isGlobalEditing) { setIsGlobalEditing(false); setEditingSelectionId(null); setEditingPayload(null); }
+              else setIsGlobalEditing(true);
             }}
-            className={
-              isGlobalEditing
-                ? 'border border-white/20 bg-white/5 px-4 text-xs text-slate-200 hover:bg-white/10'
-                : 'bg-gradient-to-r from-orange-500 to-rose-500 px-4 text-xs text-white shadow-sm shadow-orange-500/40'
-            }
+            className={isGlobalEditing
+              ? 'border border-border-default bg-bg-primary px-4 text-xs text-text-secondary hover:bg-bg-hover'
+              : 'bg-gradient-to-r from-orange-500 to-rose-500 px-4 text-xs text-text-inverse shadow-sm shadow-orange-500/40'}
           >
-            {isGlobalEditing ? t('menu.exitEditMode') : t('menu.editMode')}
+            <span className="flex items-center gap-1.5">
+              {isGlobalEditing ? <X className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+              {isGlobalEditing ? t('menu.exitEditMode') : t('menu.editMode')}
+            </span>
           </Button>
-        </div>
+        }
+      />
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-orange-500" />
-          </div>
-        ) : sortedDates.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl shadow-black/40 backdrop-blur">
-            <p className="text-slate-400">{t('menu.noSelections')}</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {sortedDates.map((date) => {
-              const selectionsForDate = groupedSelections[date];
-              if (!selectionsForDate || selectionsForDate.length === 0) {
-                return null;
-              }
-
-              // 하루에 1개의 Row를 사용한다는 개념에 맞춰, 첫 번째 selection만 사용
-              const selection = selectionsForDate[0];
-              const isEditing = editingSelectionId === selection.id;
-              const slots: { key: MenuSlot; label: string }[] = [
-                { key: 'breakfast', label: t('menu.breakfast') },
-                { key: 'lunch', label: t('menu.lunch') },
-                { key: 'dinner', label: t('menu.dinner') },
-                { key: 'etc', label: t('menu.etc') },
-              ];
-
-              return (
-                <div
-                  key={date}
-                  className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur"
-                >
-                  {/* 상단: 날짜 + (편집/전체취소) 액션 영역 */}
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-white">{formatDateStandard(date)}</h2>
-                    <div className="flex items-center gap-2 text-xs">
-                      {isGlobalEditing && (
-                        <>
-                          {isEditing && (
-                            <button
-                              type="button"
-                              onClick={() => handleCancelClick(selection.id)}
-                              disabled={isUpdating === selection.id}
-                              className="font-medium text-red-400 hover:text-red-300 disabled:opacity-60"
-                            >
-                              {t('menu.cancelAll')}
-                            </button>
-                          )}
-                          {!isEditing && (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleEdit(selection)}
-                              disabled={isUpdating === selection.id}
-                              className="bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-sm shadow-orange-500/40"
-                            >
-                              {t('menu.modify')}
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 슬롯별 메뉴 내역 */}
-                  <div className="space-y-3">
-                    {slots.map(({ key, label }) => {
-                      const basePayload = isEditing && editingPayload ? editingPayload : selection.menuPayload;
-                      const menus = basePayload[key];
-                      if (!menus || menus.length === 0) return null;
-
-                      return (
-                        <div key={key} className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <p className="mb-1 text-sm font-medium text-slate-200">{label}</p>
-                            <div className="flex flex-wrap gap-2 pt-0.5">
-                              {menus.map((menuName, idx) => (
-                                <span
-                                  key={idx}
-                                  className="inline-flex items-center gap-1 rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1.5 text-sm font-medium text-orange-50"
-                                >
-                                  <span>{menuName}</span>
-                                  {isEditing && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveMenu(key, idx)}
-                                      className="ml-1 text-[11px] text-orange-100/80 hover:text-white"
-                                      aria-label={t('menu.deleteMenu')}
-                                    >
-                                      ✕
-                                    </button>
-                                  )}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* 하단: 저장 / 취소 버튼 (편집 중일 때만) */}
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    {isEditing && (
-                      <>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleSave}
-                          isLoading={isUpdating === selection.id}
-                          className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-white shadow-sm shadow-emerald-500/40"
-                        >
-                          {t('common.save')}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleEditCancel}
-                          disabled={isUpdating === selection.id}
-                          className="border border-white/20 bg-white/5 px-4 text-xs text-slate-200 hover:bg-white/10"
-                        >
-                          {t('common.cancel')}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      <div className="mb-6">
+        <DateFilterPanel selectedDate={selectedDate} onDateChange={handleDateChange} />
       </div>
 
-      {/* 취소 확인 모달 */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
+        </div>
+      ) : sortedDates.length === 0 ? (
+        <div className="rounded-2xl border border-border-default bg-bg-surface p-10 text-center shadow-lg">
+          <p className="text-text-tertiary">{t('menu.noSelections')}</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {sortedDates.map((date) => {
+            const selectionsForDate = groupedSelections[date];
+            if (!selectionsForDate || selectionsForDate.length === 0) return null;
+            const selection = selectionsForDate[0];
+            const isEditing = editingSelectionId === selection.id;
+
+            return (
+              <div key={date} className={`rounded-2xl border bg-bg-surface p-5 shadow-md transition-all ${isEditing ? 'border-brand-primary/40 ring-1 ring-brand-primary/20' : 'border-border-default hover:border-border-focus'}`}>
+                {/* 날짜 + 액션 */}
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-text-primary">{formatDateStandard(date)}</h2>
+                  {isGlobalEditing && (
+                    <div className="flex items-center gap-2 text-xs">
+                      {isEditing ? (
+                        <button type="button" onClick={() => setCancelConfirm({ show: true, selectionId: selection.id })}
+                          disabled={isUpdating === selection.id}
+                          className="font-medium text-red-500 hover:text-red-600 disabled:opacity-60 transition-colors">
+                          {t('menu.cancelAll')}
+                        </button>
+                      ) : (
+                        <Button variant="primary" size="sm" onClick={() => handleEdit(selection)} disabled={isUpdating === selection.id}
+                          className="bg-gradient-to-r from-orange-500 to-rose-500 text-text-inverse shadow-sm shadow-orange-500/40">
+                          {t('menu.modify')}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 슬롯별 메뉴 */}
+                <div className="space-y-3">
+                  {slots.map(({ key, label }) => {
+                    const basePayload = isEditing && editingPayload ? editingPayload : selection.menuPayload;
+                    const menus = basePayload[key];
+                    if (!menus || menus.length === 0) return null;
+                    return (
+                      <div key={key} className="flex items-start gap-3">
+                        <p className="mt-1 w-14 shrink-0 text-xs font-medium text-text-tertiary">{label}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {menus.map((menuName, idx) => (
+                            <span key={idx} className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium transition-colors ${isEditing ? 'border-orange-500/60 bg-orange-500/15 text-orange-700' : 'border-orange-500/30 bg-orange-500/10 text-orange-700'}`}>
+                              <span>{menuName}</span>
+                              {isEditing && (
+                                <button type="button" onClick={() => handleRemoveMenu(key, idx)}
+                                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-orange-600/80 hover:bg-orange-500/20 hover:text-orange-800 transition-colors"
+                                  aria-label={t('menu.deleteMenu')}>
+                                  <X className="h-3 w-3" />
+                                </button>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 편집 저장/취소 */}
+                {isEditing && (
+                  <div className="mt-5 flex items-center justify-end gap-2 border-t border-border-default pt-4">
+                    <Button variant="ghost" size="sm" onClick={handleEditCancel} disabled={isUpdating === selection.id}
+                      className="border border-border-default bg-bg-primary px-4 text-xs text-text-secondary hover:bg-bg-hover">
+                      {t('common.cancel')}
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={handleSave} isLoading={isUpdating === selection.id}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-text-inverse shadow-sm shadow-emerald-500/40">
+                      {t('common.save')}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <ConfirmDialog
         open={cancelConfirm.show}
         title={t('menu.cancelMenuSelection')}
         message={t('menu.cancelMenuSelectionMessage')}
         onConfirm={handleCancelConfirm}
-        onCancel={handleCancelCancel}
+        onCancel={() => setCancelConfirm({ show: false, selectionId: null })}
         confirmLabel={t('menu.confirmCancel')}
         cancelLabel={t('menu.goBack')}
         variant="danger"
       />
-    </div>
+    </PageContainer>
   );
 };
-

@@ -3,7 +3,11 @@ import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import type { UserAddress } from '@/types/user';
 import { createPortal } from 'react-dom';
-import { useEffect, useState } from 'react';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useEscapeKey } from '@/hooks/common/useEscapeKey';
+import { useFocusTrap } from '@/hooks/common/useFocusTrap';
+import { Z_INDEX } from '@/utils/constants';
 
 interface AddressListModalProps {
   open: boolean;
@@ -33,60 +37,54 @@ export const AddressListModal = ({
   onAddAddress,
 }: AddressListModalProps) => {
   const { t } = useTranslation();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
-
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-
-  if (!shouldRender) {
-    return null;
-  }
+  const { isAnimating, shouldRender } = useModalAnimation(open);
+  useModalScrollLock(open);
+  const focusTrapRef = useFocusTrap(open);
 
   const handleClose = () => {
     onEditModeChange(false);
     onClose();
   };
 
-  const handleEditComplete = () => {
-    onEditModeChange(false);
-  };
+  useEscapeKey(handleClose, open);
+
+  if (!shouldRender) return null;
 
   const defaultAddr = defaultAddress || addresses.find((addr) => addr.isDefault);
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="address-list-title"
+      className={[
+        'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
+        'items-end sm:items-center',
+        `z-[${Z_INDEX.MODAL_BACKDROP}]`,
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+      ].join(' ')}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div 
-        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+      <div
+        ref={focusTrapRef}
+        className={[
+          'relative w-full max-w-2xl mx-auto bg-bg-surface border border-border-default shadow-2xl',
+          'rounded-t-2xl sm:rounded-2xl',
+          'p-6 sm:p-8 max-h-[90vh] overflow-y-auto',
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+        ].join(' ')}
       >
         <ModalCloseButton onClose={handleClose} />
-        <div className="flex items-center justify-between mb-6 pr-12">
-          <h2 className="text-2xl font-bold text-white">{t('user.address.title')}</h2>
+        <div className="flex items-center justify-between mb-6 pr-8">
+          <h2 id="address-list-title" className="text-2xl font-bold text-text-primary">
+            {t('user.address.title')}
+          </h2>
           {!isEditMode && addresses.length > 1 && (
             <Button
               size="sm"
               variant="ghost"
               onClick={() => onEditModeChange(true)}
-              className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+              className="border border-border-default bg-bg-secondary text-text-primary hover:bg-bg-hover"
             >
               {t('user.address.edit')}
             </Button>
@@ -95,93 +93,81 @@ export const AddressListModal = ({
             <Button
               size="sm"
               variant="ghost"
-              onClick={handleEditComplete}
-              className="border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+              onClick={() => onEditModeChange(false)}
+              className="border border-border-default bg-bg-secondary text-text-primary hover:bg-bg-hover"
             >
               {t('user.address.done')}
             </Button>
           )}
         </div>
 
-        <div className="space-y-4">
-          {/* 기본주소 표시 */}
+        <div className="space-y-3">
+          {/* Default address */}
           {defaultAddr && (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-white font-medium">
-                    {defaultAddr.alias && (
-                      <span className="mr-2 text-orange-200">{defaultAddr.alias}</span>
-                    )}
-                    {defaultAddr.roadAddress}
-                  </p>
+            <div className="rounded-2xl border border-brand-primary/30 bg-brand-primary/10 p-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 shrink-0 rounded-full bg-brand-primary/20 px-2 py-0.5 text-xs font-semibold text-brand-primary">
+                  {t('user.address.default')}
+                </span>
+                <div className="flex-1 min-w-0">
+                  {defaultAddr.alias && (
+                    <p className="text-xs font-medium text-brand-primary mb-0.5">{defaultAddr.alias}</p>
+                  )}
+                  <p className="text-sm font-medium text-text-primary">{defaultAddr.roadAddress}</p>
                   {defaultAddr.postalCode && (
-                    <p className="mt-1 text-xs text-slate-400">{defaultAddr.postalCode}</p>
+                    <p className="mt-0.5 text-xs text-text-tertiary">{defaultAddr.postalCode}</p>
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* 나머지 주소 리스트 */}
-          {addresses.length > 0 && (
-            <div className="space-y-2">
-              {addresses
-                .filter((addr) => !addr.isDefault)
-                .map((address) => (
-                  <div
-                    key={address.id}
-                    onClick={() => {
-                      if (!isEditMode) {
-                        onAddressClick(address);
-                      }
-                    }}
-                    className={`rounded-xl border p-4 transition cursor-pointer ${
-                      isEditMode && selectedDeleteIds.includes(address.id)
-                        ? 'border-red-500/50 bg-red-500/20'
-                        : isEditMode
-                        ? 'border-white/10 bg-white/5 hover:bg-white/10'
-                        : 'border-white/10 bg-white/5 hover:border-orange-500/30 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        {/* 삭제 체크박스 (편집 모드에서만 표시) */}
-                        {isEditMode && (
-                          <input
-                            type="checkbox"
-                            checked={selectedDeleteIds.includes(address.id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              onToggleDeleteSelection(address.id);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="mt-1 h-4 w-4 rounded border-white/20 bg-white/5 text-orange-500 focus:ring-orange-500"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <p className="text-white font-medium">
-                            {address.alias && (
-                              <span className="mr-2 text-orange-200">{address.alias}</span>
-                            )}
-                            {address.roadAddress}
-                          </p>
-                          {address.postalCode && (
-                            <p className="mt-1 text-xs text-slate-400">{address.postalCode}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+          {/* Other addresses */}
+          {addresses
+            .filter((addr) => !addr.isDefault)
+            .map((address) => (
+              <div
+                key={address.id}
+                onClick={() => { if (!isEditMode) onAddressClick(address); }}
+                className={[
+                  'rounded-2xl border p-4 transition',
+                  isEditMode && selectedDeleteIds.includes(address.id)
+                    ? 'cursor-pointer border-red-500/50 bg-red-500/15'
+                    : isEditMode
+                    ? 'cursor-pointer border-border-default bg-bg-secondary hover:bg-bg-hover'
+                    : 'cursor-pointer border-border-default bg-bg-secondary hover:border-brand-primary/30 hover:bg-bg-hover',
+                ].join(' ')}
+              >
+                <div className="flex items-start gap-3">
+                  {isEditMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedDeleteIds.includes(address.id)}
+                      onChange={(e) => { e.stopPropagation(); onToggleDeleteSelection(address.id); }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1 h-4 w-4 rounded border-border-default bg-bg-secondary accent-brand-primary"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    {address.alias && (
+                      <p className="text-xs font-medium text-brand-primary mb-0.5">{address.alias}</p>
+                    )}
+                    <p className="text-sm font-medium text-text-primary">{address.roadAddress}</p>
+                    {address.postalCode && (
+                      <p className="mt-0.5 text-xs text-text-tertiary">{address.postalCode}</p>
+                    )}
                   </div>
-                ))}
-            </div>
-          )}
+                </div>
+              </div>
+            ))}
 
           {addresses.length === 0 && (
-            <p className="text-center text-slate-400 py-8">{t('user.address.noAddresses')}</p>
+            <p className="py-8 text-center text-sm text-text-tertiary">
+              {t('user.address.noAddresses')}
+            </p>
           )}
 
-          {/* 편집 모드에서 선택된 주소 삭제 버튼 */}
+          {/* Delete button in edit mode */}
           {isEditMode && selectedDeleteIds.length > 0 && (
             <Button
               size="lg"
@@ -193,13 +179,13 @@ export const AddressListModal = ({
             </Button>
           )}
 
-          {/* 주소 추가 버튼 */}
+          {/* Add address button */}
           {!isEditMode && addresses.length < 4 && (
             <Button
               size="lg"
               variant="primary"
               onClick={onAddAddress}
-              className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30"
+              className="w-full bg-gradient-to-r from-brand-primary to-rose-500 text-text-inverse shadow-md shadow-brand-primary/30"
               data-testid="address-list-add-button"
             >
               {t('user.address.addAddress', { current: addresses.length, max: 4 })}
@@ -207,7 +193,7 @@ export const AddressListModal = ({
           )}
 
           {!isEditMode && addresses.length >= 4 && (
-            <p className="text-center text-sm text-slate-400">
+            <p className="text-center text-sm text-text-tertiary">
               {t('user.address.maxAddresses', { max: 4 })}
             </p>
           )}
@@ -217,4 +203,3 @@ export const AddressListModal = ({
     document.body
   );
 };
-

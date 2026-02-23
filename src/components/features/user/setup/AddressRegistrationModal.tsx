@@ -7,12 +7,16 @@ import { userService } from '@/api/services/user';
 import { AddressSearchInput } from './AddressSearchInput';
 import { AddressSearchResults } from '@/components/common/AddressSearchResults';
 import { Button } from '@/components/common/Button';
+import { ModalCloseButton } from '@/components/common/ModalCloseButton';
 import { useAddressSearch } from '@/hooks/address/useAddressSearch';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
 import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
 import { useAppDispatch } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
-import { useEffect, useState } from 'react';
+import { Z_INDEX } from '@/utils/constants';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -31,13 +35,13 @@ export const AddressRegistrationModal = ({
   const dispatch = useAppDispatch();
   const addressSearch = useAddressSearch();
   const { handleError, handleSuccess } = useErrorHandler();
+  const { isAnimating, shouldRender } = useModalAnimation(open);
 
   const [alias, setAlias] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      // 모달이 닫히면 상태 초기화
       addressSearch.clearSearch();
       addressSearch.setSelectedAddress(null);
       setAlias('');
@@ -46,7 +50,6 @@ export const AddressRegistrationModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, addressSearch.clearSearch, addressSearch.setSelectedAddress]);
 
-  // 모달 열림/닫힘 시 body 스크롤 방지
   useModalScrollLock(open);
 
   const handleSave = async () => {
@@ -57,22 +60,17 @@ export const AddressRegistrationModal = ({
 
     setIsSaving(true);
     try {
-      // 처음 주소 등록이므로 PATCH /user/address 사용 (자동으로 기본주소로 설정됨)
       const addressResult = await userService.setAddress(addressSearch.selectedAddress);
-      
-      // 별칭이 있으면 주소 리스트를 조회해서 방금 추가된 주소에 별칭 설정
+
       if (alias.trim()) {
         try {
           const addressesResponse = await userService.getAddresses();
-          // 응답이 배열인지 객체인지 확인
-          const addresses = Array.isArray(addressesResponse) 
-            ? addressesResponse 
+          const addresses = Array.isArray(addressesResponse)
+            ? addressesResponse
             : addressesResponse?.addresses || [];
-          
           const newAddress = addresses.find(
             (addr) => addr.roadAddress === addressResult.roadAddress
           );
-          
           if (newAddress) {
             await userService.updateAddress(newAddress.id, { alias: alias.trim() });
           }
@@ -81,10 +79,16 @@ export const AddressRegistrationModal = ({
         }
       }
 
-      const latitudeValue = addressSearch.selectedAddress.latitude ? parseFloat(addressSearch.selectedAddress.latitude) : null;
-      const longitudeValue = addressSearch.selectedAddress.longitude ? parseFloat(addressSearch.selectedAddress.longitude) : null;
-      const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
-      const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
+      const latitudeValue = addressSearch.selectedAddress.latitude
+        ? parseFloat(addressSearch.selectedAddress.latitude)
+        : null;
+      const longitudeValue = addressSearch.selectedAddress.longitude
+        ? parseFloat(addressSearch.selectedAddress.longitude)
+        : null;
+      const normalizedLatitude =
+        latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
+      const normalizedLongitude =
+        longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
 
       dispatch(
         updateUser({
@@ -103,52 +107,64 @@ export const AddressRegistrationModal = ({
     }
   };
 
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
+  const handleClose = () => {
+    if (!isSaving && onClose) onClose();
+  };
 
-  useEffect(() => {
-    if (open) {
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-
-  if (!shouldRender) {
-    return null;
-  }
+  if (!shouldRender) return null;
 
   return createPortal(
-    <div 
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+    <div
+      className={`fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4
+        bg-black/40 backdrop-blur-sm transition-opacity duration-300
+        ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="address-registration-title"
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       <div
-        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+        className={`relative w-full sm:max-w-2xl max-h-[95dvh] sm:max-h-[90vh]
+          overflow-y-auto bg-bg-surface shadow-2xl shadow-black/30
+          rounded-t-2xl sm:rounded-2xl
+          transition-all duration-300
+          ${isAnimating ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-8 sm:scale-95 sm:translate-y-0'}`}
+        style={{ zIndex: Z_INDEX.MODAL_CONTENT }}
       >
-        <div className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">{t('setup.address.titleModal')}</h2>
-            <p className="mt-2 text-sm text-slate-400">
+        {/* 모바일 드래그 핸들 */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-border-default" />
+        </div>
+
+        <div className="px-6 pb-8 pt-4 sm:px-8 sm:pt-8 space-y-5">
+          {/* 헤더 */}
+          <div className="text-center pr-6">
+            <h2
+              id="address-registration-title"
+              className="text-xl sm:text-2xl font-bold text-text-primary"
+            >
+              {t('setup.address.titleModal')}
+            </h2>
+            <p className="mt-2 text-sm text-text-tertiary leading-relaxed">
               {t('setup.address.descriptionModal')}
             </p>
           </div>
 
+          {/* 닫기 버튼 */}
+          {onClose && (
+            <ModalCloseButton onClose={handleClose} aria-label={t('common.close')} />
+          )}
+
           {/* 주소 검색 섹션 */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white">{t('setup.address.search')}</h3>
-              <p className="mt-1 text-sm text-slate-400">{t('setup.address.searchDesc')}</p>
+          <div className="rounded-2xl border border-border-default bg-bg-secondary p-5">
+            <div className="mb-3">
+              <h3 className="text-base font-semibold text-text-primary">
+                {t('setup.address.search')}
+              </h3>
+              <p className="mt-1 text-xs text-text-tertiary">
+                {t('setup.address.searchDesc')}
+              </p>
             </div>
             <div className="space-y-3">
               <AddressSearchInput
@@ -157,19 +173,20 @@ export const AddressRegistrationModal = ({
                 onAddressQueryChange={addressSearch.setAddressQuery}
                 onSearch={addressSearch.handleSearch}
               />
-
               <AddressSearchResults
                 searchResults={addressSearch.searchResults}
                 isSearching={addressSearch.isSearching}
                 hasSearchedAddress={addressSearch.hasSearchedAddress}
                 onSelectAddress={addressSearch.handleSelectAddress}
               />
-
               {addressSearch.selectedAddress && (
                 <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                  <p className="text-xs text-emerald-200">{t('setup.address.selected')}</p>
-                  <p className="mt-1 text-white font-medium">
-                    {addressSearch.selectedAddress.roadAddress || addressSearch.selectedAddress.address}
+                  <p className="text-xs font-medium text-emerald-400">
+                    {t('setup.address.selected')}
+                  </p>
+                  <p className="mt-1 text-sm text-text-primary font-medium">
+                    {addressSearch.selectedAddress.roadAddress ||
+                      addressSearch.selectedAddress.address}
                   </p>
                 </div>
               )}
@@ -178,10 +195,12 @@ export const AddressRegistrationModal = ({
 
           {/* 별칭 입력 섹션 */}
           {addressSearch.selectedAddress && (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white">{t('setup.address.alias')}</h3>
-                <p className="mt-1 text-sm text-slate-400">
+            <div className="rounded-2xl border border-border-default bg-bg-secondary p-5">
+              <div className="mb-3">
+                <h3 className="text-base font-semibold text-text-primary">
+                  {t('setup.address.alias')}
+                </h3>
+                <p className="mt-1 text-xs text-text-tertiary">
                   {t('setup.address.aliasDescription')}
                 </p>
               </div>
@@ -191,20 +210,25 @@ export const AddressRegistrationModal = ({
                 onChange={(e) => setAlias(e.target.value)}
                 placeholder={t('setup.address.aliasPlaceholder')}
                 maxLength={20}
-                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                aria-label={t('setup.address.alias')}
+                className="w-full rounded-xl border border-border-default bg-bg-surface px-4 py-3
+                  text-sm text-text-primary placeholder-text-placeholder
+                  transition focus:border-border-focus focus:outline-none
+                  focus:ring-2 focus:ring-brand-primary/40"
               />
             </div>
           )}
 
           {/* 버튼 */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-1">
             {onClose && (
               <Button
                 variant="ghost"
                 size="lg"
-                onClick={onClose}
+                onClick={handleClose}
                 disabled={isSaving}
-                className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                className="flex-1 border border-border-default bg-bg-secondary
+                  text-text-primary hover:bg-bg-hover"
               >
                 {t('common.cancel')}
               </Button>
@@ -215,7 +239,8 @@ export const AddressRegistrationModal = ({
               onClick={handleSave}
               isLoading={isSaving}
               disabled={!addressSearch.selectedAddress || isSaving}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-white shadow-md shadow-orange-500/30"
+              className="flex-1 bg-gradient-to-r from-brand-primary to-rose-500
+                px-6 text-text-inverse shadow-md shadow-brand-primary/30"
             >
               {t('setup.register')}
             </Button>
@@ -226,4 +251,3 @@ export const AddressRegistrationModal = ({
     document.body
   );
 };
-

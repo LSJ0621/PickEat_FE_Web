@@ -39,40 +39,50 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
+          manualChunks(id) {
+            // Admin 번들 분리 - admin 관련 페이지/컴포넌트를 별도 chunk로
+            if (
+              id.includes('/pages/admin/') ||
+              id.includes('/components/features/admin/') ||
+              id.includes('/components/layout/AdminLayout')
+            ) {
+              return 'admin';
+            }
+
             // React 생태계
-            'react-vendor': [
-              'react',
-              'react-dom',
-              'react-router-dom',
-            ],
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
+              return 'react-vendor';
+            }
 
             // Redux 생태계
-            'redux-vendor': [
-              '@reduxjs/toolkit',
-              'react-redux',
-            ],
+            if (id.includes('node_modules/@reduxjs/toolkit') || id.includes('node_modules/react-redux')) {
+              return 'redux-vendor';
+            }
 
             // UI 라이브러리
-            'ui-vendor': [
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-checkbox',
-              '@radix-ui/react-label',
-              '@radix-ui/react-radio-group',
-              '@radix-ui/react-select',
-              '@radix-ui/react-separator',
-              '@radix-ui/react-slot',
-              '@radix-ui/react-tabs',
-            ],
+            if (
+              id.includes('node_modules/@radix-ui/react-dialog') ||
+              id.includes('node_modules/@radix-ui/react-checkbox') ||
+              id.includes('node_modules/@radix-ui/react-label') ||
+              id.includes('node_modules/@radix-ui/react-radio-group') ||
+              id.includes('node_modules/@radix-ui/react-select') ||
+              id.includes('node_modules/@radix-ui/react-separator') ||
+              id.includes('node_modules/@radix-ui/react-slot') ||
+              id.includes('node_modules/@radix-ui/react-tabs')
+            ) {
+              return 'ui-vendor';
+            }
 
             // 유틸리티
-            'utils-vendor': [
-              'axios',
-              'class-variance-authority',
-              'clsx',
-              'tailwind-merge',
-              '@googlemaps/js-api-loader',
-            ],
+            if (
+              id.includes('node_modules/axios') ||
+              id.includes('node_modules/class-variance-authority') ||
+              id.includes('node_modules/clsx') ||
+              id.includes('node_modules/tailwind-merge') ||
+              id.includes('node_modules/@googlemaps/js-api-loader')
+            ) {
+              return 'utils-vendor';
+            }
           },
         },
       },

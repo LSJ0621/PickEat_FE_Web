@@ -1,6 +1,5 @@
-export { HomeCTA } from './HomeCTA';
-export { HomeFeatures } from './HomeFeatures';
-export { HomeHero } from './HomeHero';
-export { HomeHighlights } from './HomeHighlights';
-export { HomeHowItWorks } from './HomeHowItWorks';
-
+export { CtaSection } from './CtaSection';
+export { FeatureShowcase } from './FeatureShowcase';
+export { HomeRecentHistory } from './HomeRecentHistory';
+export { HeroSection } from './HeroSection';
+export { HowItWorks } from './HowItWorks';

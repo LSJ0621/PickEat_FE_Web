@@ -4,6 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 
 interface AddressSearchInputProps {
@@ -25,22 +26,30 @@ export const AddressSearchInput = ({
 
   return (
     <div className="flex gap-2">
-      <input
+      <Input
         type="text"
         value={addressQuery}
         onChange={(e) => onAddressQueryChange(e.target.value)}
-        onKeyPress={(e) => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' && !isSearching) {
             onSearch();
           }
         }}
         placeholder={placeholder || t('setup.address.searchPlaceholder')}
-        className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+        aria-label={t('setup.address.search')}
+        className="flex-1 rounded-xl border-border-default bg-bg-secondary
+          text-text-primary placeholder-text-placeholder
+          focus-visible:ring-brand-primary/40 focus-visible:border-border-focus
+          h-11"
       />
-      <Button onClick={onSearch} isLoading={isSearching} size="md">
+      <Button
+        onClick={onSearch}
+        isLoading={isSearching}
+        size="md"
+        aria-label={t('setup.search')}
+      >
         {t('setup.search')}
       </Button>
     </div>
   );
 };
-

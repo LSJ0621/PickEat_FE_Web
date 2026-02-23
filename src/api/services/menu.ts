@@ -2,8 +2,9 @@
  * 메뉴 관련 API 서비스
  */
 
-import apiClient from '@/api/client';
+import apiClient, { API_BASE_URL } from '@/api/client';
 import { ENDPOINTS } from '@/api/endpoints';
+import { STORAGE_KEYS } from '@/utils/constants';
 import type {
     CreateMenuSelectionRequest,
     CreateMenuSelectionResponse,
@@ -17,6 +18,79 @@ import type {
     UpdateMenuSelectionRequest,
     UpdateMenuSelectionResponse,
 } from '@/types/menu';
+
+// SSE Streaming Types
+export type StreamEventType = 'status' | 'retrying' | 'result' | 'error';
+
+export interface StreamEvent<T = unknown> {
+  type: StreamEventType;
+  status?: string;
+  attempt?: number;
+  data?: T;
+  message?: string;
+}
+
+interface StreamCallbacks<T> {
+  onEvent: (event: StreamEvent<T>) => void;
+}
+
+/**
+ * Helper to construct headers for streaming requests
+ */
+function getStreamHeaders(method: 'GET' | 'POST'): HeadersInit {
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const currentLang = localStorage.getItem('i18nextLng') || 'ko';
+  return {
+    'Accept': 'text/event-stream',
+    ...(method === 'POST' && { 'Content-Type': 'application/json' }),
+    'Accept-Language': currentLang,
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+}
+
+/**
+ * Parse SSE stream from ReadableStream
+ */
+async function parseSSEStream<T>(
+  response: Response,
+  callbacks: StreamCallbacks<T>
+): Promise<void> {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('Response body is not readable');
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6);
+          try {
+            const event = JSON.parse(dataStr) as StreamEvent<T>;
+            callbacks.onEvent(event);
+          } catch (parseError) {
+            callbacks.onEvent({
+              type: 'error',
+              message: 'Failed to parse SSE event'
+            } as StreamEvent<T>);
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
 
 export const menuService = {
   /**
@@ -141,5 +215,97 @@ export const menuService = {
     const url = ENDPOINTS.MENU.SELECTION_UPDATE(selectionId);
     const response = await apiClient.patch<UpdateMenuSelectionResponse>(url, data);
     return response.data;
+  },
+
+  /**
+   * Menu recommendation with SSE streaming
+   */
+  recommendStream: async (
+    prompt: string,
+    callbacks: StreamCallbacks<MenuRecommendationResponse>
+  ): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.MENU.RECOMMEND_STREAM}`, {
+      method: 'POST',
+      headers: getStreamHeaders('POST'),
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await parseSSEStream(response, callbacks);
+  },
+
+  /**
+   * Search-based place recommendations with SSE streaming
+   */
+  recommendSearchPlacesStream: async (
+    params: {
+      latitude: number;
+      longitude: number;
+      menuName: string;
+      menuRecommendationId: number;
+      language?: string;
+    },
+    callbacks: StreamCallbacks<PlaceRecommendationResponse>
+  ): Promise<void> => {
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      menuName: params.menuName,
+      menuRecommendationId: params.menuRecommendationId.toString(),
+      ...(params.language && { language: params.language }),
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}${ENDPOINTS.MENU.PLACES_SEARCH_STREAM}?${queryParams}`,
+      {
+        method: 'GET',
+        headers: getStreamHeaders('GET'),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await parseSSEStream(response, callbacks);
+  },
+
+  /**
+   * Community-based place recommendations with SSE streaming
+   */
+  recommendCommunityPlacesStream: async (
+    params: {
+      latitude: number;
+      longitude: number;
+      menuName: string;
+      menuRecommendationId: number;
+      language?: string;
+    },
+    callbacks: StreamCallbacks<PlaceRecommendationResponse>
+  ): Promise<void> => {
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      menuName: params.menuName,
+      menuRecommendationId: params.menuRecommendationId.toString(),
+      ...(params.language && { language: params.language }),
+    });
+
+    const response = await fetch(
+      `${API_BASE_URL}${ENDPOINTS.MENU.PLACES_COMMUNITY_STREAM}?${queryParams}`,
+      {
+        method: 'GET',
+        headers: getStreamHeaders('GET'),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await parseSSEStream(response, callbacks);
   },
 };

@@ -6,10 +6,14 @@ import { useScrollAnimation } from '@/hooks/common/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
 
 const STEP_NUMBERS = [1, 2, 3] as const;
+const STEP_COLORS = ['bg-brand-primary', 'bg-brand-amber', 'bg-brand-coral'] as const;
 
 export const HomeHowItWorks = () => {
   const { t } = useTranslation();
-  const { ref, isVisible } = useScrollAnimation({ threshold: 0.2, delay: 100 });
+  const { ref, isVisible } = useScrollAnimation({
+    threshold: 0.1,
+    rootMargin: '100px 0px',
+  });
 
   const steps = STEP_NUMBERS.map((num) => ({
     number: num,
@@ -18,25 +22,32 @@ export const HomeHowItWorks = () => {
   }));
 
   return (
-    <section ref={ref} className="py-20 px-4">
+    <section ref={ref} className="py-20 px-4 bg-bg-primary">
       <div className="mx-auto max-w-4xl">
         <div
           className={`mb-12 text-center transition-all duration-700 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="text-sm uppercase tracking-[0.4em] text-orange-200/80">{t('home.howItWorks.badge')}</p>
-          <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
+          <p className="text-sm uppercase tracking-[0.2em] text-text-secondary font-medium">
+            <span className="bg-brand-tertiary text-brand-primary rounded-full px-3 py-1 text-xs font-medium inline-block">
+              {t('home.howItWorks.badge')}
+            </span>
+          </p>
+          <h2 className="mt-4 text-4xl font-bold text-text-primary sm:text-5xl">
             {t('home.howItWorks.title')}
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary">
             {t('home.howItWorks.description')}
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="relative space-y-6">
+          {/* Timeline connector line */}
+          <div className="absolute left-8 top-8 bottom-8 hidden w-1 bg-gradient-to-b from-brand-primary via-brand-amber to-brand-coral timeline-connector sm:block" />
+
           {steps.map((step, index) => (
-            <StepItem key={step.number} step={step} index={index} />
+            <StepItem key={step.number} step={step} index={index} stepColor={STEP_COLORS[index]} />
           ))}
         </div>
       </div>
@@ -51,27 +62,29 @@ interface StepItemProps {
     description: string;
   };
   index: number;
+  stepColor: string;
 }
 
-const StepItem = ({ step, index }: StepItemProps) => {
+const StepItem = ({ step, index, stepColor }: StepItemProps) => {
   const { ref, isVisible } = useScrollAnimation({
-    threshold: 0.2,
+    threshold: 0.1,
+    rootMargin: '50px 0px',
     delay: index * 200,
   });
 
   return (
     <div
       ref={ref}
-      className={`flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-slate-900/40 p-8 shadow-2xl backdrop-blur transition-all duration-700 sm:flex-row sm:items-center ${
+      className={`flex flex-col gap-6 rounded-[var(--radius-lg)] border border-border-light bg-bg-surface p-6 sm:p-8 shadow-md card-interactive sm:flex-row sm:items-center ${
         isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
       }`}
     >
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500/30 to-rose-500/30 text-2xl font-bold text-orange-200 shadow-lg">
+      <div className={`relative z-10 flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-full ${stepColor} text-2xl font-bold text-white shadow-lg ring-4 ring-white`}>
         {step.number}
       </div>
       <div className="flex-1">
-        <h3 className="text-xl font-semibold text-white sm:text-2xl">{step.title}</h3>
-        <p className="mt-2 text-base text-slate-300">{step.description}</p>
+        <h3 className="text-xl font-semibold text-text-primary sm:text-2xl">{step.title}</h3>
+        <p className="mt-2 text-base text-text-primary">{step.description}</p>
       </div>
     </div>
   );

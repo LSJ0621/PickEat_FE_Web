@@ -31,7 +31,7 @@ export const ReRegisterFormSection = ({
     <>
       {/* 이름 */}
       <div>
-        <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-200">
+        <label htmlFor="name" className="mb-2 block text-sm font-medium text-text-primary">
           {t('auth.name')}
         </label>
         <input
@@ -40,7 +40,7 @@ export const ReRegisterFormSection = ({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder={t('auth.namePlaceholder')}
-          className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+          className="w-full rounded-2xl border border-border-default bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
         />
         {nameError && <p className="mt-1 text-sm text-red-400">{nameError}</p>}
       </div>
@@ -51,7 +51,7 @@ export const ReRegisterFormSection = ({
         isLoading={isLoading}
         disabled={!isEmailVerified}
         size="lg"
-        className="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/30 disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-brand-primary to-rose-500 text-text-inverse shadow-md shadow-brand-primary/30 disabled:opacity-50"
       >
         {t('oauth.reRegister.confirm')}
       </Button>
@@ -61,7 +61,7 @@ export const ReRegisterFormSection = ({
         <div className="text-center">
           <button
             onClick={onBackToLogin}
-            className="text-sm text-slate-400 hover:text-white transition"
+            className="text-sm text-text-tertiary hover:text-text-primary transition"
           >
             {t('oauth.reRegister.backToLogin')}
           </button>

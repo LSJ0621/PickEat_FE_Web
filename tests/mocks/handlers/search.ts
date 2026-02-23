@@ -1,5 +1,4 @@
 import { http, HttpResponse } from 'msw';
-import { ENDPOINTS } from '@/api/endpoints';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -59,9 +58,9 @@ export const mockRestaurants: Restaurant[] = [
   },
 ];
 
+// Search endpoint has been removed (일반 검색 기능 제거됨)
 export const searchHandlers = [
-  // Search restaurants
-  http.post(`${BASE_URL}${ENDPOINTS.SEARCH.RESTAURANTS}`, async ({ request }) => {
+  http.post(`${BASE_URL}/search/restaurants`, async ({ request }) => {
     const body = (await request.json()) as {
       menuName: string;
       latitude: number;
@@ -83,7 +82,6 @@ export const searchHandlers = [
       );
     }
 
-    // Filter restaurants based on menu (simple mock logic)
     let filteredRestaurants = mockRestaurants;
 
     if (body.menuName.includes('김치찌개')) {
@@ -96,7 +94,6 @@ export const searchHandlers = [
       );
     }
 
-    // If no specific match, return all
     if (filteredRestaurants.length === 0) {
       filteredRestaurants = mockRestaurants;
     }

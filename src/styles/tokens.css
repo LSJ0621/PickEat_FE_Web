@@ -1,0 +1,85 @@
+:root {
+  /* Background */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAF8;      /* Neutral warm gray */
+  --bg-tertiary: #F5F0EB;       /* Warm stone tone */
+  --bg-hover: #FFF1E6;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+
+  /* Text */
+  --text-primary: #18181B;
+  --text-secondary: #71717A;
+  --text-tertiary: #9CA3AF;
+  --text-placeholder: #D1D5DB;
+  --text-inverse: #FFFFFF;     /* Light text (for dark backgrounds) */
+
+  /* Brand */
+  --brand-primary: #FF6B35;
+  --brand-secondary: #FF8F5E;
+  --brand-tertiary: #FFECD2;
+  --brand-dark: #E85D2C;
+  --brand-amber: #F5A623;
+  --brand-coral: #FF7043;
+  --accent-green: #34D399;
+  --surface-glass: rgba(255,255,255,0.7);
+
+  /* Semantic */
+  --success: #22C55E;
+  --success-bg: #F0FDF4;
+  --warning: #F59E0B;
+  --warning-bg: #FFFBEB;
+  --error: #EF4444;
+  --error-bg: #FEF2F2;
+  --info: #3B82F6;
+  --info-bg: #EFF6FF;
+
+  /* Border */
+  --border-default: #F3F4F6;
+  --border-light: #F9FAFB;
+  --border-focus: #FF6B35;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Safe Area */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Motion Tokens */
+  --duration-instant: 0ms;
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-moderate: 300ms;
+  --duration-slow: 450ms;
+  --duration-stagger: 50ms;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}

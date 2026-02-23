@@ -136,7 +136,7 @@ export function CalendarGrid({
         {WEEKDAY_NAMES.map((day) => (
           <div
             key={day}
-            className="flex h-10 items-center justify-center text-xs font-semibold text-slate-400"
+            className="flex h-10 items-center justify-center text-xs font-semibold text-text-tertiary"
           >
             {day}
           </div>
@@ -156,7 +156,7 @@ export function CalendarGrid({
                 type="button"
                 disabled
                 aria-disabled="true"
-                className={`${baseClasses} cursor-not-allowed text-slate-600 opacity-40`}
+                className={`${baseClasses} cursor-not-allowed text-text-placeholder opacity-40`}
               >
                 {cell.day}
               </button>
@@ -170,7 +170,7 @@ export function CalendarGrid({
                 key={index}
                 type="button"
                 onClick={() => onDateClick(cell.date)}
-                className={`${baseClasses} bg-gradient-to-r from-orange-500 to-rose-500 font-bold text-white shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95`}
+                className={`${baseClasses} bg-gradient-to-r from-orange-500 to-rose-500 font-bold text-text-inverse shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95`}
               >
                 {cell.day}
               </button>
@@ -184,7 +184,7 @@ export function CalendarGrid({
                 key={index}
                 type="button"
                 onClick={() => onDateClick(cell.date)}
-                className={`${baseClasses} border-2 border-orange-500/50 text-orange-400 hover:scale-105 hover:border-orange-400 hover:bg-orange-500/10 active:scale-95`}
+                className={`${baseClasses} border-2 border-brand-primary/50 text-brand-primary hover:scale-105 hover:border-brand-primary hover:bg-brand-primary/10 active:scale-95`}
               >
                 {cell.day}
               </button>
@@ -198,7 +198,7 @@ export function CalendarGrid({
                 key={index}
                 type="button"
                 onClick={() => onDateClick(cell.date)}
-                className={`${baseClasses} text-white hover:scale-105 hover:bg-white/10 active:scale-95`}
+                className={`${baseClasses} text-text-primary hover:scale-105 hover:bg-bg-hover active:scale-95`}
               >
                 {cell.day}
               </button>
@@ -211,7 +211,7 @@ export function CalendarGrid({
               key={index}
               type="button"
               onClick={() => onDateClick(cell.date)}
-              className={`${baseClasses} text-slate-500 hover:scale-105 hover:bg-white/5 hover:text-slate-400 active:scale-95`}
+              className={`${baseClasses} text-text-placeholder hover:scale-105 hover:bg-bg-secondary hover:text-text-tertiary active:scale-95`}
             >
               {cell.day}
             </button>

@@ -86,15 +86,15 @@ export function AdminTab({ currentUserId }: AdminTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
+      <div className="rounded-lg border border-border-default bg-bg-surface p-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-text-tertiary">
               총 {admins.length}명의 관리자
             </p>
             <Button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-brand-primary hover:bg-brand-secondary text-text-inverse"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               관리자 추가

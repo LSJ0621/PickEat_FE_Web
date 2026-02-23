@@ -7,11 +7,17 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
-import { useAppDispatch } from '@/store/hooks';
+import { ROUTES } from './paths';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { initializeAuth } from '@/store/slices/authSlice';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { PageLoadingFallback } from '@/components/common/PageLoadingFallback';
+import { FeatureErrorBoundary } from '@/components/common/FeatureErrorBoundary';
+import { useRatingPrompt } from '@/hooks/rating/useRatingPrompt';
+import { RatingPromptModal } from '@/components/features/rating/RatingPromptModal';
+import { useOnboarding } from '@/hooks/onboarding/useOnboarding';
+import { OnboardingModal } from '@/components/features/onboarding/OnboardingModal';
 
 // Lazy imports - 모든 페이지를 동적으로 로드
 const HomePage = lazy(() => import('@/pages/main/Home').then(m => ({ default: m.HomePage })));
@@ -34,6 +40,17 @@ const UserPlaceListPage = lazy(() => import('@/pages/user-place/UserPlaceListPag
 const UserPlaceCreatePage = lazy(() => import('@/pages/user-place/UserPlaceCreatePage').then(m => ({ default: m.UserPlaceCreatePage })));
 const UserPlaceEditPage = lazy(() => import('@/pages/user-place/UserPlaceEditPage').then(m => ({ default: m.UserPlaceEditPage })));
 
+// MyPage sub-pages
+const MyProfilePage = lazy(() => import('@/pages/user/mypage/MyProfilePage').then(m => ({ default: m.MyProfilePage })));
+const MyPreferencesPage = lazy(() => import('@/pages/user/mypage/MyPreferencesPage').then(m => ({ default: m.MyPreferencesPage })));
+const MyAddressPage = lazy(() => import('@/pages/user/mypage/MyAddressPage').then(m => ({ default: m.MyAddressPage })));
+
+// Rating pages
+const PlaceRatingHistory = lazy(() => import('@/pages/rating/PlaceRatingHistory').then(m => ({ default: m.PlaceRatingHistory })));
+
+// 404 Not Found page
+const NotFoundPage = lazy(() => import('@/pages/NotFound').then(m => ({ default: m.NotFoundPage })));
+
 // Admin pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminUserListPage = lazy(() => import('@/pages/admin/users/AdminUserListPage').then(m => ({ default: m.AdminUserListPage })));
@@ -50,7 +67,9 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
-          <HomePage />
+          <FeatureErrorBoundary featureName="Home" fallbackMessage="홈 페이지를 불러오지 못했습니다">
+            <HomePage />
+          </FeatureErrorBoundary>
         </Suspense>
       </AppLayout>
     ),
@@ -61,7 +80,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <AgentPage />
+            <FeatureErrorBoundary featureName="Agent" fallbackMessage="AI 추천 기능을 불러오지 못했습니다">
+              <AgentPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -123,7 +144,51 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <MyPage />
+            <FeatureErrorBoundary featureName="MyPage" fallbackMessage="마이페이지를 불러오지 못했습니다">
+              <MyPage />
+            </FeatureErrorBoundary>
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/mypage/profile',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <FeatureErrorBoundary featureName="MyProfile" fallbackMessage="프로필 페이지를 불러오지 못했습니다">
+              <MyProfilePage />
+            </FeatureErrorBoundary>
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/mypage/preferences',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <FeatureErrorBoundary featureName="MyPreferences" fallbackMessage="선호도 페이지를 불러오지 못했습니다">
+              <MyPreferencesPage />
+            </FeatureErrorBoundary>
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/mypage/address',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <FeatureErrorBoundary featureName="MyAddress" fallbackMessage="주소 페이지를 불러오지 못했습니다">
+              <MyAddressPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -135,7 +200,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <RecommendationHistory />
+            <FeatureErrorBoundary featureName="RecommendationHistory" fallbackMessage="추천 이력을 불러오지 못했습니다">
+              <RecommendationHistory />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -147,7 +214,23 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <MenuSelectionHistory />
+            <FeatureErrorBoundary featureName="MenuSelectionHistory" fallbackMessage="메뉴 선택 이력을 불러오지 못했습니다">
+              <MenuSelectionHistory />
+            </FeatureErrorBoundary>
+          </ProtectedRoute>
+        </Suspense>
+      </AppLayout>
+    ),
+  },
+  {
+    path: '/ratings/history',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <ProtectedRoute>
+            <FeatureErrorBoundary featureName="RatingsHistory" fallbackMessage="평가 이력을 불러오지 못했습니다">
+              <PlaceRatingHistory />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -159,7 +242,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <MapPage />
+            <FeatureErrorBoundary featureName="Map" fallbackMessage="지도를 불러오지 못했습니다">
+              <MapPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -191,7 +276,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <BugReportPage />
+            <FeatureErrorBoundary featureName="BugReport" fallbackMessage="버그 신고 페이지를 불러오지 못했습니다">
+              <BugReportPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -204,7 +291,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <UserPlaceListPage />
+            <FeatureErrorBoundary featureName="UserPlaceList" fallbackMessage="내 장소 목록을 불러오지 못했습니다">
+              <UserPlaceListPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -216,7 +305,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <UserPlaceCreatePage />
+            <FeatureErrorBoundary featureName="UserPlaceCreate" fallbackMessage="장소 등록 페이지를 불러오지 못했습니다">
+              <UserPlaceCreatePage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -228,7 +319,9 @@ const router = createBrowserRouter([
       <AppLayout>
         <Suspense fallback={<PageLoadingFallback />}>
           <ProtectedRoute>
-            <UserPlaceEditPage />
+            <FeatureErrorBoundary featureName="UserPlaceEdit" fallbackMessage="장소 수정 페이지를 불러오지 못했습니다">
+              <UserPlaceEditPage />
+            </FeatureErrorBoundary>
           </ProtectedRoute>
         </Suspense>
       </AppLayout>
@@ -337,11 +430,44 @@ const router = createBrowserRouter([
       </AppLayout>
     ),
   },
+  // Catch-all route - must be last
+  {
+    path: '*',
+    element: (
+      <AppLayout>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <NotFoundPage />
+        </Suspense>
+      </AppLayout>
+    ),
+  },
 ]);
 
 export default function Routes() {
   const dispatch = useAppDispatch();
   const hasInitialized = useRef(false);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const {
+    pendingRating,
+    isModalOpen,
+    isSubmitting,
+    checkPendingRating,
+    skipPlace,
+    dismissRating,
+    dismissPermanently,
+    goToHistory,
+  } = useRatingPrompt();
+  const {
+    isOpen: isOnboardingOpen,
+    currentStep,
+    totalSteps,
+    checkOnboarding,
+    nextStep,
+    prevStep,
+    complete: completeOnboarding,
+    skip: skipOnboarding,
+  } = useOnboarding();
+  const lastCheckedDate = useRef(new Date().toDateString());
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -351,5 +477,55 @@ export default function Routes() {
     dispatch(initializeAuth());
   }, [dispatch]);
 
-  return <RouterProvider router={router} />;
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkPendingRating();
+      checkOnboarding();
+    }
+  }, [isAuthenticated, checkPendingRating, checkOnboarding]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+      const today = new Date().toDateString();
+      if (today !== lastCheckedDate.current) {
+        lastCheckedDate.current = today;
+        checkPendingRating();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isAuthenticated, checkPendingRating]);
+
+  const handleGoToHistory = () => {
+    goToHistory();
+    router.navigate(ROUTES.RATINGS_HISTORY);
+  };
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      <RatingPromptModal
+        open={isModalOpen}
+        placeName={pendingRating?.placeName ?? ''}
+        onGoToHistory={handleGoToHistory}
+        onSkipPlace={skipPlace}
+        onDismiss={dismissRating}
+        onNeverShow={dismissPermanently}
+        isSubmitting={isSubmitting}
+      />
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onNext={nextStep}
+        onPrev={prevStep}
+        onComplete={completeOnboarding}
+        onSkip={skipOnboarding}
+      />
+    </>
+  );
 }

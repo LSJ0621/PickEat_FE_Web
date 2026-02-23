@@ -3,6 +3,9 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { DataErrorFallback } from '@/components/common/DataErrorFallback';
+import { PageContainer } from '@/components/common/PageContainer';
+import { PageHeader } from '@/components/common/PageHeader';
 import { UserPlaceList } from '@/components/features/user-place/UserPlaceList';
 import { UserPlaceDetailModal } from '@/components/features/user-place/UserPlaceDetailModal';
 import { UserPlaceDeleteConfirm } from '@/components/features/user-place/UserPlaceDeleteConfirm';
@@ -13,6 +16,7 @@ import type { UserPlace } from '@/types/user-place';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 
 export function UserPlaceListPage() {
   const { t } = useTranslation();
@@ -28,6 +32,7 @@ export function UserPlaceListPage() {
     status,
     search,
     isLoading,
+    error,
     handlePageChange,
     handleStatusFilter,
     handleSearch,
@@ -37,24 +42,20 @@ export function UserPlaceListPage() {
   const { place: selectedPlace } = useUserPlaceDetail(selectedPlaceId);
   const { deletePlace, isDeleteLoading } = useUserPlaceActions();
 
-  // 가게 클릭
   const handlePlaceClick = useCallback((place: UserPlace) => {
     setSelectedPlaceId(place.id);
   }, []);
 
-  // 상세 모달 닫기
   const handleCloseDetail = useCallback(() => {
     setSelectedPlaceId(null);
   }, []);
 
-  // 수정 버튼 클릭
   const handleEditClick = useCallback(() => {
     if (selectedPlace) {
       navigate(`/user-places/${selectedPlace.id}/edit`);
     }
   }, [selectedPlace, navigate]);
 
-  // 삭제 버튼 클릭
   const handleDeleteClick = useCallback(() => {
     if (selectedPlace) {
       setDeleteTarget(selectedPlace);
@@ -62,10 +63,8 @@ export function UserPlaceListPage() {
     }
   }, [selectedPlace]);
 
-  // 삭제 확인
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
-
     try {
       await deletePlace(deleteTarget.id);
       setDeleteTarget(null);
@@ -75,61 +74,59 @@ export function UserPlaceListPage() {
     }
   }, [deleteTarget, deletePlace, refreshList]);
 
-  // 등록 페이지로 이동
   const handleCreateClick = useCallback(() => {
     navigate('/user-places/create');
   }, [navigate]);
 
+  if (error && !isLoading) {
+    return (
+      <PageContainer maxWidth="max-w-7xl">
+        <DataErrorFallback message={error} onRetry={refreshList} />
+      </PageContainer>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-8">
-      <div className="mx-auto max-w-7xl">
-        {/* 헤더 */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              {t('userPlace.title')}
-            </h1>
-            <p className="mt-2 text-slate-400">
-              {t('userPlace.subtitle', { count: total })}
-            </p>
-          </div>
+    <PageContainer maxWidth="max-w-7xl">
+      <PageHeader
+        title={t('userPlace.title')}
+        subtitle={t('userPlace.subtitle', { count: total })}
+        action={
           <Button variant="primary" onClick={handleCreateClick}>
+            <Plus className="mr-1.5 h-4 w-4" />
             {t('userPlace.addPlace')}
           </Button>
-        </div>
+        }
+      />
 
-        {/* 목록 */}
-        <UserPlaceList
-          places={places}
-          isLoading={isLoading}
-          status={status}
-          search={search}
-          page={page}
-          totalPages={totalPages}
-          onStatusFilter={handleStatusFilter}
-          onSearch={handleSearch}
-          onPageChange={handlePageChange}
-          onPlaceClick={handlePlaceClick}
-        />
+      <UserPlaceList
+        places={places}
+        isLoading={isLoading}
+        status={status}
+        search={search}
+        page={page}
+        totalPages={totalPages}
+        onStatusFilter={handleStatusFilter}
+        onSearch={handleSearch}
+        onPageChange={handlePageChange}
+        onPlaceClick={handlePlaceClick}
+      />
 
-        {/* 상세 모달 */}
-        <UserPlaceDetailModal
-          open={!!selectedPlaceId && !!selectedPlace}
-          place={selectedPlace}
-          onClose={handleCloseDetail}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-        />
+      <UserPlaceDetailModal
+        open={!!selectedPlaceId && !!selectedPlace}
+        place={selectedPlace}
+        onClose={handleCloseDetail}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteClick}
+      />
 
-        {/* 삭제 확인 모달 */}
-        <UserPlaceDeleteConfirm
-          open={!!deleteTarget}
-          place={deleteTarget}
-          isDeleting={isDeleteLoading}
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={() => void handleConfirmDelete()}
-        />
-      </div>
-    </div>
+      <UserPlaceDeleteConfirm
+        open={!!deleteTarget}
+        place={deleteTarget}
+        isDeleting={isDeleteLoading}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void handleConfirmDelete()}
+      />
+    </PageContainer>
   );
 }

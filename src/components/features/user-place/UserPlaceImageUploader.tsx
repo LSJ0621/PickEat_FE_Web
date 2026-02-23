@@ -146,9 +146,9 @@ export function UserPlaceImageUploader({
         className={`relative rounded-xl border-2 border-dashed transition ${
           remainingSlots > 0
             ? isDragging
-              ? 'cursor-pointer border-orange-500 bg-orange-500/10'
-              : 'cursor-pointer border-slate-600 bg-slate-900/50 hover:border-slate-500'
-            : 'cursor-not-allowed border-slate-700 bg-slate-900/30 opacity-60'
+              ? 'cursor-pointer border-brand-primary bg-brand-primary/10'
+              : 'cursor-pointer border-border-default bg-bg-secondary hover:border-border-focus/40'
+            : 'cursor-not-allowed border-border-default bg-bg-secondary opacity-60'
         }`}
       >
         <input
@@ -162,7 +162,7 @@ export function UserPlaceImageUploader({
         />
         <div className="flex flex-col items-center justify-center py-12 px-4">
           <svg
-            className="mb-4 h-12 w-12 text-slate-400"
+            className="mb-4 h-12 w-12 text-text-tertiary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -174,25 +174,25 @@ export function UserPlaceImageUploader({
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <p className="mb-2 text-sm font-medium text-slate-300">
+          <p className="mb-2 text-sm font-medium text-text-secondary">
             {remainingSlots > 0
               ? '이미지를 드래그하거나 클릭하여 업로드'
               : '최대 개수에 도달했습니다'}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-placeholder">
             최대 {maxTotal}개, 각 {USER_PLACE.MAX_IMAGE_SIZE / (1024 * 1024)}MB 이하 (현재: {currentTotal}/{maxTotal})
           </p>
         </div>
 
         {/* 업로드된 이미지 썸네일 */}
         {(existingPhotos.length > 0 || newImages.length > 0) && (
-          <div className="border-t border-slate-700/60 px-4 pb-4 pt-3">
+          <div className="border-t border-border-default px-4 pb-4 pt-3">
             <div className="flex flex-wrap justify-center gap-3">
               {/* 기존 사진 (서버에서 가져온 URL) */}
               {existingPhotos.map((url, index) => (
                 <div
                   key={`existing-${index}`}
-                  className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-800"
+                  className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-bg-tertiary"
                 >
                   <img
                     src={url}
@@ -228,7 +228,7 @@ export function UserPlaceImageUploader({
               {newImages.map((image, index) => (
                 <div
                   key={`new-${index}`}
-                  className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-800"
+                  className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-bg-tertiary"
                 >
                   <img
                     src={getPreviewUrl(image)}

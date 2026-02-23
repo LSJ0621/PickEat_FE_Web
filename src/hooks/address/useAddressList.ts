@@ -5,8 +5,9 @@
 
 import { userService } from '@/api/services/user';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateUser } from '@/store/slices/authSlice';
+import { fetchAddresses, invalidateAddresses } from '@/store/slices/userDataSlice';
 import type { UserAddress } from '@/types/user';
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,44 +17,34 @@ export const useAddressList = () => {
   const { handleError, handleSuccess } = useErrorHandler();
   const { t } = useTranslation();
 
-  // 주소 리스트 관련 상태
-  const [addresses, setAddresses] = useState<UserAddress[]>([]);
-  const [defaultAddress, setDefaultAddress] = useState<UserAddress | null>(null);
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  // Redux에서 주소 리스트 가져오기
+  const { list: addresses, defaultAddress, isLoading: isLoadingAddresses } = useAppSelector(
+    (state) => state.userData.addresses
+  );
+
+  // UI 전용 로컬 상태
   const [selectedDeleteIds, setSelectedDeleteIds] = useState<number[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [confirmDefaultAddress, setConfirmDefaultAddress] = useState<UserAddress | null>(null);
 
-  // 주소 리스트 로드
+  // 주소 리스트 로드 (Redux thunk 사용)
   const loadAddresses = useCallback(async () => {
-    setIsLoadingAddresses(true);
-    try {
-      const [addressesResponse, defaultResponse] = await Promise.all([
-        userService.getAddresses(),
-        userService.getDefaultAddress(),
-      ]);
-      setAddresses(addressesResponse.addresses);
-      setDefaultAddress(defaultResponse.address);
-    } catch {
-      // 주소 리스트 조회 실패는 무시
-    } finally {
-      setIsLoadingAddresses(false);
-    }
-  }, []);
+    await dispatch(fetchAddresses());
+  }, [dispatch]);
 
   // 기본 주소 설정
   const handleSetDefaultAddress = useCallback(async (id: number) => {
     try {
       const updatedAddress = await userService.setDefaultAddress(id);
-      
-      // 응답값으로 Redux 업데이트
-      const latitudeValue = updatedAddress.latitude !== null && !Number.isNaN(updatedAddress.latitude) 
-        ? updatedAddress.latitude 
+
+      // 응답값으로 Redux auth 업데이트
+      const latitudeValue = updatedAddress.latitude !== null && !Number.isNaN(updatedAddress.latitude)
+        ? updatedAddress.latitude
         : null;
-      const longitudeValue = updatedAddress.longitude !== null && !Number.isNaN(updatedAddress.longitude) 
-        ? updatedAddress.longitude 
+      const longitudeValue = updatedAddress.longitude !== null && !Number.isNaN(updatedAddress.longitude)
+        ? updatedAddress.longitude
         : null;
-      
+
       dispatch(
         updateUser({
           address: updatedAddress.roadAddress,
@@ -61,7 +52,9 @@ export const useAddressList = () => {
           longitude: longitudeValue,
         })
       );
-      
+
+      // Redux 캐시 무효화 후 재로드
+      dispatch(invalidateAddresses());
       await loadAddresses();
       handleSuccess('toast.address.defaultChanged');
     } catch (error: unknown) {
@@ -113,13 +106,15 @@ export const useAddressList = () => {
 
     try {
       await userService.deleteAddresses(ids);
+      // Redux 캐시 무효화 후 재로드
+      dispatch(invalidateAddresses());
       await loadAddresses();
       setSelectedDeleteIds([]);
       handleSuccess('toast.address.deleted', { count: ids.length });
     } catch (error: unknown) {
       handleError(error, 'useAddressList');
     }
-  }, [addresses, loadAddresses, handleError, handleSuccess, t]);
+  }, [addresses, dispatch, loadAddresses, handleError, handleSuccess, t]);
 
   // 주소 삭제 선택 토글
   const handleToggleDeleteSelection = useCallback((id: number) => {

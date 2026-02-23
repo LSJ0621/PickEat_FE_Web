@@ -13,7 +13,6 @@ export {
 
 // Menu factories
 export {
-  createMockRestaurant,
   createMockMenuRecommendation,
   createMockPlaceRecommendationItem,
   createMockPlaceRecommendations,
@@ -63,8 +62,6 @@ export {
   createAgentStateWithSelectedMenu,
   createAgentStateWithAiLoading,
   createAgentStateWithAiRecommendations,
-  createAgentStateSearching,
-  createAgentStateWithRestaurantList,
   createAgentStateWithSelectedPlace,
   createEmptyAgentState,
   defaultAgentState,

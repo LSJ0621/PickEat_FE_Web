@@ -4,7 +4,6 @@
  */
 
 import type { PlaceRecommendationItem } from '@/types/menu';
-import type { Restaurant } from '@/types/search';
 
 /**
  * MenuPlaceRecommendationGroup 인터페이스
@@ -32,10 +31,6 @@ export interface AgentState {
   selectedMenu: string | null;
   menuHistoryId: number | null;
   menuRequestAddress: string | null;
-
-  // 네이버 검색 결과
-  restaurants: Restaurant[];
-  isSearching: boolean;
 
   // AI 추천 결과
   aiRecommendationGroups: MenuPlaceRecommendationGroup[];
@@ -65,8 +60,6 @@ export const defaultAgentState: AgentState = {
   selectedMenu: null,
   menuHistoryId: null,
   menuRequestAddress: null,
-  restaurants: [],
-  isSearching: false,
   aiRecommendationGroups: [],
   isAiLoading: false,
   aiLoadingMenu: null,
@@ -177,47 +170,6 @@ export function createAgentStateWithAiRecommendations(
     agent: createMockAgentState({
       selectedMenu: '김치찌개',
       aiRecommendationGroups: groups ?? defaultGroups,
-      showConfirmCard: true,
-    }),
-  };
-}
-
-/**
- * 검색 중인 Agent 상태 생성
- */
-export function createAgentStateSearching(menuName: string = '김치찌개'): { agent: AgentState } {
-  return {
-    agent: createMockAgentState({
-      selectedMenu: menuName,
-      isSearching: true,
-      showConfirmCard: true,
-    }),
-  };
-}
-
-/**
- * 레스토랑 목록이 있는 Agent 상태 생성
- */
-export function createAgentStateWithRestaurantList(
-  restaurants?: Restaurant[]
-): { agent: AgentState } {
-  const defaultRestaurants: Restaurant[] = [
-    {
-      name: '명동 김치찌개',
-      link: 'https://place.naver.com/restaurant/123',
-      phone: '02-1234-5678',
-      address: '서울시 중구 명동길 123',
-      roadAddress: '서울시 중구 명동길 123',
-      mapx: 1269869,
-      mapy: 375636,
-    },
-  ];
-
-  return {
-    agent: createMockAgentState({
-      selectedMenu: '김치찌개',
-      restaurants: restaurants ?? defaultRestaurants,
-      menuRequestAddress: '서울시 강남구 테헤란로 123',
       showConfirmCard: true,
     }),
   };

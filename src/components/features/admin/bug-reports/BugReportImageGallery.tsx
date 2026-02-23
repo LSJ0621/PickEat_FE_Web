@@ -52,9 +52,9 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-slate-100">{t('bugReport.gallery.title')}</h4>
+      <h4 className="text-sm font-semibold text-text-primary">{t('bugReport.gallery.title')}</h4>
       <div className="relative">
-        <div className="relative h-64 w-full overflow-hidden rounded-xl bg-slate-800">
+        <div className="relative h-64 w-full overflow-hidden rounded-xl bg-bg-secondary">
           <img
             src={images[currentImageIndex]}
             alt={t('bugReport.gallery.imageAlt', { index: currentImageIndex + 1 })}
@@ -65,14 +65,14 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
             decoding="async"
           />
           {/* 이미지 카운터 */}
-          <div className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
+          <div className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-text-inverse backdrop-blur-sm">
             {currentImageIndex + 1} / {images.length}
           </div>
           {/* 이전 버튼 */}
           {images.length > 1 && (
             <button
               onClick={handlePreviousImage}
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-text-inverse transition hover:bg-black/80 backdrop-blur-sm"
               aria-label={t('bugReport.gallery.previous')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
           {images.length > 1 && (
             <button
               onClick={handleNextImage}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition hover:bg-black/80 backdrop-blur-sm"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-text-inverse transition hover:bg-black/80 backdrop-blur-sm"
               aria-label={t('bugReport.gallery.next')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,8 +108,8 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
                 }}
                 className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
                   index === currentImageIndex
-                    ? 'border-pink-500'
-                    : 'border-slate-700 hover:border-slate-600'
+                    ? 'border-brand-primary'
+                    : 'border-border-default hover:border-border-focus'
                 }`}
               >
                 <img
@@ -127,4 +127,3 @@ export const BugReportImageGallery = ({ images }: BugReportImageGalleryProps) =>
     </div>
   );
 };
-

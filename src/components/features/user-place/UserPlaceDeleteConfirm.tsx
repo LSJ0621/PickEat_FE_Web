@@ -4,10 +4,14 @@
 
 import { Button } from '@/components/common/Button';
 import { ModalCloseButton } from '@/components/common/ModalCloseButton';
+import { useModalAnimation } from '@/hooks/common/useModalAnimation';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
 import type { UserPlace } from '@/types/user-place';
+import { Z_INDEX } from '@/utils/constants';
+import { useEscapeKey } from '@/hooks/common/useEscapeKey';
+import { Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
 
 interface UserPlaceDeleteConfirmProps {
   open: boolean;
@@ -25,53 +29,53 @@ export function UserPlaceDeleteConfirm({
   onConfirm,
 }: UserPlaceDeleteConfirmProps) {
   const { t } = useTranslation();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(open);
+  const { isAnimating, shouldRender } = useModalAnimation(open && !!place);
+  useModalScrollLock(open && !!place);
 
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
+  useEscapeKey(() => { if (!isDeleting) onClose(); }, open);
 
-  if (!shouldRender || !place) {
-    return null;
-  }
+  if (!shouldRender || !place) return null;
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
-      }`}
+      role="alertdialog"
+      aria-modal="true"
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
+      className={[
+        'fixed inset-0 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm',
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+      ].join(' ')}
+      onClick={() => { if (!isDeleting) onClose(); }}
     >
       <div
-        className={`relative w-full max-w-md rounded-[32px] border border-white/10 bg-slate-900/95 p-8 shadow-2xl backdrop-blur ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
-        }`}
+        style={{ zIndex: Z_INDEX.MODAL_CONTENT }}
+        className={[
+          'relative w-full max-w-md rounded-2xl border border-border-default bg-bg-surface p-8 shadow-2xl',
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+        ].join(' ')}
+        onClick={(e) => e.stopPropagation()}
       >
         <ModalCloseButton onClose={onClose} />
 
-        <h2 className="mb-4 pr-12 text-2xl font-bold text-white">
+        {/* 아이콘 */}
+        <div className="mb-4 flex justify-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500/15">
+            <Trash2 className="h-7 w-7 text-red-400" />
+          </div>
+        </div>
+
+        <h2 className="mb-2 pr-8 text-center text-xl font-bold text-text-primary">
           {t('common.delete')}
         </h2>
 
-        <p className="mb-6 text-slate-300">
+        <p className="mb-6 text-center text-sm text-text-secondary">
           {t('userPlace.confirmDelete')}
         </p>
 
-        <div className="mb-6 rounded-lg bg-slate-800/50 p-4">
-          <p className="font-semibold text-white">{place.name}</p>
-          <p className="text-sm text-slate-400">{place.address}</p>
+        {/* 가게 정보 */}
+        <div className="mb-6 rounded-2xl bg-bg-secondary p-4 text-center">
+          <p className="font-semibold text-text-primary">{place.name}</p>
+          <p className="mt-1 text-sm text-text-tertiary">{place.address}</p>
         </div>
 
         <div className="flex gap-3">

@@ -48,10 +48,10 @@ export function TrendChart({ data, period, onPeriodChange }: TrendChartProps) {
   );
 
   return (
-    <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-bg-surface border-border-default">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-white">활동 추이</CardTitle>
+          <CardTitle className="text-lg font-semibold text-text-primary">활동 추이</CardTitle>
           <div className="flex gap-2">
             {periodOptions.map((option) => (
               <button
@@ -59,8 +59,8 @@ export function TrendChart({ data, period, onPeriodChange }: TrendChartProps) {
                 onClick={() => onPeriodChange(option.value)}
                 className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                   period === option.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    ? 'bg-brand-primary text-text-inverse'
+                    : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
                 }`}
               >
                 {option.label}
@@ -72,23 +72,23 @@ export function TrendChart({ data, period, onPeriodChange }: TrendChartProps) {
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
             <XAxis
               dataKey="date"
-              stroke="#9ca3af"
-              tick={{ fill: '#9ca3af' }}
+              stroke="#8A8A8A"
+              tick={{ fill: '#8A8A8A' }}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return `${date.getMonth() + 1}/${date.getDate()}`;
               }}
             />
-            <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
+            <YAxis stroke="#8A8A8A" tick={{ fill: '#8A8A8A' }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
                 borderRadius: '0.375rem',
-                color: '#e2e8f0',
+                color: '#1A1A1A',
               }}
               labelFormatter={(value) => {
                 const date = new Date(value);
@@ -96,7 +96,7 @@ export function TrendChart({ data, period, onPeriodChange }: TrendChartProps) {
               }}
             />
             <Legend
-              wrapperStyle={{ color: '#9ca3af' }}
+              wrapperStyle={{ color: '#4A4A4A' }}
               formatter={(value) => {
                 if (value === 'users') return '신규 가입자';
                 if (value === 'recommendations') return '메뉴 추천';

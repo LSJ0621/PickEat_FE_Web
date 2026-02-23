@@ -12,25 +12,6 @@ import type {
   MenuPayload,
   PlaceReview,
 } from '@/types/menu';
-import type { Restaurant } from '@/types/search';
-
-/**
- * Creates a mock Restaurant with optional overrides
- */
-export function createMockRestaurant(
-  overrides?: Partial<Restaurant>
-): Restaurant {
-  return {
-    name: '김치찌개 전문점',
-    address: '서울시 강남구 테헤란로 123',
-    roadAddress: '서울시 강남구 테헤란로 123',
-    phone: '02-1234-5678',
-    latitude: 37.5,
-    longitude: 127.0,
-    distance: 0.5,
-    ...overrides,
-  };
-}
 
 /**
  * Creates a mock MenuRecommendationResponse with optional overrides

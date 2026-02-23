@@ -54,10 +54,10 @@ export function AdminSidebar() {
   });
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-700 flex-shrink-0">
+    <aside className="w-64 bg-bg-surface border-r border-border-default flex-shrink-0">
       {/* 로고/타이틀 */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-700">
-        <h1 className="text-xl font-bold text-white">PickEat Admin</h1>
+      <div className="h-16 flex items-center px-6 border-b border-border-default">
+        <h1 className="text-xl font-bold text-text-primary">PickEat Admin</h1>
       </div>
 
       {/* 네비게이션 메뉴 */}
@@ -77,7 +77,7 @@ export function AdminSidebar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
                     isActive
                       ? 'bg-orange-500 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                   }`}
                 >
                   <Icon className="w-5 h-5" />

@@ -45,13 +45,13 @@ export function CalendarHeader({
   isNextDisabled,
 }: CalendarHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+    <div className="flex items-center justify-between border-b border-border-default px-6 py-4">
       {/* Previous month button */}
       <button
         type="button"
         onClick={onPrevMonth}
         disabled={isPrevDisabled}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-tertiary transition-all hover:bg-bg-hover hover:text-text-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-tertiary"
         aria-label="Previous month"
       >
         <svg
@@ -79,7 +79,7 @@ export function CalendarHeader({
         type="button"
         onClick={onNextMonth}
         disabled={isNextDisabled}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-tertiary transition-all hover:bg-bg-hover hover:text-text-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-tertiary"
         aria-label="Next month"
       >
         <svg

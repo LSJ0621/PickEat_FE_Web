@@ -1,15 +1,17 @@
 /**
- * 네이버 지도 페이지
+ * Google 지도 페이지
  * 선택한 가게 또는 전체 가게 위치를 지도에 표시합니다.
  */
 
 import { Button } from '@/components/common/Button';
-import { useNaverMap } from '@/hooks/map/useNaverMap';
+import { PageContainer } from '@/components/common/PageContainer';
+import { useGoogleMap } from '@/hooks/map/useGoogleMap';
 import { useUserLocation } from '@/hooks/map/useUserLocation';
 import type { Restaurant } from '@/types/search';
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft, MapPin, Store, RefreshCw } from 'lucide-react';
 
 interface MapPageState {
   restaurants?: Restaurant[];
@@ -23,28 +25,27 @@ export const MapPage = () => {
   const { latitude, longitude, address, hasLocation } = useUserLocation();
   const navigate = useNavigate();
   const location = useLocation();
-  const naverClientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID;
-  const { restaurants = [], selectedRestaurant = null, menuName = null } = (location.state as MapPageState) || {};
+  const {
+    restaurants = [],
+    selectedRestaurant = null,
+    menuName = null,
+  } = (location.state as MapPageState) || {};
 
   const hasRestaurantData = restaurants.length > 0;
   const hasAnyLocation = hasRestaurantData || hasLocation;
+
   const blockingError = useMemo(() => {
-    if (!naverClientId) {
-      return t('map.apiKeyMissing');
-    }
     if (!hasAnyLocation) {
       return t('map.noLocationError');
     }
     return null;
-  }, [naverClientId, hasAnyLocation, t]);
+  }, [hasAnyLocation, t]);
 
-  const userLatLng = hasLocation && latitude !== null && longitude !== null
-    ? { latitude, longitude }
-    : null;
+  const userLatLng =
+    hasLocation && latitude !== null && longitude !== null ? { latitude, longitude } : null;
 
-  const { loading, runtimeError } = useNaverMap({
+  const { loading, runtimeError } = useGoogleMap({
     mapRef,
-    naverClientId,
     restaurants,
     selectedRestaurant,
     userLatLng,
@@ -63,51 +64,71 @@ export const MapPage = () => {
 
   if (!hasAnyLocation) {
     return (
-      <div className="relative min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur">
-            <h2 className="text-2xl font-semibold text-white">{t('map.noLocationData')}</h2>
-            <p className="mt-3 text-slate-300">{t('map.noLocationDataDesc')}</p>
-            <Button className="mt-6" variant="primary" size="md" onClick={() => navigate('/')}>
-              {t('navigation.backToHome')}
-            </Button>
-          </div>
+      <PageContainer maxWidth="max-w-6xl">
+        <div className="rounded-3xl border border-border-default bg-bg-surface p-8 text-center shadow-2xl">
+          <h2 className="text-2xl font-semibold text-text-primary">{t('map.noLocationData')}</h2>
+          <p className="mt-3 text-text-secondary">{t('map.noLocationDataDesc')}</p>
+          <Button className="mt-6" variant="primary" size="md" onClick={() => navigate('/')}>
+            {t('navigation.backToHome')}
+          </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 right-0 h-[480px] w-[480px] rounded-full bg-gradient-to-br from-orange-400/40 via-rose-400/30 to-purple-500/30 blur-3xl animate-gradient" />
-        <div className="absolute -bottom-52 left-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-sky-500/30 via-emerald-500/20 to-transparent blur-3xl animate-gradient" />
+    <div className="relative min-h-screen bg-bg-primary text-text-primary">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-40 right-0 h-[480px] w-[480px] rounded-full bg-gradient-to-br from-orange-300/25 via-orange-200/15 to-amber-100/10 blur-3xl" />
+        <div className="absolute -bottom-52 left-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-orange-200/15 via-amber-100/10 to-transparent blur-3xl" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/70 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        {/* Sticky header */}
+        <header className="sticky top-0 z-20 border-b border-border-default bg-bg-primary/90 backdrop-blur-md">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={handleBack} className="text-white">
-                ← {t('navigation.back')}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="inline-flex items-center gap-1.5 text-text-primary"
+                aria-label={t('navigation.back')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('navigation.back')}</span>
               </Button>
+
+              <div className="h-4 w-px bg-border-default" />
+
               <div>
-                <p className="text-xl font-semibold">{t('map.title')}</p>
+                <p className="text-sm font-semibold text-text-primary sm:text-base">
+                  {t('map.title')}
+                </p>
                 {menuName && (
-                  <p className="text-xs text-slate-400">
-                    {menuName} · {restaurants.length}{t('map.stores')}
+                  <p className="flex items-center gap-1 text-xs text-text-tertiary">
+                    <Store className="h-3 w-3" />
+                    {menuName} · {restaurants.length}
+                    {t('map.stores')}
                   </p>
                 )}
                 {!menuName && hasRestaurantData && (
-                  <p className="text-xs text-slate-400">{t('map.totalStores', { count: restaurants.length })}</p>
+                  <p className="text-xs text-text-tertiary">
+                    {t('map.totalStores', { count: restaurants.length })}
+                  </p>
                 )}
                 {!hasRestaurantData && address && (
-                  <p className="text-xs text-slate-400">📍 {address}</p>
+                  <p className="flex items-center gap-1 text-xs text-text-tertiary">
+                    <MapPin className="h-3 w-3" />
+                    {address}
+                  </p>
                 )}
               </div>
             </div>
+
             {selectedRestaurant && (
-              <div className="hidden rounded-full border border-white/15 px-4 py-1 text-xs text-white/80 sm:flex">
+              <div className="hidden items-center gap-1.5 rounded-full border border-border-default px-4 py-1 text-xs text-text-secondary sm:flex">
+                <MapPin className="h-3 w-3 text-brand-primary/70" />
                 {t('map.selected')}: {selectedRestaurant.name}
               </div>
             )}
@@ -116,25 +137,33 @@ export const MapPage = () => {
 
         <main className="relative flex-1">
           {loading && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/50 backdrop-blur">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-bg-primary/50 backdrop-blur-sm">
               <div className="text-center">
-                <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-orange-500"></div>
-                <p className="text-sm text-slate-300">{t('map.loadingMap')}</p>
+                <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-brand-primary" />
+                <p className="text-sm text-text-secondary">{t('map.loadingMap')}</p>
               </div>
             </div>
           )}
           {error && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-bg-primary/70 backdrop-blur-sm">
               <div className="mx-4 max-w-md rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-center shadow-2xl">
-                <h3 className="mb-2 text-lg font-semibold text-red-400">{t('map.errorOccurred')}</h3>
-                <p className="mb-4 text-sm text-slate-200">{error}</p>
-                <Button variant="primary" size="sm" onClick={() => window.location.reload()}>
+                <h3 className="mb-2 text-lg font-semibold text-red-500">
+                  {t('map.errorOccurred')}
+                </h3>
+                <p className="mb-4 text-sm text-text-secondary">{error}</p>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center gap-1.5"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
                   {t('map.refresh')}
                 </Button>
               </div>
             </div>
           )}
-          <div ref={mapRef} className="h-[calc(100vh-73px)] min-h-[600px] w-full" />
+          <div ref={mapRef} className="h-[calc(100vh-57px)] min-h-[600px] w-full sm:h-[calc(100vh-65px)]" />
         </main>
       </div>
     </div>

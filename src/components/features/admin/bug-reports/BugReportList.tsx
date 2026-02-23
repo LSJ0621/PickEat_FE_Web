@@ -43,9 +43,9 @@ export const BugReportList = ({
 
   if (bugReports.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-slate-700 bg-slate-900/50 py-12">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-border-default bg-bg-primary py-12">
         <svg
-          className="mb-4 h-12 w-12 text-slate-500"
+          className="mb-4 h-12 w-12 text-text-placeholder"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -57,7 +57,7 @@ export const BugReportList = ({
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           />
         </svg>
-        <p className="text-slate-400">{t('bugReport.list.empty')}</p>
+        <p className="text-text-tertiary">{t('bugReport.list.empty')}</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export const BugReportList = ({
     <div className="space-y-3">
       {/* 전체 선택 */}
       {onSelectionChange && (
-        <div className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
+        <div className="flex items-center gap-3 rounded-lg border border-border-default bg-bg-primary p-4">
           <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
@@ -77,9 +77,9 @@ export const BugReportList = ({
                 }
               }}
               onChange={(e) => handleSelectAll(e.target.checked)}
-              className="h-5 w-5 cursor-pointer rounded border-slate-600 bg-slate-800 text-pink-500 focus:ring-2 focus:ring-pink-500/20"
+              className="h-5 w-5 cursor-pointer rounded border-border-default bg-bg-surface text-brand-primary focus:ring-2 focus:ring-brand-primary/20"
             />
-            <span className="text-sm text-slate-300">
+            <span className="text-sm text-text-secondary">
               {t('bugReport.list.selectAll')} {selectedIds.length > 0 && `(${selectedIds.length})`}
             </span>
           </label>
@@ -101,4 +101,3 @@ export const BugReportList = ({
     </div>
   );
 };
-

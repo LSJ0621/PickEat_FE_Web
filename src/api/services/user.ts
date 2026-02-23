@@ -119,15 +119,10 @@ export const userService = {
 
   // 주소 리스트 조회
   getAddresses: async (): Promise<GetAddressesResponse> => {
-    const response = await apiClient.get<UserAddress[] | GetAddressesResponse>(
+    const response = await apiClient.get<GetAddressesResponse>(
       ENDPOINTS.USER.ADDRESSES
     );
-    // 서버가 배열을 직접 반환하는 경우와 객체로 감싸서 반환하는 경우 모두 처리
-    const data = response.data;
-    if (Array.isArray(data)) {
-      return { addresses: data };
-    }
-    return data as GetAddressesResponse;
+    return response.data;
   },
 
   // 기본 주소 조회

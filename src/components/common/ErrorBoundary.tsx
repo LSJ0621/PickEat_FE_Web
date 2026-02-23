@@ -76,12 +76,12 @@ export class ErrorBoundary extends React.Component<
    */
   renderErrorFallback() {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-bg-primary">
         <div className="text-center">
           {/* Error Icon */}
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-orange-500/10">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-primary/10">
             <svg
-              className="h-12 w-12 text-orange-500"
+              className="h-12 w-12 text-brand-primary"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -98,12 +98,12 @@ export class ErrorBoundary extends React.Component<
           </div>
 
           {/* Error Title */}
-          <h1 className="mb-2 text-2xl font-bold text-white">
+          <h1 className="mb-2 text-2xl font-bold text-text-primary">
             Something went wrong
           </h1>
 
           {/* Error Description */}
-          <p className="mb-8 text-gray-400">
+          <p className="mb-8 text-text-tertiary">
             An unexpected error occurred. Please try again.
           </p>
 
@@ -112,7 +112,7 @@ export class ErrorBoundary extends React.Component<
             {/* Refresh Button */}
             <button
               onClick={this.handleRetry}
-              className="rounded-lg bg-orange-500 px-6 py-3 font-medium text-white transition-colors hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="rounded-lg bg-brand-primary px-6 py-3 font-medium text-text-inverse transition-colors hover:bg-[#e55f2f] focus:outline-none focus:ring-2 focus:ring-border-focus focus:ring-offset-2 focus:ring-offset-white"
               aria-label="Refresh page"
             >
               Refresh
@@ -121,7 +121,7 @@ export class ErrorBoundary extends React.Component<
             {/* Go to Home Button */}
             <button
               onClick={() => window.location.href = '/'}
-              className="rounded-lg border border-gray-600 bg-transparent px-6 py-3 font-medium text-gray-400 transition-colors hover:border-gray-500 hover:bg-slate-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="rounded-lg border border-border-default bg-bg-surface px-6 py-3 font-medium text-text-secondary transition-colors hover:border-border-focus hover:bg-bg-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus focus:ring-offset-2 focus:ring-offset-white"
               aria-label="Go to home page"
             >
               Go to Home

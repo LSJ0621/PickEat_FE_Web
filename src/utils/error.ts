@@ -87,7 +87,7 @@ export function handleApiError(
   context: string,
   handleError: (error: unknown, context: string) => void
 ): void {
-  if (error instanceof Error && error.message.includes('Network')) {
+  if (axios.isAxiosError(error) && !error.response) {
     handleError(new Error(i18n.t('common.networkError')), context);
   } else {
     handleError(error, context);

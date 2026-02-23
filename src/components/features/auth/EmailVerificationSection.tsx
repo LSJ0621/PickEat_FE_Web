@@ -5,6 +5,8 @@
 
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { UseEmailVerificationReturn } from '@/hooks/auth/useEmailVerification';
 
 interface EmailVerificationSectionProps {
@@ -24,7 +26,6 @@ export const EmailVerificationSection = ({
 }: EmailVerificationSectionProps) => {
   const { t } = useTranslation();
 
-  // 이메일 변경 핸들러 (외부 상태와 동기화)
   const handleEmailChange = (newEmail: string) => {
     emailVerification.setEmail(newEmail);
     if (onEmailChange) {
@@ -32,7 +33,6 @@ export const EmailVerificationSection = ({
     }
   };
 
-  // 인증 코드 변경 핸들러 (외부 상태와 동기화)
   const handleVerificationCodeChange = (code: string) => {
     emailVerification.setVerificationCode(code);
     if (onVerificationCodeChange) {
@@ -47,18 +47,18 @@ export const EmailVerificationSection = ({
     !emailVerification.verificationCode.trim();
 
   const verifyButtonClass = isVerifyButtonDisabled
-    ? 'rounded-2xl bg-slate-800/80 px-4 py-3 text-sm font-semibold text-slate-500 cursor-not-allowed transition'
+    ? 'rounded-2xl bg-bg-secondary px-4 py-3 text-sm font-semibold text-text-placeholder cursor-not-allowed transition'
     : 'rounded-2xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/30 hover:brightness-110 transition';
 
   return (
     <>
       {/* 이메일 입력 */}
       <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-200">
+        <Label htmlFor="email" className="mb-2 block text-text-primary">
           {t('auth.email')}
-        </label>
+        </Label>
         <div className="flex gap-2">
-          <input
+          <Input
             id="email"
             type="email"
             value={emailVerification.email}
@@ -69,16 +69,16 @@ export const EmailVerificationSection = ({
                 ? 'border-red-500/60'
                 : emailVerification.emailAvailable === true
                 ? 'border-green-400'
-                : 'border-white/15'
-            } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60`}
+                : 'border-border-default'
+            } bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-0`}
           />
           <button
             onClick={emailVerification.handleEmailAction}
             disabled={emailVerification.isEmailActionDisabled()}
-            className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+            className={`shrink-0 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
               emailVerification.emailChecked && emailVerification.emailAvailable === true
                 ? 'bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white shadow-md shadow-pink-500/30 hover:brightness-110 disabled:opacity-60 disabled:brightness-100'
-                : 'border border-white/15 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50'
+                : 'border border-border-default bg-bg-secondary text-text-primary hover:bg-bg-hover disabled:opacity-50'
             }`}
           >
             {emailVerification.getEmailActionLabel()}
@@ -95,7 +95,7 @@ export const EmailVerificationSection = ({
       {/* 이메일 인증 */}
       <div>
         {emailVerification.isCodeSent && !emailVerification.isEmailVerified && (
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-text-tertiary">
             <span>{t('emailVerification.didNotReceive')}</span>
             <button
               type="button"
@@ -106,9 +106,9 @@ export const EmailVerificationSection = ({
             </button>
           </div>
         )}
-        <div className="text-sm font-medium text-slate-200">{t('emailVerification.title')}</div>
+        <div className="text-sm font-medium text-text-primary">{t('emailVerification.title')}</div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <input
+          <Input
             type="text"
             inputMode="numeric"
             maxLength={6}
@@ -116,13 +116,13 @@ export const EmailVerificationSection = ({
             onChange={(e) => handleVerificationCodeChange(e.target.value)}
             placeholder={t('emailVerification.codePlaceholder')}
             disabled={!emailVerification.isCodeSent || emailVerification.isEmailVerified}
-            className={`flex-1 min-w-0 rounded-2xl border ${
+            className={`min-w-0 flex-1 rounded-2xl border ${
               verificationCodeError || emailVerification.emailError
                 ? 'border-red-500/60'
                 : emailVerification.isEmailVerified
                 ? 'border-green-400'
-                : 'border-white/15'
-            } bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60 disabled:opacity-60`}
+                : 'border-border-default'
+            } bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-0 disabled:opacity-60`}
           />
           <Button
             onClick={emailVerification.handleVerifyCode}
@@ -152,4 +152,3 @@ export const EmailVerificationSection = ({
     </>
   );
 };
-

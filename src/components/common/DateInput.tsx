@@ -37,7 +37,7 @@ export interface DateInputProps {
  * Format date to YYYY/MM/DD display format
  * Example: 2026/01/19
  */
-function formatDate(dateStr: string): string {
+function formatDateForInput(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
   const formattedMonth = String(month).padStart(2, '0');
   const formattedDay = String(day).padStart(2, '0');
@@ -86,7 +86,7 @@ export function DateInput({
     setIsPickerOpen(false);
   };
 
-  const displayText = value ? formatDate(value) : placeholder;
+  const displayText = value ? formatDateForInput(value) : placeholder;
   const selectedDate = value ? stringToDate(value) : new Date();
 
   return (
@@ -97,12 +97,12 @@ export function DateInput({
         disabled={disabled}
         className={`flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
           disabled
-            ? 'cursor-not-allowed border-slate-700 bg-slate-800 text-slate-500'
-            : 'border-slate-600 bg-slate-800 text-white hover:border-slate-500'
+            ? 'cursor-not-allowed border-border-default bg-bg-secondary text-text-placeholder'
+            : 'border-border-default bg-bg-surface text-text-primary hover:border-border-focus'
         } ${className}`}
       >
-        <span className={value ? 'text-white' : 'text-slate-400'}>{displayText}</span>
-        <Calendar className={`ml-2 h-4 w-4 ${disabled ? 'text-slate-600' : 'text-slate-400'}`} />
+        <span className={value ? 'text-text-primary' : 'text-text-placeholder'}>{displayText}</span>
+        <Calendar className={`ml-2 h-4 w-4 ${disabled ? 'text-text-placeholder' : 'text-text-tertiary'}`} />
       </button>
 
       <CalendarDatePicker

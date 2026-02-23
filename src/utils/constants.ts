@@ -11,11 +11,14 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: 'refreshToken',
   USER: 'user',
   THEME: 'theme',
+  RATING_PROMPT_DISMISSED: 'ratingPromptDismissed',
+  RATING_PROMPT_NEVER_SHOW: 'ratingPromptNeverShow',
+  ONBOARDING_COMPLETED: 'onboardingCompleted',
 } as const;
 
 // API 관련
 export const API_CONFIG = {
-  TIMEOUT: 10000,
+  TIMEOUT: 30000,
   MAX_RETRY: 3,
 } as const;
 
@@ -133,6 +136,14 @@ export const USER_PLACE = {
   ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
 } as const;
 
+// 시간대 슬롯 (홈 인사 메시지)
+export const TIME_SLOTS = {
+  MORNING: { start: 5, end: 11 },
+  LUNCH: { start: 11, end: 17 },
+  EVENING: { start: 17, end: 21 },
+  NIGHT: { start: 21 }, // 21:00-04:59, fallthrough in getTimeSlot
+} as const;
+
 // Z-Index 체계
 export const Z_INDEX = {
   HEADER: 30,
@@ -143,4 +154,7 @@ export const Z_INDEX = {
   PRIORITY_MODAL: 200,
   TOAST: 300,
 } as const;
+
+// 캐시 유효 시간 (5분)
+export const CACHE_STALE_MS = 5 * 60 * 1000;
 

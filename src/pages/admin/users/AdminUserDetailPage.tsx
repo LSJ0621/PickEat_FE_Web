@@ -118,11 +118,11 @@ export const AdminUserDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-slate-950 text-white">
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary text-text-primary">
         <AdminPageBackground />
         <div className="relative z-10 text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-slate-600 border-t-pink-500 mx-auto" />
-          <p className="text-slate-400">사용자 정보를 불러오는 중...</p>
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-border-default border-t-brand-primary mx-auto" />
+          <p className="text-text-tertiary">사용자 정보를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -130,13 +130,13 @@ export const AdminUserDetailPage = () => {
 
   if (!user) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-slate-950 text-white">
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary text-text-primary">
         <AdminPageBackground />
         <div className="relative z-10 text-center">
-          <p className="text-slate-400">사용자를 찾을 수 없습니다.</p>
+          <p className="text-text-tertiary">사용자를 찾을 수 없습니다.</p>
           <button
             onClick={handleBack}
-            className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-white transition hover:bg-slate-700"
+            className="mt-4 rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-text-primary transition hover:bg-bg-hover"
           >
             목록으로 돌아가기
           </button>
@@ -146,7 +146,7 @@ export const AdminUserDetailPage = () => {
   }
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
+    <div className="relative flex min-h-screen items-start justify-center bg-bg-primary px-4 pt-20 pb-10 text-text-primary">
       <AdminPageBackground />
 
       <div className="relative z-10 w-full max-w-6xl">
@@ -154,13 +154,13 @@ export const AdminUserDetailPage = () => {
         <div className="mb-6">
           <button
             onClick={handleBack}
-            className="mb-4 flex items-center gap-2 text-slate-400 transition hover:text-white"
+            className="mb-4 flex items-center gap-2 text-text-tertiary transition hover:text-text-primary"
           >
             <ArrowLeft className="h-5 w-5" />
             목록으로 돌아가기
           </button>
-          <h1 className="mb-2 text-3xl font-bold text-white">사용자 상세</h1>
-          <p className="text-slate-400">사용자의 상세 정보를 확인하고 관리하세요.</p>
+          <h1 className="mb-2 text-3xl font-bold text-text-primary">사용자 상세</h1>
+          <p className="text-text-tertiary">사용자의 상세 정보를 확인하고 관리하세요.</p>
         </div>
 
         {/* 컨텐츠 */}

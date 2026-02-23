@@ -19,46 +19,46 @@ export function AdminListItem({ admin, currentUserId, onRemove }: AdminListItemP
   const isSuperAdminUser = isSuperAdmin(admin.role);
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/50 p-4 hover:bg-slate-800 transition-colors">
+    <div className="flex items-center justify-between rounded-lg border border-border-default bg-bg-surface p-4 hover:bg-bg-hover transition-colors">
       <div className="flex items-center gap-4 flex-1">
-        <UserCheck className="h-5 w-5 text-slate-400" />
+        <UserCheck className="h-5 w-5 text-text-tertiary" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-medium text-white truncate">{admin.name || admin.email}</p>
+            <p className="font-medium text-text-primary truncate">{admin.name || admin.email}</p>
             {admin.role === 'SUPER_ADMIN' && (
-              <Badge variant="default" className="bg-purple-600 text-white text-xs">
+              <Badge variant="default" className="bg-purple-600 text-text-inverse text-xs">
                 슈퍼 관리자
               </Badge>
             )}
             {admin.role === 'ADMIN' && (
-              <Badge variant="default" className="bg-blue-600 text-white text-xs">
+              <Badge variant="default" className="bg-brand-primary text-text-inverse text-xs">
                 관리자
               </Badge>
             )}
             {isCurrentUser && (
-              <Badge variant="default" className="bg-slate-600 text-white text-xs">
+              <Badge variant="default" className="bg-bg-tertiary text-text-secondary text-xs">
                 본인
               </Badge>
             )}
           </div>
-          <p className="text-sm text-slate-400">{admin.email}</p>
+          <p className="text-sm text-text-tertiary">{admin.email}</p>
         </div>
       </div>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-placeholder">
             {admin.lastLoginAt
               ? `마지막 로그인: ${formatDateTime(admin.lastLoginAt)}`
               : '로그인 기록 없음'}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-placeholder">
             가입일: {formatDateTime(admin.createdAt)}
           </p>
         </div>
         <button
           onClick={() => onRemove(admin)}
           disabled={isCurrentUser || isSuperAdminUser}
-          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title={
             isCurrentUser
               ? '본인의 권한은 제거할 수 없습니다'

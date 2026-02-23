@@ -25,6 +25,7 @@ export const useInitialDataLoad = (options: UseInitialDataLoadOptions): void => 
   const hasInitializedRef = useRef(false);
   const currentPathnameRef = useRef<string>(location.pathname);
   const loadFnRef = useRef(loadFn);
+  const prevDepsRef = useRef<unknown[]>([...dependencies]);
 
   // 항상 최신 loadFn 유지 (stale closure 방지)
   useEffect(() => {
@@ -47,6 +48,18 @@ export const useInitialDataLoad = (options: UseInitialDataLoadOptions): void => 
 
   // 데이터 로드 (StrictMode 대응)
   useEffect(() => {
+    // StrictMode는 동일한 값으로 이중 실행하므로 depsChanged=false → 재로드 방지
+    // 실제 dependency 변경 시에만 depsChanged=true → hasInitializedRef 리셋하여 재로드 허용
+    const prevDeps = prevDepsRef.current;
+    const depsChanged =
+      prevDeps.length !== dependencies.length ||
+      dependencies.some((dep, i) => !Object.is(dep, prevDeps[i]));
+
+    if (depsChanged) {
+      prevDepsRef.current = [...dependencies];
+      hasInitializedRef.current = false;
+    }
+
     if (!enabled) {
       // enabled가 false가 되면 리셋하여 다음에 enabled=true일 때 다시 로드되도록
       hasInitializedRef.current = false;

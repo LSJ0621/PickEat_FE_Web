@@ -89,81 +89,57 @@
     }
   },
   "home": {
-    "title": "AI 추천 주문",
-    "subtitle": "팀의 취향과 날씨 데이터를 조합해 최적의 메뉴를 추천합니다",
-    "ctaButton": "AI 메뉴 추천 받기",
-    "loginPrompt": "로그인 후 AI 에이전트가 준비한 맞춤 메뉴를 확인하세요",
+    "greeting": {
+      "morning": "좋은 아침이에요!",
+      "lunch": "점심 시간이에요!",
+      "evening": "저녁 뭐 먹을까요?",
+      "night": "야식이 땡기는 밤!",
+      "subtext": "오늘은 뭐 먹지?",
+      "subtextGuest": "AI가 기분과 상황에 맞는 메뉴를 추천해드려요",
+      "socialHint": "카카오 · Google로 간편 시작",
+      "ctaAuthenticated": "AI에게 오늘의 메뉴 추천받기",
+      "ctaGuest": "무료로 시작하기",
+      "heroSection": "히어로 섹션"
+    },
     "hero": {
-      "badge": "PickEat OS",
-      "title": "오늘 뭐 먹지?",
-      "titleHighlight": "AI 에이전트",
-      "titleSuffix": "에게 맡기세요",
-      "description": "PickEat은 메뉴 추천과 가게 탐색 과정을 자동화하는 AI 기반 추천 OS입니다.",
-      "descriptionContinued": "로그인하고 나만의 식사 플로우를 경험해보세요.",
-      "loginButton": "로그인하고 시작하기",
-      "previewButton": "에이전트 화면 미리보기",
-      "startButton": "에이전트 바로 이용하기",
-      "historyButton": "최근 추천 이력 보기"
+      "badge": "AI 메뉴 추천 서비스",
+      "headline": "오늘 뭐 먹을지,\nAI가 골라드릴게요",
+      "subtext": "상황을 알려주면 AI 에이전트가 딱 맞는 메뉴를 추천해드려요",
+      "cta": "지금 추천받기",
+      "socialHint": "카카오 · Google로 간편 시작"
+    },
+    "recentHistory": {
+      "title": "최근 추천 기록",
+      "viewAll": "전체 보기",
+      "viewDetail": "자세히 보기",
+      "noDate": "날짜 없음"
+    },
+    "communityPlaces": {
+      "title": "커뮤니티 맛집",
+      "viewAll": "전체 보기",
+      "register": "맛집 등록하기",
+      "noImage": "사진 없음"
     },
     "features": {
-      "badge": "Features",
-      "title": "핵심 기능",
-      "description": "AI 기반의 스마트한 식사 추천 시스템으로 더 나은 선택을 경험하세요.",
-      "cardBadge": "Feature",
-      "aiRecommendation": {
-        "title": "AI 메뉴 추천",
-        "description": "기분, 날씨, 취향을 반영한 메뉴를 실시간으로 제안합니다."
-      },
-      "storeSearch": {
-        "title": "메뉴별 가게 탐색",
-        "description": "원하는 메뉴를 고르면 근처 가게 후보를 AI가 선별합니다."
-      },
-      "history": {
-        "title": "히스토리 관리",
-        "description": "추천받은 메뉴와 가게 이력을 한눈에 확인하고 재탐색할 수 있습니다."
-      }
+      "title": "PickEat이 제공하는 기능",
+      "subtitle": "다음 맛집을 발견하는 데 필요한 모든 것",
+      "aiRecommendation": { "title": "AI 메뉴 추천", "description": "상황과 취향을 반영한 맞춤 메뉴를 AI가 추천합니다" },
+      "placeDiscovery": { "title": "맛집 탐색", "description": "추천 메뉴를 파는 주변 식당을 AI가 찾아드려요" },
+      "community": { "title": "커뮤니티 맛집", "description": "직접 등록한 로컬 맛집을 다른 사용자와 공유하세요" },
+      "weather": { "title": "취향 분석", "description": "선호하는 맛, 재료, 식습관을 분석해 나만의 추천을 제공합니다" }
     },
     "howItWorks": {
-      "badge": "How it works",
-      "title": "AI 추천 플로우",
-      "description": "간단한 3단계로 원하는 메뉴와 가게를 찾아보세요.",
-      "step1": {
-        "title": "AI에게 오늘의 기분이나 상황을 알려주세요.",
-        "description": "간단한 대화로 당신의 상황을 파악합니다."
-      },
-      "step2": {
-        "title": "추천된 메뉴 중 마음에 드는 항목을 선택하세요.",
-        "description": "AI가 제안한 메뉴 중에서 선택하면 됩니다."
-      },
-      "step3": {
-        "title": "메뉴별 AI 가게 추천으로 바로 근처 식당을 확인하세요.",
-        "description": "선택한 메뉴를 판매하는 주변 식당을 추천해드립니다."
-      }
-    },
-    "highlights": {
-      "badge": "Highlights",
-      "title": "주요 기능 하이라이트",
-      "description": "PickEat의 핵심 기능을 통해 더 스마트한 식사 선택을 경험하세요.",
-      "aiRecommendation": {
-        "title": "AI 추천 기능",
-        "description": "개인화된 메뉴 추천으로 매일 새로운 선택을 경험하세요."
-      },
-      "mapSearch": {
-        "title": "지도 기반 검색",
-        "description": "지도와 연동하여 실제 위치 기반 식당을 찾아드립니다."
-      },
-      "personalized": {
-        "title": "개인화된 추천",
-        "description": "당신의 취향과 이력을 학습하여 더 정확한 추천을 제공합니다."
-      }
+      "title": "3단계로 시작하기",
+      "subtitle": "몇 단계만으로 나만의 맞춤 맛집 추천을 받아보세요",
+      "stepLabel": "{{number}}단계",
+      "step1": { "title": "상황을 알려주세요", "description": "오늘의 상황이나 요청사항을 구체적으로 알려주세요" },
+      "step2": { "title": "메뉴를 선택하세요", "description": "AI가 추천한 메뉴 중 마음에 드는 걸 고르세요" },
+      "step3": { "title": "맛집을 확인하세요", "description": "선택한 메뉴를 파는 주변 식당을 바로 확인하세요" }
     },
     "cta": {
-      "title": "지금 바로 PickEat을 시작해보세요",
-      "description": "로그인 후 AI 에이전트가 준비한 맞춤 추천과 가게 탐색을 경험할 수 있습니다.",
-      "loginButton": "이메일로 로그인",
-      "previewButton": "에이전트 미리보기",
-      "startButton": "에이전트로 이동",
-      "mypageButton": "마이페이지 열어보기"
+      "title": "지금 바로 시작하세요",
+      "description": "AI가 당신의 완벽한 한 끼를 찾아드립니다",
+      "button": "무료로 추천받기"
     }
   },
   "errors": {
@@ -297,17 +273,38 @@
     "setDefaultAddress": "기본주소 변경",
     "setDefaultAddressMessage": "를 기본주소로 사용하시겠습니까?",
     "honorific": "님",
+    "gender": {
+      "male": "남성",
+      "female": "여성",
+      "other": "기타"
+    },
+    "sections": {
+      "account": "계정 관리",
+      "activity": "활동 내역",
+      "support": "지원",
+      "admin": "관리자"
+    },
+    "tabs": {
+      "profile": "프로필",
+      "preferences": "취향",
+      "address": "주소",
+      "settings": "설정"
+    },
     "preferences": {
       "title": "취향",
       "edit": "취향 수정",
       "save": "취향 정보 저장",
       "loading": "로딩 중...",
       "noPreferences": "등록된 취향 정보가 없습니다.",
+      "noPreferencesSetup": "취향을 설정하면 AI가 분석해드려요",
       "aiReport": "AI 리포트"
     },
     "profile": {
       "title": "프로필 정보",
-      "birthYear": "출생연도",
+      "birthDate": "생년월일",
+      "yearLabel": "년",
+      "monthLabel": "월",
+      "dayLabel": "일",
       "gender": "성별",
       "genderMale": "남성",
       "genderFemale": "여성",
@@ -335,7 +332,8 @@
       "selected": "선택한 주소",
       "aliasPlaceholder": "별칭 입력 (예: 집, 회사) - 선택사항",
       "clearSelection": "선택 취소",
-      "addButton": "주소 추가"
+      "addButton": "주소 추가",
+      "default": "기본"
     }
   },
   "userPlace": {
@@ -407,6 +405,10 @@
       "submit": "메뉴 추천 받기",
       "loading": "AI가 메뉴를 추천하고 있어요...",
       "loadingHint": "잠시만 기다려주세요",
+      "validating": "프롬프트를 검증하고 있습니다...",
+      "searching": "검증이 완료되었습니다. 웹서치를 진행하겠습니다...",
+      "retrying": "응답이 오지 않아 재시도 하겠습니다",
+      "retryHint": "잠시만 더 기다려주세요",
       "result": "추천 메뉴",
       "select": "메뉴 선택하기",
       "reason": "추천 이유",
@@ -458,38 +460,27 @@
     "menuSelectionUpdated": "메뉴 선택이 수정되었습니다."
   },
   "agent": {
-    "title": "기분 · 날씨 · 위치를 이해하는 추천과",
+    "title": "상황을 이해하는 AI 메뉴 추천과",
     "subtitle": "주변 맛집 탐색",
     "description": "PickEat 홈에서 AI 추천을 받고, 바로 근처 매장까지 확인하세요.",
     "loginToGetRecommendation": "로그인하고 추천 받기",
     "quickStartWithKakao": "카카오로 빠른 시작",
     "loginRequired": "맞춤 추천을 받으려면 로그인하세요",
-    "loginRequiredDesc": "로그인하면 오늘의 기분을 반영한 추천과 주변 식당 탐색을 하나의 보드에서 진행할 수 있습니다.",
+    "loginRequiredDesc": "로그인하면 맞춤 메뉴 추천과 주변 식당 탐색을 하나의 보드에서 진행할 수 있습니다.",
     "goToLogin": "로그인 페이지로 이동",
-    "exploreOptions": "에 대해 어떤 방식으로 탐색할까요?",
-    "normalSearch": "일반 검색",
-    "aiRecommendation": "AI 추천 보기",
-    "noLocationData": "위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.",
+    "confirmAiRecommendation": "에 대해 AI 추천을 받으시겠습니까?",
     "needsAddressForAi": "주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.",
     "needsSetupRedirect": "취향정보와 주소를 먼저 등록해주세요.",
     "smartCompanion": "Smart Eatery Companion",
-    "tabs": {
-      "generalSearch": "일반 검색",
-      "aiRecommendation": "AI 추천"
-    },
     "results": {
       "selectMenu": "메뉴를 선택해주세요",
       "selectMenuHint": "메뉴 추천을 받고 선택해주세요.",
-      "noSearchResults": "일반 검색 결과가 없습니다.",
-      "trySearch": "일반 검색을 실행해보세요.",
       "noAiResults": "AI 추천 결과가 없습니다.",
-      "tryAiRecommendation": "AI 추천을 실행해보세요.",
-      "noResultsYet": "아직 결과가 없습니다.",
-      "tryBothOptions": "일반 검색 또는 AI 추천을 실행해보세요."
+      "tryAiRecommendation": "AI 추천을 실행해보세요."
     }
   },
   "map": {
-    "title": "네이버 지도",
+    "title": "Google 지도",
     "stores": "개 매장",
     "totalStores": "총 {{count}}개 매장",
     "selected": "선택됨",
@@ -498,13 +489,12 @@
     "refresh": "새로고침",
     "noLocationData": "표시할 위치 정보가 없습니다",
     "noLocationDataDesc": "먼저 주변 식당을 검색한 뒤, 지도 보기 버튼을 눌러주세요.",
-    "apiKeyMissing": "네이버 지도 API 키가 설정되지 않았습니다. .env에 VITE_NAVER_MAP_CLIENT_ID를 추가해주세요.",
     "noLocationError": "표시할 위치 정보가 없습니다. 주소를 등록하거나 가게 목록에서 지도를 열어주세요.",
-    "scriptLoadTimeout": "네이버 지도 스크립트 로드 타임아웃",
-    "scriptLoadFailed": "네이버 지도 스크립트 로드 실패",
-    "keyNotSet": "네이버 지도 키가 설정되지 않았습니다.",
+    "scriptLoadTimeout": "Google 지도 스크립트 로드 타임아웃",
+    "scriptLoadFailed": "Google 지도 스크립트 로드 실패",
+    "keyNotSet": "Google 지도 키가 설정되지 않았습니다.",
     "noStoresToDisplay": "표시할 매장이 없습니다.",
-    "mapInitFailed": "네이버 지도 객체를 초기화하지 못했습니다.",
+    "mapInitFailed": "Google 지도 객체를 초기화하지 못했습니다.",
     "noCoordinates": "표시할 좌표가 없습니다.",
     "loadMapError": "지도를 불러오는 중 오류가 발생했습니다.",
     "initFailed": "지도 초기화에 실패했습니다",
@@ -541,7 +531,10 @@
     "communityInfo": "가게 정보",
     "phoneNumber": "전화번호",
     "openingHoursLabel": "영업시간",
-    "menuTypesLabel": "메뉴 종류"
+    "menuTypesLabel": "메뉴 종류",
+    "noDetailsAvailable": "이 가게의 상세 정보가 없습니다",
+    "googlePlaceRatingNotSupported": "Google 검색 가게는 평점 등록을 지원하지 않습니다",
+    "selectSuccess": "가게가 선택되었습니다. 방문 후 평점을 남겨보세요!"
   },
   "validation": {
     "required": "필수 입력 항목입니다.",
@@ -711,7 +704,7 @@
     "searchResults": "{{menuName}} 검색 결과 ({{count}}개)",
     "searchResultsTitle": "{{menuName}} 검색 결과",
     "close": "닫기",
-    "viewMoreOnNaverMap": "네이버 지도에서 더 많은 결과 확인하기",
+    "viewMoreOnGoogleMap": "Google 지도에서 더 많은 결과 확인하기",
     "viewMap": "지도 보기",
     "viewSite": "사이트 보기",
     "nearbyResults": "주변 식당 검색 결과",
@@ -723,6 +716,8 @@
     "noRecommendations": "아직 추천 결과가 없습니다. AI 추천을 실행해보세요.",
     "tapCardForDetails": "가게 카드를 누르면 상세 정보를 확인할 수 있습니다.",
     "aiSearching": "AI가 가게를 찾는 중입니다...",
+    "aiSearchingDetailed": "AI가 웹에서 검색하고 가게를 탐색중입니다",
+    "aiRetrying": "응답이 오지 않아 재시도 하겠습니다",
     "recommendationStores": "추천 매장",
     "totalStoresVisible": "총 {{count}}개 매장이 한눈에 보입니다.",
     "andMoreStores": "외 {{count}}개 매장",
@@ -734,7 +729,7 @@
     "aiRecommendation": "AI 추천",
     "close": "닫기",
     "exploreOptions": "{{menuName}}에 대해 어떤 방식으로 탐색할까요?",
-    "normalSearch": "일반 검색 (네이버)",
+    "normalSearch": "일반 검색",
     "aiRecommendGet": "AI 추천 받기",
     "noLocationWarning": "위치 정보가 없습니다. 주소를 등록해야 식당을 검색할 수 있습니다.",
     "needsAddressForAi": "주소 또는 위치 정보가 있어야 AI 추천을 사용할 수 있습니다.",
@@ -992,6 +987,26 @@
       "buttonProposal": "제안서 받기"
     }
   },
+  "rating": {
+    "placeRatingHistory": "가게 선택 이력",
+    "goToRate": "평점 남기기",
+    "dismiss": "건너뛰기",
+    "neverShowAgain": "다시 보지 않기",
+    "statusRated": "평가 완료",
+    "statusSkipped": "안 갔어요",
+    "statusPending": "평가 대기",
+    "noHistory": "가게 선택 이력이 없습니다",
+    "promptMessage": "방문은 어떠셨나요?",
+    "promptTitle": "에 방문하셨나요?",
+    "didNotVisit": "안 갔어요",
+    "submit": "제출",
+    "submitSuccess": "평점이 등록되었습니다",
+    "skipSuccess": "안 갔어요로 처리되었습니다",
+    "page": "페이지",
+    "of": "/",
+    "previous": "이전",
+    "next": "다음"
+  },
   "admin": {
     "userPlaces": {
       "title": "유저 가게 관리",
@@ -1023,5 +1038,48 @@
         "rejected": "가게가 거절되었습니다."
       }
     }
+  },
+  "onboarding": {
+    "skip": "건너뛰기",
+    "next": "다음",
+    "prev": "이전",
+    "getStarted": "시작하기",
+    "step1": {
+      "title": "PickEat에 오신 것을 환영합니다!",
+      "subtitle": "AI가 오늘 뭐 먹을지 추천해드려요",
+      "description": "상황을 알려주면 딱 맞는 메뉴와 맛집을 AI가 찾아드려요"
+    },
+    "step2": {
+      "title": "이런 기능이 있어요",
+      "feature1Title": "AI 맞춤 추천",
+      "feature1Desc": "상황과 취향에 맞는 메뉴를 AI가 골라드려요",
+      "feature2Title": "주변 맛집 탐색",
+      "feature2Desc": "추천 메뉴를 파는 주변 식당을 바로 확인해요",
+      "feature3Title": "취향 학습",
+      "feature3Desc": "사용할수록 더 정확한 추천을 받을 수 있어요"
+    },
+    "step3": {
+      "title": "이렇게 사용하세요",
+      "step1Title": "주소 설정",
+      "step1Desc": "주변 맛집을 찾기 위해 주소를 등록하세요",
+      "step2Title": "취향 입력",
+      "step2Desc": "좋아하는 음식과 싫어하는 음식을 알려주세요",
+      "step3Title": "AI 추천 받기",
+      "step3Desc": "상황을 알려주면 AI가 메뉴를 추천해드려요"
+    },
+    "step4": {
+      "title": "초기 설정",
+      "subtitle": "더 나은 추천을 위해 설정해주세요",
+      "skipNote": "나중에 마이페이지에서도 설정할 수 있어요",
+      "alreadySetupTitle": "설정이 완료되어 있어요",
+      "alreadySetupDesc": "주소와 취향 정보가 이미 등록되어 있습니다."
+    },
+    "step5": {
+      "title": "준비 완료!",
+      "subtitle": "이제 PickEat을 시작해보세요",
+      "description": "AI가 당신만을 위한 메뉴를 추천해드릴 준비가 되었어요"
+    },
+    "guide": "이용 가이드",
+    "stepIndicator": "{{current}} / {{total}}"
   }
 }

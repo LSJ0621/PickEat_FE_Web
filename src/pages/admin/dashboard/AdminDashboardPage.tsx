@@ -76,7 +76,7 @@ export function AdminDashboardPage() {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-8">관리자 대시보드</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-8">관리자 대시보드</h1>
           <DashboardSkeleton />
         </div>
       </div>
@@ -87,13 +87,13 @@ export function AdminDashboardPage() {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-950/20 border border-red-600 rounded-lg p-8 text-center">
-            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">데이터 로드 실패</h2>
-            <p className="text-slate-400 mb-4">{error || '데이터를 불러올 수 없습니다.'}</p>
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-text-primary mb-2">데이터 로드 실패</h2>
+            <p className="text-text-tertiary mb-4">{error || '데이터를 불러올 수 없습니다.'}</p>
             <button
               onClick={fetchDashboardData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-brand-primary text-text-inverse rounded-lg hover:bg-orange-600 transition-colors"
             >
               다시 시도
             </button>
@@ -107,11 +107,11 @@ export function AdminDashboardPage() {
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* 페이지 제목 */}
-        <h1 className="text-3xl font-bold text-white">관리자 대시보드</h1>
+        <h1 className="text-3xl font-bold text-text-primary">관리자 대시보드</h1>
 
         {/* 오늘의 요약 */}
         <section>
-          <h2 className="text-xl font-semibold text-white mb-4">오늘의 요약</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-4">오늘의 요약</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="신규 가입자"
@@ -136,7 +136,7 @@ export function AdminDashboardPage() {
 
         {/* 누적 통계 */}
         <section>
-          <h2 className="text-xl font-semibold text-white mb-4">누적 통계</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-4">누적 통계</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               title="총 사용자"

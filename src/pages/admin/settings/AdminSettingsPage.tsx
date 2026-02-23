@@ -19,25 +19,25 @@ export function AdminSettingsPage() {
   // SUPER_ADMIN이 아니면 접근 불가 메시지 표시
   if (!isSuperAdmin) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 text-text-primary">
         <AdminPageBackground />
         <div className="relative z-10 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-white">접근 권한 없음</h1>
-          <p className="text-slate-400">이 페이지는 슈퍼 관리자만 접근할 수 있습니다.</p>
+          <h1 className="mb-2 text-3xl font-bold text-text-primary">접근 권한 없음</h1>
+          <p className="text-text-tertiary">이 페이지는 슈퍼 관리자만 접근할 수 있습니다.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-screen items-start justify-center bg-slate-950 px-4 pt-20 pb-10 text-white">
+    <div className="relative flex min-h-screen items-start justify-center bg-bg-primary px-4 pt-20 pb-10 text-text-primary">
       <AdminPageBackground />
 
       <div className="relative z-10 w-full max-w-6xl">
         {/* 페이지 헤더 */}
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-white">관리자 계정 관리</h1>
-          <p className="text-slate-400">관리자 계정을 추가하거나 제거할 수 있습니다.</p>
+          <h1 className="mb-2 text-3xl font-bold text-text-primary">관리자 계정 관리</h1>
+          <p className="text-text-tertiary">관리자 계정을 추가하거나 제거할 수 있습니다.</p>
         </div>
 
         {/* 관리자 계정 관리 */}

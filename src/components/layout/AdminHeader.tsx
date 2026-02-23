@@ -42,19 +42,19 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6">
+    <header className="h-16 bg-bg-surface border-b border-border-default flex items-center justify-between px-6">
       {/* 페이지 제목 */}
-      <h2 className="text-xl font-semibold text-white">{getPageTitle()}</h2>
+      <h2 className="text-xl font-semibold text-text-primary">{getPageTitle()}</h2>
 
       {/* 관리자 정보 및 로그아웃 */}
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-sm text-slate-400">관리자</p>
-          <p className="text-sm font-medium text-white">{user?.email}</p>
+          <p className="text-sm text-text-tertiary">관리자</p>
+          <p className="text-sm font-medium text-text-primary">{user?.email}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-secondary text-text-secondary hover:bg-bg-hover hover:text-text-primary transition"
           aria-label="로그아웃"
         >
           <LogOut className="w-4 h-4" />

@@ -10,6 +10,8 @@ import { updateUser } from '@/store/slices/authSlice';
 import type { Language } from '@/types/common';
 import type { AddressSearchResult, SelectedAddress } from '@/types/user';
 import { extractErrorMessage } from '@/utils/error';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useToast } from '@/hooks/common/useToast';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +28,7 @@ export const AddressRegistrationModal = ({
 }: AddressRegistrationModalProps) => {
   const dispatch = useAppDispatch();
   const { i18n } = useTranslation();
+  const toast = useToast();
 
   const [addressQuery, setAddressQuery] = useState('');
   const [searchResults, setSearchResults] = useState<AddressSearchResult[]>([]);
@@ -46,20 +49,7 @@ export const AddressRegistrationModal = ({
     }
   }, [open]);
 
-  useEffect(() => {
-    if (open) {
-      // 모달이 열릴 때 body 스크롤 방지
-      document.body.style.overflow = 'hidden';
-    } else {
-      // 모달이 닫히면 스크롤 복원
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      // 컴포넌트 언마운트 시 스크롤 복원
-      document.body.style.overflow = '';
-    };
-  }, [open]);
+  useModalScrollLock(open);
 
   // 주소 검색
   const handleSearch = async () => {
@@ -76,7 +66,7 @@ export const AddressRegistrationModal = ({
       setHasSearchedAddress(true);
     } catch (error: unknown) {
       console.error('주소 검색 실패:', error);
-      alert(extractErrorMessage(error, '주소 검색에 실패했습니다.'));
+      toast.error(extractErrorMessage(error, '주소 검색에 실패했습니다.'));
     } finally {
       setIsSearching(false);
     }
@@ -96,7 +86,7 @@ export const AddressRegistrationModal = ({
 
   const handleSave = async () => {
     if (!selectedAddress) {
-      alert('주소를 선택해주세요.');
+      toast.warning('주소를 선택해주세요.');
       return;
     }
 
@@ -143,7 +133,7 @@ export const AddressRegistrationModal = ({
       onComplete();
     } catch (error: unknown) {
       console.error('주소 저장 실패:', error);
-      alert(extractErrorMessage(error, '주소 저장에 실패했습니다.'));
+      toast.error(extractErrorMessage(error, '주소 저장에 실패했습니다.'));
     } finally {
       setIsSaving(false);
     }
@@ -154,21 +144,21 @@ export const AddressRegistrationModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/20 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[var(--radius-xl)] border-border-default bg-bg-primary p-8 shadow-[var(--shadow-card)]">
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">주소 등록</h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <h2 className="text-2xl font-bold text-text-primary">주소 등록</h2>
+            <p className="mt-2 text-sm text-text-tertiary">
               주변 식당 추천을 위해 주소를 등록해주세요
             </p>
           </div>
 
           {/* 주소 검색 섹션 */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="rounded-[var(--radius-lg)] border-border-default bg-bg-secondary p-6">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white">주소 검색</h3>
-              <p className="mt-1 text-sm text-slate-400">주소를 검색하여 선택해주세요</p>
+              <h3 className="text-lg font-semibold text-text-primary">주소 검색</h3>
+              <p className="mt-1 text-sm text-text-tertiary">주소를 검색하여 선택해주세요</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -176,30 +166,30 @@ export const AddressRegistrationModal = ({
                   type="text"
                   value={addressQuery}
                   onChange={(e) => setAddressQuery(e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' && !isSearching) {
                       handleSearch();
                     }
                   }}
                   placeholder="주소를 검색하세요"
-                  className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                  className="flex-1 rounded-[var(--radius-md)] border-border-default bg-bg-surface px-4 py-3 text-text-primary placeholder-text-tertiary transition focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                 />
-                <Button onClick={handleSearch} isLoading={isSearching} size="md">
+                <Button onClick={handleSearch} isLoading={isSearching} size="md" variant="primary">
                   검색
                 </Button>
               </div>
 
               {searchResults.length > 0 && (
-                <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-slate-800/50 p-4">
+                <div className="max-h-48 space-y-2 overflow-y-auto rounded-[var(--radius-md)] border-border-default bg-bg-secondary p-4">
                   {searchResults.map((address, index) => (
                     <button
                       key={index}
                       onClick={() => handleSelectAddress(address)}
-                      className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-left text-sm text-white transition hover:bg-white/10"
+                      className="w-full rounded-[var(--radius-md)] border-border-default bg-bg-surface p-3 text-left text-sm text-text-primary transition hover:bg-bg-tertiary"
                     >
                       <p className="font-medium">{address.roadAddress || address.address}</p>
                       {address.roadAddress && (
-                        <p className="mt-1 text-xs text-slate-400">{address.address}</p>
+                        <p className="mt-1 text-xs text-text-tertiary">{address.address}</p>
                       )}
                     </button>
                   ))}
@@ -207,13 +197,13 @@ export const AddressRegistrationModal = ({
               )}
 
               {!isSearching && hasSearchedAddress && searchResults.length === 0 && !selectedAddress && (
-                <p className="text-sm text-slate-400">주소를 찾을 수 없습니다.</p>
+                <p className="text-sm text-text-tertiary">주소를 찾을 수 없습니다.</p>
               )}
 
               {selectedAddress && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                  <p className="text-xs text-emerald-200">선택한 주소</p>
-                  <p className="mt-1 text-white font-medium">
+                <div className="rounded-[var(--radius-md)] border-status-success/30 bg-status-success/10 p-4">
+                  <p className="text-xs text-status-success">선택한 주소</p>
+                  <p className="mt-1 text-text-primary font-medium">
                     {selectedAddress.roadAddress || selectedAddress.address}
                   </p>
                 </div>
@@ -223,10 +213,10 @@ export const AddressRegistrationModal = ({
 
           {/* 별칭 입력 섹션 */}
           {selectedAddress && (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="rounded-[var(--radius-lg)] border-border-default bg-bg-secondary p-6">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white">별칭 (선택사항)</h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <h3 className="text-lg font-semibold text-text-primary">별칭 (선택사항)</h3>
+                <p className="mt-1 text-sm text-text-tertiary">
                   주소를 쉽게 구분하기 위한 별칭을 입력해주세요 (예: 집, 회사)
                 </p>
               </div>
@@ -236,7 +226,7 @@ export const AddressRegistrationModal = ({
                 onChange={(e) => setAlias(e.target.value)}
                 placeholder="별칭을 입력하세요 (예: 집, 회사)"
                 maxLength={20}
-                className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-slate-400 transition focus:border-orange-300/60 focus:outline-none focus:ring-2 focus:ring-orange-400/60"
+                className="w-full rounded-[var(--radius-md)] border-border-default bg-bg-surface px-4 py-3 text-text-primary placeholder-text-tertiary transition focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
               />
             </div>
           )}
@@ -245,11 +235,11 @@ export const AddressRegistrationModal = ({
           <div className="flex gap-3">
             {onClose && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="lg"
                 onClick={onClose}
                 disabled={isSaving}
-                className="flex-1 border border-white/20 bg-white/5 text-slate-200 hover:bg-white/10"
+                className="flex-1"
               >
                 취소
               </Button>
@@ -260,7 +250,7 @@ export const AddressRegistrationModal = ({
               onClick={handleSave}
               isLoading={isSaving}
               disabled={!selectedAddress || isSaving}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-rose-500 px-6 text-white shadow-md shadow-orange-500/30"
+              className="flex-1"
             >
               등록하기
             </Button>

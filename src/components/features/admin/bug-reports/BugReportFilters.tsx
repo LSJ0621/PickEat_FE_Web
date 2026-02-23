@@ -45,10 +45,10 @@ export const BugReportFilters = ({
   }, [search]);
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-4 rounded-lg border border-slate-700 bg-slate-900/50 p-4">
+      <div className="flex flex-wrap gap-4 rounded-lg border border-border-default bg-bg-primary p-4">
         {/* 상태 필터 */}
         <div className="flex-1 min-w-[150px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.status')}</label>
+          <label className="mb-2 block text-sm font-medium text-text-secondary">{t('bugReport.filter.status')}</label>
           <div className="relative">
             <select
               value={status || 'UNCONFIRMED'}
@@ -56,7 +56,7 @@ export const BugReportFilters = ({
                 const value = e.target.value;
                 onStatusChange(value as BugReportStatus | 'ALL');
               }}
-              className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+              className="w-full appearance-none rounded-lg border border-border-default bg-bg-surface px-4 pr-10 py-2 text-text-primary focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
             >
               <option value="UNCONFIRMED">{t('bugReport.status.unconfirmed')}</option>
               <option value="CONFIRMED">{t('bugReport.status.confirmed')}</option>
@@ -66,7 +66,7 @@ export const BugReportFilters = ({
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
               <svg
-                className="h-4 w-4 text-slate-300"
+                className="h-4 w-4 text-text-secondary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -80,7 +80,7 @@ export const BugReportFilters = ({
 
         {/* 카테고리 필터 */}
         <div className="flex-1 min-w-[150px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.category')}</label>
+          <label className="mb-2 block text-sm font-medium text-text-secondary">{t('bugReport.filter.category')}</label>
           <div className="relative">
             <select
               value={category || 'ALL'}
@@ -88,7 +88,7 @@ export const BugReportFilters = ({
                 const value = e.target.value;
                 onCategoryChange(value === 'ALL' ? 'ALL' : (value as BugReportCategory));
               }}
-              className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-800 px-4 pr-10 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+              className="w-full appearance-none rounded-lg border border-border-default bg-bg-surface px-4 pr-10 py-2 text-text-primary focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
             >
               {BUG_REPORT.CATEGORY_KEYS.map((key) => (
                 <option key={key} value={key.toUpperCase()}>{t(`bugReport.categories.${key}`)}</option>
@@ -97,7 +97,7 @@ export const BugReportFilters = ({
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
               <svg
-                className="h-4 w-4 text-slate-300"
+                className="h-4 w-4 text-text-secondary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -111,12 +111,12 @@ export const BugReportFilters = ({
 
         {/* 날짜 필터 */}
         <div className="flex-1 min-w-[180px]">
-          <label className="mb-2 block text-sm font-medium text-slate-300">{t('bugReport.filter.date')}</label>
+          <label className="mb-2 block text-sm font-medium text-text-secondary">{t('bugReport.filter.date')}</label>
           <input
             type="date"
             value={date}
             onChange={(e) => onDateChange(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+            className="w-full rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-text-primary focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
           />
         </div>
 
@@ -124,7 +124,7 @@ export const BugReportFilters = ({
         <div className="flex items-end">
           <button
             onClick={onReset}
-            className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
+            className="rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-secondary transition hover:bg-bg-hover"
           >
             {t('common.reset')}
           </button>
@@ -138,11 +138,11 @@ export const BugReportFilters = ({
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
           placeholder={t('bugReport.filter.searchPlaceholder')}
-          className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 pl-10 py-3 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+          className="w-full rounded-lg border border-border-default bg-bg-surface px-4 pl-10 py-3 text-text-primary placeholder-text-placeholder focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
         />
         <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
           <svg
-            className="h-5 w-5 text-slate-400"
+            className="h-5 w-5 text-text-tertiary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -159,4 +159,3 @@ export const BugReportFilters = ({
     </div>
   );
 };
-

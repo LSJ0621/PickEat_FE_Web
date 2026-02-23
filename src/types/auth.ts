@@ -20,7 +20,7 @@ export interface User {
   preferredLanguage: Language;
   role?: string;
   createdAt?: string;
-  birthYear?: number | null;
+  birthDate?: string | null;
   gender?: 'male' | 'female' | 'other' | null;
 }
 
@@ -75,13 +75,13 @@ export interface LoginResponse {
 
 export interface UpdateUserRequest {
   name?: string;
-  birthYear?: number;
+  birthDate?: string;
   gender?: 'male' | 'female' | 'other';
 }
 
 export interface UpdateUserResponse {
   name: string | null;
-  birthYear?: number | null;
+  birthDate?: string | null;
   gender?: 'male' | 'female' | 'other' | null;
 }
 

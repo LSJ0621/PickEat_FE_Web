@@ -2,6 +2,8 @@
  * 유저 관련 타입 정의
  */
 
+import type { MenuRecommendationItemData } from '@/types/menu';
+
 export interface AddressSearchResult {
   address: string;
   roadAddress: string | null;
@@ -73,7 +75,7 @@ export interface RecommendationLocation {
 
 export interface RecommendationHistoryItem {
   id: number;
-  recommendations: string[];
+  recommendations: MenuRecommendationItemData[];
   prompt: string;
   reason: string;
   recommendedAt: string;

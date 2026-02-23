@@ -12,6 +12,7 @@ import type {
   UserAddress,
 } from '@/types/user';
 import type { UpdateUserResponse } from '@/types/auth';
+import type { MenuRecommendationItemData } from '@/types/menu';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -263,7 +264,11 @@ export const userHandlers = [
       items: [
         {
           id: 1,
-          recommendations: ['김치찌개', '불고기', '비빔밥'],
+          recommendations: [
+            { menu: '김치찌개', condition: '한식이 당긴다면' },
+            { menu: '불고기', condition: '달콤한 맛이 좋다면' },
+            { menu: '비빔밥', condition: '건강하게 먹고 싶다면' },
+          ] satisfies MenuRecommendationItemData[],
           prompt: '점심 메뉴 추천해줘',
           reason: '한식 중심의 건강한 메뉴를 추천드립니다.',
           recommendedAt: '2024-01-15T12:00:00.000Z',
@@ -272,7 +277,11 @@ export const userHandlers = [
         },
         {
           id: 2,
-          recommendations: ['파스타', '피자', '리조또'],
+          recommendations: [
+            { menu: '파스타', condition: '이탈리안이 땡긴다면' },
+            { menu: '피자', condition: '간편하게 먹고 싶다면' },
+            { menu: '리조또', condition: '크리미한 음식이 좋다면' },
+          ] satisfies MenuRecommendationItemData[],
           prompt: '이탈리안 음식 먹고 싶어',
           reason: '인기있는 이탈리안 메뉴를 추천드립니다.',
           recommendedAt: '2024-01-14T18:00:00.000Z',

@@ -39,11 +39,11 @@ export const UserPlaceFilters = ({
     ];
 
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-4">
+    <div className="rounded-lg border border-border-default bg-bg-primary p-4">
       <div className="space-y-4">
         {/* 상태 필터 */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">
+          <label className="mb-2 block text-sm font-medium text-text-secondary">
             {t('common.status')}
           </label>
           <div className="flex flex-wrap gap-2">
@@ -53,8 +53,8 @@ export const UserPlaceFilters = ({
                 onClick={() => onStatusChange(option.value)}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                   status === option.value
-                    ? 'bg-orange-500 text-white'
-                    : 'border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-brand-primary text-text-inverse'
+                    : 'border border-border-default bg-bg-surface text-text-secondary hover:bg-bg-hover'
                 }`}
               >
                 {option.label}
@@ -65,7 +65,7 @@ export const UserPlaceFilters = ({
 
         {/* 검색 */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-300">
+          <label className="mb-2 block text-sm font-medium text-text-secondary">
             {t('common.search')}
           </label>
           <div className="flex gap-2">
@@ -74,11 +74,11 @@ export const UserPlaceFilters = ({
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               placeholder={t('admin.userPlaces.filter.searchPlaceholder')}
-              className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white placeholder-slate-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              className="flex-1 rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-text-primary placeholder-text-placeholder focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
             />
             <button
               onClick={onReset}
-              className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700"
+              className="rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-secondary transition hover:bg-bg-hover"
             >
               {t('common.reset')}
             </button>

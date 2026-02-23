@@ -12,34 +12,34 @@ export const AddressSection = ({ userAddress, addresses, onManageClick }: Addres
   const { t } = useTranslation();
 
   return (
-    <div data-testid="address-section" className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40 backdrop-blur">
+    <div data-testid="address-section" className="rounded-[32px] border border-border-default bg-bg-surface p-6 shadow-2xl shadow-black/10">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-sm text-slate-400">{t('user.address.title')}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
+            {t('user.address.title')}
+          </p>
           {userAddress ? (
-            <div className="mt-2">
-              <p className="text-lg font-semibold text-white">{userAddress}</p>
+            <div className="mt-3">
+              <p className="truncate text-base font-semibold text-text-primary">{userAddress}</p>
               {addresses.length > 1 && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-text-tertiary">
                   {t('user.address.addressCount', { count: addresses.length })}
                 </p>
               )}
             </div>
           ) : (
-            <p className="mt-3 text-sm text-slate-400">{t('user.address.noAddress')}</p>
+            <p className="mt-3 text-sm text-text-tertiary">{t('user.address.noAddress')}</p>
           )}
         </div>
-        <div className="flex flex-col gap-2">
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-orange-500 to-rose-500 px-5 text-white shadow-md shadow-orange-500/30"
-            onClick={onManageClick}
-          >
-            {t('user.address.manage')}
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          className="shrink-0 bg-gradient-to-r from-brand-primary to-rose-500 px-5 text-text-inverse shadow-md shadow-brand-primary/30"
+          onClick={onManageClick}
+          aria-label={t('user.address.manage')}
+        >
+          {t('user.address.manage')}
+        </Button>
       </div>
     </div>
   );
 };
-

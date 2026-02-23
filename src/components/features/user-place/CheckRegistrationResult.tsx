@@ -13,12 +13,12 @@ export function CheckRegistrationResult({ result }: CheckRegistrationResultProps
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-800/50 p-6">
+    <div className="space-y-4 rounded-2xl border border-border-default bg-bg-secondary p-6">
       <div className="flex items-center justify-between">
-        <span className="text-lg font-semibold text-white">
+        <span className="text-lg font-semibold text-text-primary">
           {t('userPlace.dailyRemaining')}
         </span>
-        <span className="text-2xl font-bold text-orange-400">
+        <span className="text-2xl font-bold text-brand-primary">
           {result.dailyRemaining}
         </span>
       </div>
@@ -40,11 +40,11 @@ export function CheckRegistrationResult({ result }: CheckRegistrationResultProps
             {result.nearbyPlaces.map((place) => (
               <li
                 key={place.id}
-                className="text-sm text-slate-300"
+                className="text-sm text-text-secondary"
               >
                 <span className="font-medium">{place.name}</span>
-                <span className="text-slate-400"> - {place.address}</span>
-                <span className="text-slate-500"> ({place.distance.toFixed(0)}m)</span>
+                <span className="text-text-tertiary"> - {place.address}</span>
+                <span className="text-text-placeholder"> ({place.distance.toFixed(0)}m)</span>
               </li>
             ))}
           </ul>
