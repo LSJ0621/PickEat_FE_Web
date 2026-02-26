@@ -3,7 +3,7 @@
  * Agent Redux 상태 테스트를 위한 Factory 함수
  */
 
-import type { PlaceRecommendationItem } from '@features/agent/types';
+import type { MenuRecommendationItemData, PlaceRecommendationItem } from '@features/agent/types';
 
 /**
  * MenuPlaceRecommendationGroup 인터페이스
@@ -20,11 +20,12 @@ export interface MenuPlaceRecommendationGroup {
  */
 export interface AgentState {
   // 메뉴 추천 결과
-  menuRecommendations: string[];
+  menuRecommendations: MenuRecommendationItemData[];
   menuRecommendationHistoryId: number | null;
   menuRecommendationPrompt: string;
   menuRecommendationRequestAddress: string | null;
-  menuRecommendationReason: string | null;
+  menuRecommendationIntro: string | null;
+  menuRecommendationClosing: string | null;
   isMenuRecommendationLoading: boolean;
 
   // 메뉴 선택 관련
@@ -32,7 +33,19 @@ export interface AgentState {
   menuHistoryId: number | null;
   menuRequestAddress: string | null;
 
-  // AI 추천 결과
+  // AI 추천 결과 - 검색 기반 (Google Places)
+  searchAiRecommendationGroups: MenuPlaceRecommendationGroup[];
+  isSearchAiLoading: boolean;
+  searchAiLoadingMenu: string | null;
+  searchAiRetrying: boolean;
+
+  // AI 추천 결과 - 커뮤니티 기반 (UserPlace)
+  communityAiRecommendationGroups: MenuPlaceRecommendationGroup[];
+  isCommunityAiLoading: boolean;
+  communityAiLoadingMenu: string | null;
+  communityAiRetrying: boolean;
+
+  // 레거시 AI 추천 결과 (하위 호환성 유지)
   aiRecommendationGroups: MenuPlaceRecommendationGroup[];
   isAiLoading: boolean;
   aiLoadingMenu: string | null;
@@ -55,11 +68,20 @@ export const defaultAgentState: AgentState = {
   menuRecommendationHistoryId: null,
   menuRecommendationPrompt: '',
   menuRecommendationRequestAddress: null,
-  menuRecommendationReason: null,
+  menuRecommendationIntro: null,
+  menuRecommendationClosing: null,
   isMenuRecommendationLoading: false,
   selectedMenu: null,
   menuHistoryId: null,
   menuRequestAddress: null,
+  searchAiRecommendationGroups: [],
+  isSearchAiLoading: false,
+  searchAiLoadingMenu: null,
+  searchAiRetrying: false,
+  communityAiRecommendationGroups: [],
+  isCommunityAiLoading: false,
+  communityAiLoadingMenu: null,
+  communityAiRetrying: false,
   aiRecommendationGroups: [],
   isAiLoading: false,
   aiLoadingMenu: null,
@@ -83,7 +105,11 @@ export function createMockAgentState(overrides?: Partial<AgentState>): AgentStat
  * 메뉴 추천 결과가 있는 Agent 상태 생성
  */
 export function createAgentStateWithMenuRecommendations(
-  recommendations: string[] = ['김치찌개', '불고기', '비빔밥'],
+  recommendations: MenuRecommendationItemData[] = [
+    { condition: '매콤한 맛을 원한다면', menu: '김치찌개' },
+    { condition: '고소하고 담백한 맛을 원한다면', menu: '불고기' },
+    { condition: '건강한 한 끼를 원한다면', menu: '비빔밥' },
+  ],
   historyId: number = 1
 ): { agent: AgentState } {
   return {
@@ -91,7 +117,8 @@ export function createAgentStateWithMenuRecommendations(
       menuRecommendations: recommendations,
       menuRecommendationHistoryId: historyId,
       menuRecommendationPrompt: '점심 메뉴 추천해줘',
-      menuRecommendationReason: '한식 중심의 건강한 메뉴를 추천드립니다.',
+      menuRecommendationIntro: '한식 중심의 건강한 메뉴를 추천드립니다.',
+      menuRecommendationClosing: '지금 가장 끌리는 조건을 선택해 보세요.',
       menuRecommendationRequestAddress: '서울시 강남구 테헤란로 123',
     }),
   };

@@ -4,19 +4,21 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useRatingPrompt } from '@/hooks/rating/useRatingPrompt';
-import { ratingService } from '@/api/services/rating';
+import { useRatingPrompt } from '@features/rating/hooks/useRatingPrompt';
+import { ratingService } from '@features/rating/api';
 import { STORAGE_KEYS } from '@shared/utils/constants';
 
-vi.mock('@/api/services/rating');
+vi.mock('@features/rating/api');
 
 describe('useRatingPrompt', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     sessionStorage.clear();
   });
 
   afterEach(() => {
+    localStorage.clear();
     sessionStorage.clear();
   });
 
@@ -43,15 +45,16 @@ describe('useRatingPrompt', () => {
       const { result } = renderHook(() => useRatingPrompt());
 
       expect(typeof result.current.checkPendingRating).toBe('function');
-      expect(typeof result.current.submitRating).toBe('function');
       expect(typeof result.current.skipPlace).toBe('function');
-      expect(typeof result.current.dismissForSession).toBe('function');
+      expect(typeof result.current.dismissRating).toBe('function');
+      expect(typeof result.current.dismissPermanently).toBe('function');
+      expect(typeof result.current.goToHistory).toBe('function');
     });
   });
 
   describe('checkPendingRating', () => {
-    it('should not check if dismissed flag is set', async () => {
-      sessionStorage.setItem(STORAGE_KEYS.RATING_PROMPT_DISMISSED, 'true');
+    it('should not check if neverShow flag is set in localStorage', async () => {
+      localStorage.setItem(STORAGE_KEYS.RATING_PROMPT_NEVER_SHOW, 'true');
 
       const { result } = renderHook(() => useRatingPrompt());
 
@@ -116,80 +119,6 @@ describe('useRatingPrompt', () => {
     });
   });
 
-  describe('submitRating', () => {
-    it('should submit rating successfully', async () => {
-      const mockPendingRating = {
-        id: 1,
-        placeName: 'Test Restaurant',
-        visitedAt: '2025-01-01T12:00:00Z',
-      };
-
-      vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
-      vi.mocked(ratingService.submitRating).mockResolvedValue(undefined);
-
-      const { result } = renderHook(() => useRatingPrompt());
-
-      // Set up pending rating through proper flow
-      await act(async () => {
-        await result.current.checkPendingRating();
-      });
-
-      let submitResult: boolean = false;
-
-      await act(async () => {
-        submitResult = await result.current.submitRating(5);
-      });
-
-      expect(submitResult).toBe(true);
-      expect(ratingService.submitRating).toHaveBeenCalledWith({
-        placeRatingId: 1,
-        rating: 5,
-      });
-      expect(result.current.isModalOpen).toBe(false);
-      expect(result.current.pendingRating).toBeNull();
-      expect(result.current.isSubmitting).toBe(false);
-    });
-
-    it('should return false when no pendingRating', async () => {
-      const { result } = renderHook(() => useRatingPrompt());
-
-      let submitResult: boolean = true;
-
-      await act(async () => {
-        submitResult = await result.current.submitRating(5);
-      });
-
-      expect(submitResult).toBe(false);
-      expect(ratingService.submitRating).not.toHaveBeenCalled();
-    });
-
-    it('should return false on API error', async () => {
-      const mockPendingRating = {
-        id: 1,
-        placeName: 'Test Restaurant',
-        visitedAt: '2025-01-01T12:00:00Z',
-      };
-
-      vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
-      vi.mocked(ratingService.submitRating).mockRejectedValue(new Error('API Error'));
-
-      const { result } = renderHook(() => useRatingPrompt());
-
-      await act(async () => {
-        await result.current.checkPendingRating();
-      });
-
-      let submitResult: boolean = true;
-
-      await act(async () => {
-        submitResult = await result.current.submitRating(5);
-      });
-
-      expect(submitResult).toBe(false);
-      expect(result.current.isSubmitting).toBe(false);
-    });
-  });
-
   describe('skipPlace', () => {
     it('should skip place successfully', async () => {
       const mockPendingRating = {
@@ -218,7 +147,7 @@ describe('useRatingPrompt', () => {
       expect(result.current.pendingRating).toBeNull();
     });
 
-    it('should handle API error silently', async () => {
+    it('should handle API error silently and still close modal', async () => {
       const mockPendingRating = {
         id: 1,
         placeName: 'Test Restaurant',
@@ -253,15 +182,78 @@ describe('useRatingPrompt', () => {
     });
   });
 
-  describe('dismissForSession', () => {
-    it('should set dismissed flag in sessionStorage', () => {
+  describe('dismissRating', () => {
+    it('should call dismissRating API and close modal', async () => {
+      const mockPendingRating = {
+        id: 1,
+        placeName: 'Test Restaurant',
+        visitedAt: '2025-01-01T12:00:00Z',
+      };
+
+      vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
+      vi.mocked(ratingService.dismissRating).mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useRatingPrompt());
+
+      await act(async () => {
+        await result.current.checkPendingRating();
+      });
+
+      await act(async () => {
+        await result.current.dismissRating();
+      });
+
+      expect(ratingService.dismissRating).toHaveBeenCalledWith({
+        placeRatingId: 1,
+      });
+      expect(result.current.isModalOpen).toBe(false);
+      expect(result.current.pendingRating).toBeNull();
+      expect(result.current.isSubmitting).toBe(false);
+    });
+
+    it('should do nothing when no pendingRating', async () => {
+      const { result } = renderHook(() => useRatingPrompt());
+
+      await act(async () => {
+        await result.current.dismissRating();
+      });
+
+      expect(ratingService.dismissRating).not.toHaveBeenCalled();
+    });
+
+    it('should handle API error silently', async () => {
+      const mockPendingRating = {
+        id: 1,
+        placeName: 'Test Restaurant',
+        visitedAt: '2025-01-01T12:00:00Z',
+      };
+
+      vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
+      vi.mocked(ratingService.dismissRating).mockRejectedValue(new Error('API Error'));
+
+      const { result } = renderHook(() => useRatingPrompt());
+
+      await act(async () => {
+        await result.current.checkPendingRating();
+      });
+
+      await act(async () => {
+        await result.current.dismissRating();
+      });
+
+      expect(result.current.isSubmitting).toBe(false);
+    });
+  });
+
+  describe('dismissPermanently', () => {
+    it('should set neverShow flag in localStorage', () => {
       const { result } = renderHook(() => useRatingPrompt());
 
       act(() => {
-        result.current.dismissForSession();
+        result.current.dismissPermanently();
       });
 
-      expect(sessionStorage.getItem(STORAGE_KEYS.RATING_PROMPT_DISMISSED)).toBe('true');
+      expect(localStorage.getItem(STORAGE_KEYS.RATING_PROMPT_NEVER_SHOW)).toBe('true');
     });
 
     it('should close modal', async () => {
@@ -282,15 +274,13 @@ describe('useRatingPrompt', () => {
       expect(result.current.isModalOpen).toBe(true);
 
       act(() => {
-        result.current.dismissForSession();
+        result.current.dismissPermanently();
       });
 
       expect(result.current.isModalOpen).toBe(false);
     });
-  });
 
-  describe('실제 사용 시나리오', () => {
-    it('should handle complete rating flow', async () => {
+    it('should clear pendingRating', async () => {
       const mockPendingRating = {
         id: 1,
         placeName: 'Test Restaurant',
@@ -298,32 +288,80 @@ describe('useRatingPrompt', () => {
       };
 
       vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
-      vi.mocked(ratingService.submitRating).mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useRatingPrompt());
 
-      // App loads, check for pending rating
       await act(async () => {
         await result.current.checkPendingRating();
       });
 
-      await waitFor(() => {
-        expect(result.current.pendingRating).toEqual(mockPendingRating);
-        expect(result.current.isModalOpen).toBe(true);
+      act(() => {
+        result.current.dismissPermanently();
       });
 
-      // User submits rating
-      await act(async () => {
-        await result.current.submitRating(5);
-      });
-
-      await waitFor(() => {
-        expect(result.current.isModalOpen).toBe(false);
-        expect(result.current.pendingRating).toBeNull();
-      });
+      expect(result.current.pendingRating).toBeNull();
     });
 
-    it('should handle user skipping the place', async () => {
+    it('should prevent future checkPendingRating calls', async () => {
+      vi.mocked(ratingService.getPendingRating).mockResolvedValue({
+        id: 1,
+        placeName: 'Test Restaurant',
+        visitedAt: '2025-01-01T12:00:00Z',
+      });
+
+      const { result } = renderHook(() => useRatingPrompt());
+
+      await act(async () => {
+        await result.current.checkPendingRating();
+      });
+
+      expect(result.current.isModalOpen).toBe(true);
+
+      act(() => {
+        result.current.dismissPermanently();
+      });
+
+      expect(result.current.isModalOpen).toBe(false);
+
+      // Subsequent checks should be skipped
+      await act(async () => {
+        await result.current.checkPendingRating();
+      });
+
+      expect(result.current.isModalOpen).toBe(false);
+    });
+  });
+
+  describe('goToHistory', () => {
+    it('should close modal without API call', async () => {
+      const mockPendingRating = {
+        id: 1,
+        placeName: 'Test Restaurant',
+        visitedAt: '2025-01-01T12:00:00Z',
+      };
+
+      vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
+
+      const { result } = renderHook(() => useRatingPrompt());
+
+      await act(async () => {
+        await result.current.checkPendingRating();
+      });
+
+      expect(result.current.isModalOpen).toBe(true);
+
+      act(() => {
+        result.current.goToHistory();
+      });
+
+      expect(result.current.isModalOpen).toBe(false);
+      // pendingRating should remain (not cleared)
+      expect(result.current.pendingRating).toEqual(mockPendingRating);
+    });
+  });
+
+  describe('실제 사용 시나리오', () => {
+    it('should handle complete flow: check -> skip', async () => {
       const mockPendingRating = {
         id: 1,
         placeName: 'Test Restaurant',
@@ -340,10 +378,10 @@ describe('useRatingPrompt', () => {
       });
 
       await waitFor(() => {
+        expect(result.current.pendingRating).toEqual(mockPendingRating);
         expect(result.current.isModalOpen).toBe(true);
       });
 
-      // User clicks "didn't visit"
       await act(async () => {
         await result.current.skipPlace();
       });
@@ -354,7 +392,7 @@ describe('useRatingPrompt', () => {
       });
     });
 
-    it('should handle user dismissing for session', async () => {
+    it('should handle complete flow: check -> dismiss', async () => {
       const mockPendingRating = {
         id: 1,
         placeName: 'Test Restaurant',
@@ -362,6 +400,7 @@ describe('useRatingPrompt', () => {
       };
 
       vi.mocked(ratingService.getPendingRating).mockResolvedValue(mockPendingRating);
+      vi.mocked(ratingService.dismissRating).mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useRatingPrompt());
 
@@ -373,20 +412,14 @@ describe('useRatingPrompt', () => {
         expect(result.current.isModalOpen).toBe(true);
       });
 
-      // User dismisses modal
-      act(() => {
-        result.current.dismissForSession();
-      });
-
-      expect(result.current.isModalOpen).toBe(false);
-      expect(sessionStorage.getItem(STORAGE_KEYS.RATING_PROMPT_DISMISSED)).toBe('true');
-
-      // Should not check again in same session
       await act(async () => {
-        await result.current.checkPendingRating();
+        await result.current.dismissRating();
       });
 
-      expect(result.current.isModalOpen).toBe(false);
+      await waitFor(() => {
+        expect(result.current.isModalOpen).toBe(false);
+        expect(result.current.pendingRating).toBeNull();
+      });
     });
   });
 
@@ -395,12 +428,12 @@ describe('useRatingPrompt', () => {
       const { result, rerender } = renderHook(() => useRatingPrompt());
 
       const checkPendingRatingRef = result.current.checkPendingRating;
-      const dismissForSessionRef = result.current.dismissForSession;
+      const dismissPermanentlyRef = result.current.dismissPermanently;
 
       rerender();
 
       expect(result.current.checkPendingRating).toBe(checkPendingRatingRef);
-      expect(result.current.dismissForSession).toBe(dismissForSessionRef);
+      expect(result.current.dismissPermanently).toBe(dismissPermanentlyRef);
     });
   });
 });

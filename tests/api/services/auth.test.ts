@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { authService } from '@/api/services/auth';
+import { authService } from '@features/auth/api';
 import { server } from '@tests/mocks/server';
-import type { LoginRequest, RegisterRequest } from '@/types/auth';
+import type { LoginRequest, RegisterRequest } from '@shared/types/auth';
 import { apiClient } from '@shared/api/client';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';

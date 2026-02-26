@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { ImageUploader } from '@/components/features/bug-report/ImageUploader';
+import { ImageUploader } from '@features/bug-report/components/ImageUploader';
 import { BUG_REPORT } from '@shared/utils/constants';
 
 describe('ImageUploader', () => {
@@ -143,23 +143,17 @@ describe('ImageUploader', () => {
       expect(onImagesChange).not.toHaveBeenCalled();
     });
 
-    it('should show error when exceeding max images limit', async () => {
-      const user = userEvent.setup();
-      const onImagesChange = vi.fn();
+    it('should not show upload area when images are at max limit', () => {
       const existingImages = Array(BUG_REPORT.MAX_IMAGES).fill(
         new File(['image'], 'test.png', { type: 'image/png' })
       );
       const { container } = renderWithProviders(
-        <ImageUploader {...defaultProps} images={existingImages} onImagesChange={onImagesChange} />
+        <ImageUploader {...defaultProps} images={existingImages} />
       );
 
-      const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
-      const newFile = new File(['image'], 'new.png', { type: 'image/png' });
-
-      await user.upload(fileInput, newFile);
-
-      // onImagesChange should not be called when limit exceeded
-      expect(onImagesChange).not.toHaveBeenCalled();
+      // When at limit, the upload area with input is hidden
+      const fileInput = container.querySelector('input[type="file"]');
+      expect(fileInput).not.toBeInTheDocument();
     });
   });
 
@@ -174,7 +168,7 @@ describe('ImageUploader', () => {
     it('should have proper default border styling', () => {
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} />);
 
-      const dropArea = container.querySelector('.border-slate-600');
+      const dropArea = container.querySelector('.border-border-default');
       expect(dropArea).toBeInTheDocument();
     });
 
@@ -183,13 +177,13 @@ describe('ImageUploader', () => {
 
       const dropArea = container.querySelector('.cursor-pointer') as HTMLElement;
       expect(dropArea).toBeInTheDocument();
-      expect(dropArea).toHaveClass('border-slate-600');
+      expect(dropArea).toHaveClass('border-border-default');
 
       // Trigger dragOver event
       fireEvent.dragOver(dropArea);
 
-      // Should change to pink border
-      expect(dropArea).toHaveClass('border-pink-500');
+      // Should change to brand-primary border
+      expect(dropArea).toHaveClass('border-brand-primary');
     });
 
     it('should set isDragging to false on dragLeave', () => {
@@ -199,13 +193,13 @@ describe('ImageUploader', () => {
 
       // First dragOver
       fireEvent.dragOver(dropArea);
-      expect(dropArea).toHaveClass('border-pink-500');
+      expect(dropArea).toHaveClass('border-brand-primary');
 
       // Then dragLeave
       fireEvent.dragLeave(dropArea);
 
-      // Should revert to slate border
-      expect(dropArea).toHaveClass('border-slate-600');
+      // Should revert to border-default
+      expect(dropArea).toHaveClass('border-border-default');
     });
 
     it('should handle file drop', async () => {
@@ -236,7 +230,7 @@ describe('ImageUploader', () => {
 
       // First dragOver
       fireEvent.dragOver(dropArea);
-      expect(dropArea).toHaveClass('border-pink-500');
+      expect(dropArea).toHaveClass('border-brand-primary');
 
       // Then drop
       const file = new File(['image'], 'test.png', { type: 'image/png' });
@@ -246,8 +240,8 @@ describe('ImageUploader', () => {
         },
       });
 
-      // Should revert to slate border
-      expect(dropArea).toHaveClass('border-slate-600');
+      // Should revert to border-default
+      expect(dropArea).toHaveClass('border-border-default');
     });
   });
 
@@ -355,7 +349,7 @@ describe('ImageUploader', () => {
     it('should have rounded corners on upload area', () => {
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} />);
 
-      const uploadArea = container.querySelector('.rounded-xl');
+      const uploadArea = container.querySelector('.rounded-2xl');
       expect(uploadArea).toBeInTheDocument();
     });
 
@@ -370,9 +364,9 @@ describe('ImageUploader', () => {
       const images = [new File(['image'], 'test.png', { type: 'image/png' })];
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} images={images} />);
 
-      const thumbnail = container.querySelector('.h-16.w-16');
+      const thumbnail = container.querySelector('.h-20.w-20');
       expect(thumbnail).toBeInTheDocument();
-      expect(thumbnail).toHaveClass('rounded-lg', 'overflow-hidden');
+      expect(thumbnail).toHaveClass('rounded-2xl', 'overflow-hidden');
     });
   });
 
@@ -381,7 +375,7 @@ describe('ImageUploader', () => {
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} />);
 
       // Component should have the structure for error display
-      expect(container.querySelector('.space-y-4')).toBeInTheDocument();
+      expect(container.querySelector('.space-y-3')).toBeInTheDocument();
     });
   });
 
@@ -401,20 +395,20 @@ describe('ImageUploader', () => {
     });
   });
 
-  describe('Image Border in Upload Area', () => {
-    it('should display images inside upload area with border', () => {
+  describe('Image Preview Area', () => {
+    it('should display images in a flex wrap container when images are present', () => {
       const images = [new File(['image'], 'test.png', { type: 'image/png' })];
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} images={images} />);
 
-      const borderSection = container.querySelector('.border-t.border-slate-700\\/60');
-      expect(borderSection).toBeInTheDocument();
+      const previewSection = container.querySelector('.flex.flex-wrap.gap-3');
+      expect(previewSection).toBeInTheDocument();
     });
 
-    it('should not show border section when no images', () => {
+    it('should not show preview section when no images', () => {
       const { container } = renderWithProviders(<ImageUploader {...defaultProps} images={[]} />);
 
-      const borderSection = container.querySelector('.border-t.border-slate-700\\/60');
-      expect(borderSection).not.toBeInTheDocument();
+      const previewSection = container.querySelector('.flex.flex-wrap.gap-3');
+      expect(previewSection).not.toBeInTheDocument();
     });
   });
 });

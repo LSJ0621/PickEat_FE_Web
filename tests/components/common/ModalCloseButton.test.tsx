@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/react';
-import { ModalCloseButton } from '@/components/common/ModalCloseButton';
+import { ModalCloseButton } from '@shared/components/ModalCloseButton';
 
 describe('ModalCloseButton', () => {
   const mockOnClose = vi.fn();
@@ -97,7 +97,8 @@ describe('ModalCloseButton', () => {
       render(<ModalCloseButton onClose={mockOnClose} />);
 
       const button = screen.getByRole('button', { name: '닫기' });
-      expect(button).toHaveClass('hover:text-white');
+      // Component uses hover:text-text-primary (design token)
+      expect(button).toHaveClass('hover:text-text-primary');
     });
   });
 

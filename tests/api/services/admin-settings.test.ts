@@ -4,12 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { adminSettingsService } from '@/api/services/admin-settings';
+import { adminSettingsService } from '@features/admin/api-settings';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
 import apiClient from '@shared/api/client';
-import type { AdminListResponse, PromoteAdminRequest } from '@/types/admin-settings';
+import type { AdminListResponse, PromoteAdminRequest } from '@features/admin/types-settings';
 
 const BASE_URL = 'http://localhost:3000';
 

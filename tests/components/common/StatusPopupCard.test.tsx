@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/react';
-import { StatusPopupCard } from '@/components/common/StatusPopupCard';
+import { StatusPopupCard } from '@shared/components/StatusPopupCard';
 
 describe('StatusPopupCard', () => {
   const mockOnConfirm = vi.fn();
@@ -119,7 +119,7 @@ describe('StatusPopupCard', () => {
 
   describe('스타일 테스트', () => {
     it('팝업이 고정 위치에 렌더링된다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -127,12 +127,13 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const popup = container.querySelector('.fixed.inset-0');
+      // Component uses createPortal to render into document.body
+      const popup = document.body.querySelector('.fixed.inset-0');
       expect(popup).toBeInTheDocument();
     });
 
     it('backdrop이 blur 효과를 가진다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -140,12 +141,12 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const backdrop = container.querySelector('.backdrop-blur-sm');
+      const backdrop = document.body.querySelector('.backdrop-blur-sm');
       expect(backdrop).toBeInTheDocument();
     });
 
     it('팝업이 둥근 모서리를 가진다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -153,12 +154,12 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const popup = container.querySelector('.rounded-\\[32px\\]');
+      const popup = document.body.querySelector('.rounded-\\[32px\\]');
       expect(popup).toBeInTheDocument();
     });
 
-    it('팝업이 z-index 100을 가진다', () => {
-      const { container } = render(
+    it('팝업이 z-index를 가진다', () => {
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -166,11 +167,12 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const popup = container.querySelector('.z-\\[100\\]');
+      // z-index is applied via inline style from Z_INDEX constant
+      const popup = document.body.querySelector('[style*="z-index"]');
       expect(popup).toBeInTheDocument();
     });
 
-    it('제목이 흰색 텍스트를 가진다', () => {
+    it('제목이 적절한 텍스트 스타일을 가진다', () => {
       render(
         <StatusPopupCard
           open={true}
@@ -180,11 +182,12 @@ describe('StatusPopupCard', () => {
       );
 
       const title = screen.getByText('알림');
-      expect(title).toHaveClass('text-white');
+      // Component uses design token text-text-primary
+      expect(title).toHaveClass('text-text-primary');
     });
 
     it('메시지가 중앙 정렬된다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -192,14 +195,14 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const textCenter = container.querySelector('.text-center');
+      const textCenter = document.body.querySelector('.text-center');
       expect(textCenter).toBeInTheDocument();
     });
   });
 
   describe('레이아웃 테스트', () => {
     it('팝업이 화면 중앙에 위치한다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -207,12 +210,12 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const popup = container.querySelector('.flex.items-center.justify-center');
+      const popup = document.body.querySelector('.flex.items-center.justify-center');
       expect(popup).toBeInTheDocument();
     });
 
     it('최대 너비가 설정되어 있다', () => {
-      const { container } = render(
+      render(
         <StatusPopupCard
           open={true}
           message="테스트 메시지"
@@ -220,7 +223,7 @@ describe('StatusPopupCard', () => {
         />
       );
 
-      const popupContent = container.querySelector('.max-w-md');
+      const popupContent = document.body.querySelector('.max-w-md');
       expect(popupContent).toBeInTheDocument();
     });
 

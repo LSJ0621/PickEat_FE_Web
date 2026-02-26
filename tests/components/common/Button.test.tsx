@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { Button } from '@/components/common/Button';
+import { Button } from '@shared/components/Button';
 
 describe('Button', () => {
   describe('Rendering', () => {
@@ -14,7 +14,6 @@ describe('Button', () => {
     it('should render with default variant (primary) and size (md)', () => {
       renderWithProviders(<Button>Default Button</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('from-orange-500', 'via-pink-500', 'to-fuchsia-600');
       expect(button).toHaveClass('px-6', 'py-2.5', 'text-base');
     });
 
@@ -28,19 +27,19 @@ describe('Button', () => {
     it('should render primary variant with gradient background', () => {
       renderWithProviders(<Button variant="primary">Primary</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-gradient-to-r', 'from-orange-500', 'via-pink-500', 'to-fuchsia-600');
+      expect(button).toHaveClass('bg-gradient-to-r');
     });
 
-    it('should render secondary variant with white background', () => {
+    it('should render secondary variant with background', () => {
       renderWithProviders(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-white/90', 'text-slate-900');
+      expect(button).toHaveClass('bg-bg-secondary');
     });
 
-    it('should render ghost variant with border and transparent background', () => {
+    it('should render ghost variant with border and background', () => {
       renderWithProviders(<Button variant="ghost">Ghost</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('border', 'border-white/20', 'bg-white/5');
+      expect(button).toHaveClass('border', 'border-border-default');
     });
   });
 

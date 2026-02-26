@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/react';
-import { PlaceReviewsSection } from '@/components/features/restaurant/PlaceReviewsSection';
+import { PlaceReviewsSection } from '@features/agent/components/restaurant/PlaceReviewsSection';
 import { createMockPlaceReview } from '@tests/factories';
 
 describe('PlaceReviewsSection', () => {
@@ -74,21 +74,25 @@ describe('PlaceReviewsSection', () => {
       const reviews = [createMockPlaceReview({ rating: 4.5 })];
       render(<PlaceReviewsSection reviews={reviews} />);
 
-      expect(screen.getByText(/★ 4.5/)).toBeInTheDocument();
+      // Component shows rating as a number with SVG star icon separately
+      expect(screen.getByText('4.5')).toBeInTheDocument();
     });
 
     it('평점이 null일 때 표시되지 않는다', () => {
       const reviews = [createMockPlaceReview({ rating: null })];
       const { container } = render(<PlaceReviewsSection reviews={reviews} />);
 
-      expect(container.textContent).not.toContain('★');
+      // No rating span should exist
+      const ratingContainer = container.querySelector('.text-amber-300');
+      expect(ratingContainer).not.toBeInTheDocument();
     });
 
     it('평점이 소수점 한 자리로 표시된다', () => {
       const reviews = [createMockPlaceReview({ rating: 4.567 })];
       render(<PlaceReviewsSection reviews={reviews} />);
 
-      expect(screen.getByText(/★ 4.6/)).toBeInTheDocument();
+      // Component uses toFixed(1) so 4.567 becomes 4.6
+      expect(screen.getByText('4.6')).toBeInTheDocument();
     });
   });
 

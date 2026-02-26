@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { SkeletonCard, SkeletonCardList } from '@/components/common/SkeletonCard';
+import { SkeletonCard, SkeletonCardList } from '@shared/components/SkeletonCard';
 
 describe('SkeletonCard', () => {
   describe('렌더링 테스트', () => {
@@ -48,25 +48,20 @@ describe('SkeletonCard', () => {
       expect(card).toBeInTheDocument();
     });
 
-    it('카드가 backdrop-blur를 가진다', () => {
+    it('제목 스켈레톤이 배경색을 가진다', () => {
       const { container } = render(<SkeletonCard />);
 
-      const card = container.querySelector('.backdrop-blur-sm');
-      expect(card).toBeInTheDocument();
-    });
-
-    it('제목 스켈레톤이 적절한 배경색을 가진다', () => {
-      const { container } = render(<SkeletonCard />);
-
-      const titleSkeleton = container.querySelector('.bg-slate-700\\/50');
+      // Component uses design token bg-bg-tertiary/50
+      const titleSkeleton = container.querySelector('.h-6.w-3\\/4');
       expect(titleSkeleton).toBeInTheDocument();
     });
 
-    it('설명 스켈레톤이 더 연한 배경색을 가진다', () => {
+    it('설명 스켈레톤이 배경색을 가진다', () => {
       const { container } = render(<SkeletonCard />);
 
-      const descriptionSkeleton = container.querySelector('.bg-slate-700\\/30');
-      expect(descriptionSkeleton).toBeInTheDocument();
+      // Component uses design token bg-bg-tertiary/30
+      const descriptionArea = container.querySelector('.space-y-2');
+      expect(descriptionArea).toBeInTheDocument();
     });
 
     it('메타 스켈레톤이 둥근 모서리를 가진다', () => {

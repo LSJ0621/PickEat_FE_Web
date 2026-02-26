@@ -1,20 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useAddressModal } from '@/hooks/address/useAddressModal';
-import { userService } from '@/api/services/user';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-import type { AddressSearchResult, SelectedAddress } from '@/types/user';
+import { useAddressModal } from '@shared/hooks/address/useAddressModal';
+import { userService } from '@features/user/api';
+import { useErrorHandler } from '@shared/hooks/useErrorHandler';
+import type { AddressSearchResult, SelectedAddress } from '@features/user/types';
 import { createMockUserAddress } from '@tests/factories/address';
+import { createWrapper } from '@tests/utils/renderWithProviders';
 
-vi.mock('@/api/services/user');
-vi.mock('@/hooks/useErrorHandler');
+vi.mock('@features/user/api');
+vi.mock('@shared/hooks/useErrorHandler');
 
 describe('useAddressModal', () => {
   const mockHandleError = vi.fn();
   const mockHandleSuccess = vi.fn();
+  let wrapper: ReturnType<typeof createWrapper>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    wrapper = createWrapper();
 
     vi.mocked(useErrorHandler).mockReturnValue({
       handleError: mockHandleError,
@@ -24,7 +27,7 @@ describe('useAddressModal', () => {
 
   describe('Initial State', () => {
     it('should initialize with correct default values', () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       expect(result.current.addressQuery).toBe('');
       expect(result.current.searchResults).toEqual([]);
@@ -38,7 +41,7 @@ describe('useAddressModal', () => {
 
   describe('handleSearch', () => {
     it('should not search when query is empty', async () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       await act(async () => {
         await result.current.handleSearch();
@@ -67,7 +70,7 @@ describe('useAddressModal', () => {
         addresses: mockAddresses,
       });
 
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('서울시 강남구');
@@ -77,7 +80,7 @@ describe('useAddressModal', () => {
         await result.current.handleSearch();
       });
 
-      expect(userService.searchAddress).toHaveBeenCalledWith('서울시 강남구');
+      expect(userService.searchAddress).toHaveBeenCalledWith('서울시 강남구', expect.anything());
       expect(result.current.searchResults).toEqual(mockAddresses);
       expect(result.current.hasSearchedAddress).toBe(true);
       expect(result.current.isSearching).toBe(false);
@@ -87,7 +90,7 @@ describe('useAddressModal', () => {
       const error = new Error('Search failed');
       vi.mocked(userService.searchAddress).mockRejectedValue(error);
 
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('서울시 강남구');
@@ -111,7 +114,7 @@ describe('useAddressModal', () => {
         addresses: [],
       });
 
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('   ');
@@ -135,7 +138,7 @@ describe('useAddressModal', () => {
         longitude: '127.456',
       };
 
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('서울');
@@ -161,7 +164,7 @@ describe('useAddressModal', () => {
 
   describe('handleAddAddress', () => {
     it('should show error when no address is selected', async () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       const success = await act(async () => {
         return await result.current.handleAddAddress();
@@ -172,7 +175,7 @@ describe('useAddressModal', () => {
     });
 
     it('should show error when maximum addresses limit is reached', async () => {
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 4 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 4 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -208,7 +211,7 @@ describe('useAddressModal', () => {
         })
       );
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -231,7 +234,7 @@ describe('useAddressModal', () => {
         selectedAddress: mockAddress,
         alias: undefined,
       });
-      expect(mockHandleSuccess).toHaveBeenCalledWith('주소가 추가되었습니다.');
+      expect(mockHandleSuccess).toHaveBeenCalledWith('toast.address.added');
       expect(result.current.selectedAddress).toBe(null);
       expect(result.current.addressAlias).toBe('');
       expect(result.current.hasSearchedAddress).toBe(false);
@@ -251,7 +254,7 @@ describe('useAddressModal', () => {
         })
       );
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -293,7 +296,7 @@ describe('useAddressModal', () => {
         })
       );
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0, onAddressAdded }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0, onAddressAdded }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -318,7 +321,7 @@ describe('useAddressModal', () => {
       const error = new Error('Server error');
       vi.mocked(userService.createAddress).mockRejectedValue(error);
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -355,7 +358,7 @@ describe('useAddressModal', () => {
         })
       );
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -394,7 +397,7 @@ describe('useAddressModal', () => {
         })
       );
 
-      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }));
+      const { result } = renderHook(() => useAddressModal({ addressesCount: 0 }), { wrapper });
 
       const mockAddress: AddressSearchResult = {
         address: '서울시 강남구',
@@ -439,7 +442,7 @@ describe('useAddressModal', () => {
         ],
       });
 
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('서울');
@@ -467,7 +470,7 @@ describe('useAddressModal', () => {
 
   describe('State setters', () => {
     it('should update addressQuery', () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressQuery('서울시');
@@ -477,7 +480,7 @@ describe('useAddressModal', () => {
     });
 
     it('should update selectedAddress', () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       const mockSelected: SelectedAddress = {
         address: '서울시 강남구',
@@ -495,7 +498,7 @@ describe('useAddressModal', () => {
     });
 
     it('should update addressAlias', () => {
-      const { result } = renderHook(() => useAddressModal());
+      const { result } = renderHook(() => useAddressModal(), { wrapper });
 
       act(() => {
         result.current.setAddressAlias('회사');

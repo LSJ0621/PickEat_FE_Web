@@ -13,8 +13,45 @@ import {
 } from '@shared/utils/translateMessage';
 import i18n from '@/i18n/config';
 import { AxiosError } from 'axios';
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-describe('translateMessage', () => {
+// ---------------------------------------------------------------------------
+// Test helpers
+// ---------------------------------------------------------------------------
+
+/** Assert a value is a non-empty string */
+function assertString(value: unknown): void {
+  expect(value).toBeDefined();
+  expect(typeof value).toBe('string');
+  expect((value as string).length).toBeGreaterThan(0);
+}
+
+interface ApiErrorData {
+  errorCode?: string;
+  message?: string;
+}
+
+/** Build a minimal AxiosError with the given response payload */
+function makeAxiosError(
+  status: number,
+  data: ApiErrorData | null,
+  code = 'ERR_BAD_REQUEST'
+): AxiosError {
+  const response: AxiosResponse = {
+    status,
+    statusText: String(status),
+    headers: {},
+    config: {} as InternalAxiosRequestConfig,
+    data,
+  };
+  return new AxiosError('Request failed', code, undefined, undefined, response);
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+describe('All translateMessage utilities', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('ko');
   });
@@ -23,598 +60,223 @@ describe('translateMessage', () => {
     vi.clearAllMocks();
   });
 
-  describe('Basic Translation', () => {
-    it('should translate error code to Korean message', () => {
-      const result = translateMessage(
-        'INTERNAL_SERVER_ERROR',
-        'Default error message'
-      );
+  // -------------------------------------------------------------------------
+  describe('translateMessage', () => {
+    describe('Basic Translation', () => {
+      it('should translate error code to Korean message', () => {
+        assertString(translateMessage('INTERNAL_SERVER_ERROR', 'Default error message'));
+      });
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      // Should return either translated message or fallback
-      expect(result.length).toBeGreaterThan(0);
+      it('should translate error code to English message', async () => {
+        await i18n.changeLanguage('en');
+        assertString(translateMessage('INTERNAL_SERVER_ERROR', 'Default error message'));
+      });
+
+      it.each([
+        ['undefined code', undefined, 'Fallback error message'],
+        ['unknown code', 'NONEXISTENT_ERROR_CODE', 'Unknown error occurred'],
+        ['empty string code', '', 'Empty code fallback'],
+      ])('should return fallback when code is %s', (_label, code, fallback) => {
+        expect(translateMessage(code, fallback)).toBe(fallback);
+      });
     });
 
-    it('should translate error code to English message', async () => {
-      await i18n.changeLanguage('en');
-
-      const result = translateMessage(
-        'INTERNAL_SERVER_ERROR',
-        'Default error message'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
+    describe('Parameter Interpolation', () => {
+      it.each([
+        ['count parameter', 'ITEMS_COUNT', 'Default: {{count}} items', { count: 5 }],
+        ['string parameter', 'WELCOME_MESSAGE', 'Welcome {{name}}', { name: 'John' }],
+        ['multiple parameters', 'USER_INFO', 'User: {{name}}, Age: {{age}}', { name: 'Alice', age: 25 }],
+        ['missing parameters', 'MESSAGE_WITH_PARAMS', 'Hello {{name}}', {}],
+      ])('should handle %s', (_label, code, fallback, params) => {
+        const result = translateMessage(code, fallback, params);
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
 
-    it('should return fallback message when code is undefined', () => {
-      const fallback = 'Fallback error message';
-      const result = translateMessage(undefined, fallback);
-
-      expect(result).toBe(fallback);
+    describe('Validation Message Translation', () => {
+      it.each([
+        ['VALIDATION_MIN:page:1'],
+        ['VALIDATION_MAX:limit:100'],
+        ['VALIDATION_MAX_LENGTH:name:50'],
+        ['VALIDATION_ARRAY_MIN:items:1'],
+        ['VALIDATION_ARRAY_MAX:items:10'],
+        ['VALIDATION_REQUIRED:email'],
+        ['VALIDATION_MAX_LENGTH:email:50'],
+      ])('should parse %s format correctly', (code) => {
+        const result = translateMessage(code, 'Fallback message');
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
 
-    it('should return fallback message when code is not found', () => {
-      const fallback = 'Unknown error occurred';
-      const result = translateMessage('NONEXISTENT_ERROR_CODE', fallback);
+    describe('Namespace Priority', () => {
+      it('should check messages namespace first (AUTH_EMAIL_VERIFICATION_COMPLETED)', () => {
+        const result = translateMessage('AUTH_EMAIL_VERIFICATION_COMPLETED', 'Fallback message');
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
 
-      // Should return fallback when translation not found
-      expect(result).toBe(fallback);
-    });
-
-    it('should handle empty string code', () => {
-      const fallback = 'Empty code fallback';
-      const result = translateMessage('', fallback);
-
-      expect(result).toBe(fallback);
-    });
-  });
-
-  describe('Parameter Interpolation', () => {
-    it('should interpolate count parameter', () => {
-      // Test with a message that uses count parameter
-      const result = translateMessage(
-        'ITEMS_COUNT',
-        'Default: {{count}} items',
-        { count: 5 }
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should interpolate string parameter', () => {
-      const result = translateMessage(
-        'WELCOME_MESSAGE',
-        'Welcome {{name}}',
-        { name: 'John' }
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should interpolate multiple parameters', () => {
-      const result = translateMessage(
-        'USER_INFO',
-        'User: {{name}}, Age: {{age}}',
-        { name: 'Alice', age: 25 }
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should handle missing parameters gracefully', () => {
-      const result = translateMessage(
-        'MESSAGE_WITH_PARAMS',
-        'Hello {{name}}',
-        {}
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should fallback to errors namespace if not in messages (INTERNAL_SERVER_ERROR)', () => {
+        const result = translateMessage('INTERNAL_SERVER_ERROR', 'Fallback message');
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
   });
 
-  describe('Validation Message Translation', () => {
-    it('should parse VALIDATION_MIN format correctly', () => {
-      const result = translateMessage(
-        'VALIDATION_MIN:page:1',
-        'Fallback message'
-      );
+  // -------------------------------------------------------------------------
+  describe('getApiErrorMessage', () => {
+    describe('Axios Error Handling', () => {
+      it('should extract and translate errorCode from API response', () => {
+        const error = makeAxiosError(400, { errorCode: 'INVALID_INPUT', message: 'Invalid input provided' });
+        assertString(getApiErrorMessage(error));
+      });
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should use message from response if errorCode is missing', () => {
+        const error = makeAxiosError(400, { message: 'Server error message' });
+        expect(getApiErrorMessage(error)).toBe('Server error message');
+      });
+
+      it('should use default message if response has no error info', () => {
+        const error = makeAxiosError(500, {});
+        expect(getApiErrorMessage(error, 'Something went wrong')).toBe('Something went wrong');
+      });
+
+      it('should translate errorCode with fallback to response message (RESOURCE_NOT_FOUND)', () => {
+        const error = makeAxiosError(404, { errorCode: 'RESOURCE_NOT_FOUND', message: 'Resource not found' });
+        const result = getApiErrorMessage(error);
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
 
-    it('should parse VALIDATION_MAX format correctly', () => {
-      const result = translateMessage(
-        'VALIDATION_MAX:limit:100',
-        'Fallback message'
-      );
+    describe('Non-Axios Error Handling', () => {
+      it.each([
+        ['generic Error object', new Error('Generic error')],
+        ['null error', null],
+        ['undefined error', undefined],
+      ])('should return default message for %s', (_label, error) => {
+        expect(getApiErrorMessage(error, 'Default error message')).toBe('Default error message');
+      });
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should use translated INTERNAL_SERVER_ERROR if no default provided', () => {
+        assertString(getApiErrorMessage(new Error('Unknown error')));
+      });
     });
 
-    it('should parse VALIDATION_MAX_LENGTH format correctly', () => {
-      const result = translateMessage(
-        'VALIDATION_MAX_LENGTH:name:50',
-        'Fallback message'
-      );
+    describe('Edge Cases', () => {
+      it('should handle Axios error without response', () => {
+        const error = new AxiosError('Network Error', 'ERR_NETWORK', undefined, undefined, undefined);
+        expect(getApiErrorMessage(error, 'Network error occurred')).toBe('Network error occurred');
+      });
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should parse VALIDATION_ARRAY_MIN format correctly', () => {
-      const result = translateMessage(
-        'VALIDATION_ARRAY_MIN:items:1',
-        'Fallback message'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should parse VALIDATION_ARRAY_MAX format correctly', () => {
-      const result = translateMessage(
-        'VALIDATION_ARRAY_MAX:items:10',
-        'Fallback message'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should handle validation message without value', () => {
-      const result = translateMessage(
-        'VALIDATION_REQUIRED:email',
-        'Fallback message'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should translate field names in validation messages', () => {
-      const result = translateMessage(
-        'VALIDATION_MIN:page:1',
-        'Fallback message'
-      );
-
-      // Should contain some form of field name and value
-      expect(result).toBeDefined();
+      it('should handle response with null data', () => {
+        const error = makeAxiosError(500, null);
+        expect(getApiErrorMessage(error, 'Default message')).toBe('Default message');
+      });
     });
   });
 
-  describe('Namespace Priority', () => {
-    it('should check messages namespace first', () => {
-      // Messages namespace should take priority
-      const result = translateMessage(
-        'AUTH_EMAIL_VERIFICATION_COMPLETED',
-        'Fallback message'
-      );
+  // -------------------------------------------------------------------------
+  describe('getApiSuccessMessage', () => {
+    describe('Success Message Translation', () => {
+      it('should translate messageCode to success message', () => {
+        const response = { messageCode: 'AUTH_EMAIL_VERIFICATION_COMPLETED', message: 'Email verification completed' };
+        assertString(getApiSuccessMessage(response));
+      });
 
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should use fallback message if messageCode is missing', () => {
+        expect(getApiSuccessMessage({ message: 'Operation successful' })).toBe('Operation successful');
+      });
+
+      it('should return empty string if both messageCode and message are missing', () => {
+        expect(getApiSuccessMessage({})).toBe('');
+      });
+
+      it('should interpolate parameters in success message', () => {
+        const response = { messageCode: 'ITEMS_DELETED', message: 'Items deleted successfully' };
+        const result = getApiSuccessMessage(response, { count: 5 });
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
 
-    it('should fallback to errors namespace if not in messages', () => {
-      const result = translateMessage(
-        'INTERNAL_SERVER_ERROR',
-        'Fallback message'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-  });
-});
-
-describe('getApiErrorMessage', () => {
-  beforeEach(async () => {
-    await i18n.changeLanguage('ko');
-  });
-
-  describe('Axios Error Handling', () => {
-    it('should extract and translate errorCode from API response', () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 400,
-          statusText: 'Bad Request',
-          headers: {},
-          config: {} as any,
-          data: {
-            errorCode: 'INVALID_INPUT',
-            message: 'Invalid input provided',
-          },
-        }
-      );
-
-      const result = getApiErrorMessage(axiosError);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
+    describe('Parameter Interpolation', () => {
+      it.each([
+        ['count parameter', { messageCode: 'SUCCESS_WITH_COUNT', message: '{{count}} items processed' }, { count: 10 }],
+        ['string parameter', { messageCode: 'SUCCESS_WITH_NAME', message: 'Welcome {{name}}' }, { name: 'Alice' }],
+        ['no parameters', { messageCode: 'OPERATION_SUCCESS', message: 'Operation completed' }, undefined],
+      ])('should handle %s', (_label, response, params) => {
+        const result = getApiSuccessMessage(response, params);
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
     });
 
-    it('should use message from response if errorCode is missing', () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 400,
-          statusText: 'Bad Request',
-          headers: {},
-          config: {} as any,
-          data: {
-            message: 'Server error message',
-          },
-        }
-      );
+    describe('Edge Cases', () => {
+      it.each([
+        ['undefined messageCode', { messageCode: undefined, message: 'Success message' }],
+        ['empty messageCode', { messageCode: '', message: 'Success message' }],
+      ])('should return fallback for %s', (_label, response) => {
+        expect(getApiSuccessMessage(response)).toBe('Success message');
+      });
 
-      const result = getApiErrorMessage(axiosError);
-
-      expect(result).toBe('Server error message');
-    });
-
-    it('should use default message if response has no error info', () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 500,
-          statusText: 'Internal Server Error',
-          headers: {},
-          config: {} as any,
-          data: {},
-        }
-      );
-
-      const defaultMessage = 'Something went wrong';
-      const result = getApiErrorMessage(axiosError, defaultMessage);
-
-      expect(result).toBe(defaultMessage);
-    });
-
-    it('should translate errorCode with fallback to response message', () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 404,
-          statusText: 'Not Found',
-          headers: {},
-          config: {} as any,
-          data: {
-            errorCode: 'RESOURCE_NOT_FOUND',
-            message: 'Resource not found',
-          },
-        }
-      );
-
-      const result = getApiErrorMessage(axiosError);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should translate with English locale', async () => {
+        await i18n.changeLanguage('en');
+        const response = { messageCode: 'AUTH_EMAIL_VERIFICATION_COMPLETED', message: 'Email verification completed' };
+        assertString(getApiSuccessMessage(response));
+      });
     });
   });
 
-  describe('Non-Axios Error Handling', () => {
-    it('should handle generic Error object', () => {
-      const error = new Error('Generic error');
-      const defaultMessage = 'Default error message';
+  // -------------------------------------------------------------------------
+  describe('Integration Tests', () => {
+    describe('Language Switching', () => {
+      it('should translate differently based on current language', async () => {
+        const messageCode = 'INTERNAL_SERVER_ERROR';
+        const fallback = 'Server error';
 
-      const result = getApiErrorMessage(error, defaultMessage);
+        await i18n.changeLanguage('ko');
+        const koreanResult = translateMessage(messageCode, fallback);
 
-      expect(result).toBe(defaultMessage);
+        await i18n.changeLanguage('en');
+        const englishResult = translateMessage(messageCode, fallback);
+
+        expect(typeof koreanResult).toBe('string');
+        expect(typeof englishResult).toBe('string');
+      });
+
+      it('should handle language changes in getApiErrorMessage', async () => {
+        const error = makeAxiosError(400, { errorCode: 'INVALID_INPUT', message: 'Invalid input' });
+
+        await i18n.changeLanguage('ko');
+        const koreanResult = getApiErrorMessage(error);
+
+        await i18n.changeLanguage('en');
+        const englishResult = getApiErrorMessage(error);
+
+        expect(typeof koreanResult).toBe('string');
+        expect(typeof englishResult).toBe('string');
+      });
     });
 
-    it('should handle null error', () => {
-      const defaultMessage = 'Default error message';
+    describe('Real-world Scenarios', () => {
+      it('should handle authentication error flow', () => {
+        const error = makeAxiosError(401, { errorCode: 'UNAUTHORIZED', message: 'Authentication required' }, 'ERR_UNAUTHORIZED');
+        assertString(getApiErrorMessage(error));
+      });
 
-      const result = getApiErrorMessage(null, defaultMessage);
+      it('should handle validation error with field information', () => {
+        const result = translateMessage('VALIDATION_MAX_LENGTH:email:50', 'Email too long');
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+      });
 
-      expect(result).toBe(defaultMessage);
-    });
-
-    it('should handle undefined error', () => {
-      const defaultMessage = 'Default error message';
-
-      const result = getApiErrorMessage(undefined, defaultMessage);
-
-      expect(result).toBe(defaultMessage);
-    });
-
-    it('should use translated INTERNAL_SERVER_ERROR if no default provided', () => {
-      const error = new Error('Unknown error');
-
-      const result = getApiErrorMessage(error);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      // Should return some error message
-      expect(result.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle Axios error without response', () => {
-      const axiosError = new AxiosError(
-        'Network Error',
-        'ERR_NETWORK',
-        undefined,
-        undefined,
-        undefined
-      );
-
-      const defaultMessage = 'Network error occurred';
-      const result = getApiErrorMessage(axiosError, defaultMessage);
-
-      expect(result).toBe(defaultMessage);
-    });
-
-    it('should handle response with null data', () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 500,
-          statusText: 'Internal Server Error',
-          headers: {},
-          config: {} as any,
-          data: null,
-        }
-      );
-
-      const defaultMessage = 'Default message';
-      const result = getApiErrorMessage(axiosError, defaultMessage);
-
-      expect(result).toBe(defaultMessage);
-    });
-  });
-});
-
-describe('getApiSuccessMessage', () => {
-  beforeEach(async () => {
-    await i18n.changeLanguage('ko');
-  });
-
-  describe('Success Message Translation', () => {
-    it('should translate messageCode to success message', () => {
-      const response = {
-        messageCode: 'AUTH_EMAIL_VERIFICATION_COMPLETED',
-        message: 'Email verification completed',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('should use fallback message if messageCode is missing', () => {
-      const response = {
-        message: 'Operation successful',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBe('Operation successful');
-    });
-
-    it('should return empty string if both messageCode and message are missing', () => {
-      const response = {};
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBe('');
-    });
-
-    it('should interpolate parameters in success message', () => {
-      const response = {
-        messageCode: 'ITEMS_DELETED',
-        message: 'Items deleted successfully',
-      };
-
-      const result = getApiSuccessMessage(response, { count: 5 });
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-  });
-
-  describe('Parameter Interpolation', () => {
-    it('should handle count parameter', () => {
-      const response = {
-        messageCode: 'SUCCESS_WITH_COUNT',
-        message: '{{count}} items processed',
-      };
-
-      const result = getApiSuccessMessage(response, { count: 10 });
-
-      expect(result).toBeDefined();
-    });
-
-    it('should handle string parameter', () => {
-      const response = {
-        messageCode: 'SUCCESS_WITH_NAME',
-        message: 'Welcome {{name}}',
-      };
-
-      const result = getApiSuccessMessage(response, { name: 'Alice' });
-
-      expect(result).toBeDefined();
-    });
-
-    it('should work without parameters', () => {
-      const response = {
-        messageCode: 'OPERATION_SUCCESS',
-        message: 'Operation completed',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle undefined messageCode', () => {
-      const response = {
-        messageCode: undefined,
-        message: 'Success message',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBe('Success message');
-    });
-
-    it('should handle empty messageCode', () => {
-      const response = {
-        messageCode: '',
-        message: 'Success message',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBe('Success message');
-    });
-
-    it('should translate with English locale', async () => {
-      await i18n.changeLanguage('en');
-
-      const response = {
-        messageCode: 'AUTH_EMAIL_VERIFICATION_COMPLETED',
-        message: 'Email verification completed',
-      };
-
-      const result = getApiSuccessMessage(response);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-  });
-});
-
-describe('Integration Tests', () => {
-  describe('Language Switching', () => {
-    it('should translate differently based on current language', async () => {
-      const messageCode = 'INTERNAL_SERVER_ERROR';
-      const fallback = 'Server error';
-
-      // Korean
-      await i18n.changeLanguage('ko');
-      const koreanResult = translateMessage(messageCode, fallback);
-
-      // English
-      await i18n.changeLanguage('en');
-      const englishResult = translateMessage(messageCode, fallback);
-
-      expect(koreanResult).toBeDefined();
-      expect(englishResult).toBeDefined();
-      // Both should be strings
-      expect(typeof koreanResult).toBe('string');
-      expect(typeof englishResult).toBe('string');
-    });
-
-    it('should handle language changes in getApiErrorMessage', async () => {
-      const axiosError = new AxiosError(
-        'Request failed',
-        'ERR_BAD_REQUEST',
-        undefined,
-        undefined,
-        {
-          status: 400,
-          statusText: 'Bad Request',
-          headers: {},
-          config: {} as any,
-          data: {
-            errorCode: 'INVALID_INPUT',
-            message: 'Invalid input',
-          },
-        }
-      );
-
-      // Korean
-      await i18n.changeLanguage('ko');
-      const koreanResult = getApiErrorMessage(axiosError);
-
-      // English
-      await i18n.changeLanguage('en');
-      const englishResult = getApiErrorMessage(axiosError);
-
-      expect(koreanResult).toBeDefined();
-      expect(englishResult).toBeDefined();
-      expect(typeof koreanResult).toBe('string');
-      expect(typeof englishResult).toBe('string');
-    });
-  });
-
-  describe('Real-world Scenarios', () => {
-    it('should handle authentication error flow', () => {
-      const axiosError = new AxiosError(
-        'Unauthorized',
-        'ERR_UNAUTHORIZED',
-        undefined,
-        undefined,
-        {
-          status: 401,
-          statusText: 'Unauthorized',
-          headers: {},
-          config: {} as any,
-          data: {
-            errorCode: 'UNAUTHORIZED',
-            message: 'Authentication required',
-          },
-        }
-      );
-
-      const result = getApiErrorMessage(axiosError);
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should handle validation error with field information', () => {
-      const result = translateMessage(
-        'VALIDATION_MAX_LENGTH:email:50',
-        'Email too long'
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
-    });
-
-    it('should handle success message with dynamic content', () => {
-      const response = {
-        messageCode: 'ITEMS_UPDATED',
-        message: '{{count}} items updated successfully',
-      };
-
-      const result = getApiSuccessMessage(response, { count: 3 });
-
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('string');
+      it('should handle success message with dynamic content', () => {
+        const response = { messageCode: 'ITEMS_UPDATED', message: '{{count}} items updated successfully' };
+        assertString(getApiSuccessMessage(response, { count: 3 }));
+      });
     });
   });
 });

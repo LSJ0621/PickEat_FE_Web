@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { ReRegisterFormSection } from '@/components/features/auth/ReRegisterFormSection';
+import { ReRegisterFormSection } from '@features/auth/components/ReRegisterFormSection';
 
 describe('ReRegisterFormSection', () => {
   const defaultProps = {
@@ -34,7 +34,7 @@ describe('ReRegisterFormSection', () => {
     it('should not render back to login button by default', () => {
       renderWithProviders(<ReRegisterFormSection {...defaultProps} />);
 
-      expect(screen.queryByRole('button', { name: '로그인으로 돌아가기' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '로그인 페이지로 돌아가기' })).not.toBeInTheDocument();
     });
 
     it('should render back to login button when onBackToLogin is provided', () => {
@@ -42,7 +42,7 @@ describe('ReRegisterFormSection', () => {
         <ReRegisterFormSection {...defaultProps} onBackToLogin={vi.fn()} />
       );
 
-      expect(screen.getByRole('button', { name: '로그인으로 돌아가기' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '로그인 페이지로 돌아가기' })).toBeInTheDocument();
     });
   });
 
@@ -83,11 +83,11 @@ describe('ReRegisterFormSection', () => {
         'w-full',
         'rounded-2xl',
         'border',
-        'border-white/15',
-        'bg-white/5',
+        'border-border-default',
+        'bg-bg-secondary',
         'px-4',
         'py-3',
-        'text-white'
+        'text-text-primary'
       );
     });
   });
@@ -140,9 +140,8 @@ describe('ReRegisterFormSection', () => {
       const button = screen.getByRole('button', { name: '재가입' });
       expect(button).toHaveClass(
         'bg-gradient-to-r',
-        'from-orange-500',
-        'to-rose-500',
-        'text-white'
+        'from-brand-primary',
+        'to-rose-500'
       );
     });
 
@@ -179,7 +178,7 @@ describe('ReRegisterFormSection', () => {
         <ReRegisterFormSection {...defaultProps} onBackToLogin={onBackToLogin} />
       );
 
-      await user.click(screen.getByRole('button', { name: '로그인으로 돌아가기' }));
+      await user.click(screen.getByRole('button', { name: '로그인 페이지로 돌아가기' }));
       expect(onBackToLogin).toHaveBeenCalledTimes(1);
     });
 
@@ -188,8 +187,8 @@ describe('ReRegisterFormSection', () => {
         <ReRegisterFormSection {...defaultProps} onBackToLogin={vi.fn()} />
       );
 
-      const button = screen.getByRole('button', { name: '로그인으로 돌아가기' });
-      expect(button).toHaveClass('text-sm', 'text-slate-400', 'hover:text-white', 'transition');
+      const button = screen.getByRole('button', { name: '로그인 페이지로 돌아가기' });
+      expect(button).toHaveClass('text-sm', 'text-text-tertiary', 'hover:text-text-primary', 'transition');
     });
 
     it('should be in a centered container', () => {
@@ -197,7 +196,7 @@ describe('ReRegisterFormSection', () => {
         <ReRegisterFormSection {...defaultProps} onBackToLogin={vi.fn()} />
       );
 
-      const button = screen.getByRole('button', { name: '로그인으로 돌아가기' });
+      const button = screen.getByRole('button', { name: '로그인 페이지로 돌아가기' });
       const parentDiv = button.parentElement;
       expect(parentDiv).toHaveClass('text-center');
     });
@@ -220,7 +219,7 @@ describe('ReRegisterFormSection', () => {
       expect(screen.getByLabelText('이름')).toHaveValue('홍길동');
       expect(screen.getByText('이름이 너무 짧습니다')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '재가입' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '로그인으로 돌아가기' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '로그인 페이지로 돌아가기' })).toBeInTheDocument();
     });
 
     it('should handle loading state with all other props', () => {
@@ -237,7 +236,7 @@ describe('ReRegisterFormSection', () => {
 
       expect(screen.getByText('로딩 중...')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '로딩 중...' })).toBeDisabled();
-      expect(screen.getByRole('button', { name: '로그인으로 돌아가기' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '로그인 페이지로 돌아가기' })).toBeInTheDocument();
     });
 
     it('should handle unverified email state', () => {
@@ -270,7 +269,7 @@ describe('ReRegisterFormSection', () => {
       );
 
       const reRegisterButton = screen.getByRole('button', { name: '재가입' });
-      const backButton = screen.getByRole('button', { name: '로그인으로 돌아가기' });
+      const backButton = screen.getByRole('button', { name: '로그인 페이지로 돌아가기' });
 
       expect(reRegisterButton).toBeInTheDocument();
       expect(backButton).toBeInTheDocument();
@@ -281,10 +280,10 @@ describe('ReRegisterFormSection', () => {
 
       const nameInput = screen.getByLabelText('이름');
       expect(nameInput).toHaveClass(
-        'focus:border-orange-300/60',
+        'focus:border-border-focus',
         'focus:outline-none',
         'focus:ring-2',
-        'focus:ring-orange-400/60'
+        'focus:ring-brand-primary/40'
       );
     });
   });

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/react';
-import { AuthPromptModal } from '@/components/common/AuthPromptModal';
+import { AuthPromptModal } from '@shared/components/AuthPromptModal';
 
 describe('AuthPromptModal', () => {
   const mockOnConfirm = vi.fn();
@@ -46,7 +46,8 @@ describe('AuthPromptModal', () => {
         />
       );
 
-      expect(screen.getByText('해당 기능은 로그인 후 이용할 수 있습니다. 지금 로그인하시겠어요?')).toBeInTheDocument();
+      // The default message comes from i18n: auth.loginRequired.message
+      expect(screen.getByText(/로그인 후/)).toBeInTheDocument();
     });
 
     it('커스텀 메시지를 사용할 수 있다', () => {
@@ -131,7 +132,7 @@ describe('AuthPromptModal', () => {
         />
       );
 
-      const modal = document.body.querySelector('.fixed.inset-0.z-50');
+      const modal = document.body.querySelector('.fixed.inset-0');
       expect(modal).toBeInTheDocument();
     });
   });
@@ -146,9 +147,9 @@ describe('AuthPromptModal', () => {
         />
       );
 
-      // requestAnimationFrame 후 애니메이션 클래스 확인
+      // The modal uses opacity-100 when animating (isAnimating=true)
       await waitFor(() => {
-        const backdrop = document.body.querySelector('.modal-backdrop-enter');
+        const backdrop = document.body.querySelector('.opacity-100');
         expect(backdrop).toBeInTheDocument();
       });
     });
@@ -204,7 +205,7 @@ describe('AuthPromptModal', () => {
         />
       );
 
-      const backdrop = document.body.querySelector('.bg-black\\/60');
+      const backdrop = document.body.querySelector('.backdrop-blur-sm');
       expect(backdrop).toBeInTheDocument();
     });
 

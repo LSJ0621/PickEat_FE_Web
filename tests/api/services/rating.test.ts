@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { ratingService } from '@/api/services/rating';
+import { ratingService } from '@features/rating/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
@@ -14,7 +14,7 @@ import type {
   SubmitRatingRequest,
   SkipRatingRequest,
   PendingRating,
-} from '@/types/rating';
+} from '@features/rating/types';
 
 const BASE_URL = 'http://localhost:3000';
 

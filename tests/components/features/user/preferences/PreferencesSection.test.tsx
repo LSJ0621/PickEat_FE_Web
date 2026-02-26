@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PreferencesSection } from '@/components/features/user/preferences/PreferencesSection';
+import { PreferencesSection } from '@features/user/components/preferences/PreferencesSection';
 
 describe('PreferencesSection', () => {
   const mockOnEditClick = vi.fn();
@@ -11,6 +11,7 @@ describe('PreferencesSection', () => {
     likes: ['한식', '중식'],
     dislikes: ['매운 음식'],
     analysis: '한식과 중식을 선호하는 편입니다.',
+    analysisParagraphs: null,
     isLoading: false,
     onEditClick: mockOnEditClick,
   };
@@ -78,6 +79,7 @@ describe('PreferencesSection', () => {
           likes={[]}
           dislikes={[]}
           analysis={null}
+          analysisParagraphs={null}
         />
       );
 
@@ -86,7 +88,7 @@ describe('PreferencesSection', () => {
 
     it('좋아하는 것만 없을 때 싫어하는 것은 표시된다', () => {
       renderWithProviders(
-        <PreferencesSection {...defaultProps} likes={[]} analysis={null} />
+        <PreferencesSection {...defaultProps} likes={[]} analysis={null} analysisParagraphs={null} />
       );
 
       expect(screen.queryByText('좋아하는 것')).not.toBeInTheDocument();
@@ -96,7 +98,7 @@ describe('PreferencesSection', () => {
 
     it('싫어하는 것만 없을 때 좋아하는 것은 표시된다', () => {
       renderWithProviders(
-        <PreferencesSection {...defaultProps} dislikes={[]} analysis={null} />
+        <PreferencesSection {...defaultProps} dislikes={[]} analysis={null} analysisParagraphs={null} />
       );
 
       expect(screen.getByText('좋아하는 것')).toBeInTheDocument();
@@ -104,7 +106,7 @@ describe('PreferencesSection', () => {
     });
 
     it('AI 리포트가 null일 때 표시되지 않는다', () => {
-      renderWithProviders(<PreferencesSection {...defaultProps} analysis={null} />);
+      renderWithProviders(<PreferencesSection {...defaultProps} analysis={null} analysisParagraphs={null} />);
 
       expect(screen.queryByText('AI 리포트')).not.toBeInTheDocument();
     });
@@ -137,14 +139,16 @@ describe('PreferencesSection', () => {
       renderWithProviders(<PreferencesSection {...defaultProps} />);
 
       const likeTag = screen.getByText('한식');
-      expect(likeTag).toHaveClass('border-green-500/30');
+      // Badge uses border-green-200 for the 'like' variant
+      expect(likeTag).toHaveClass('border-green-200');
     });
 
     it('싫어하는 것 태그에 red 스타일이 적용된다', () => {
       renderWithProviders(<PreferencesSection {...defaultProps} />);
 
       const dislikeTag = screen.getByText('매운 음식');
-      expect(dislikeTag).toHaveClass('border-red-500/30');
+      // Badge uses border-red-200 for the 'dislike' variant
+      expect(dislikeTag).toHaveClass('border-red-200');
     });
   });
 });

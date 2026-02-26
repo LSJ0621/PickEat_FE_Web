@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { StatCard } from '@/components/features/admin/dashboard/StatCard';
+import { StatCard } from '@features/admin/components/dashboard/StatCard';
 import { Users, AlertTriangle, XCircle } from 'lucide-react';
 
 describe('StatCard', () => {
@@ -51,7 +51,7 @@ describe('StatCard', () => {
 
       const card = container.querySelector('.bg-bg-surface');
       expect(card).toBeInTheDocument();
-      expect(card).toHaveClass('border-[var(--border-default)]');
+      expect(card).toHaveClass('border-border-default');
     });
 
     it('should apply default variant when explicitly specified', () => {
@@ -60,7 +60,7 @@ describe('StatCard', () => {
       );
 
       const card = container.querySelector('.bg-bg-surface');
-      expect(card).toHaveClass('border-[var(--border-default)]');
+      expect(card).toHaveClass('border-border-default');
     });
 
     it('should apply warning variant styles', () => {
@@ -68,7 +68,7 @@ describe('StatCard', () => {
         <StatCard title="Warnings" value={5} icon={AlertTriangle} variant="warning" />
       );
 
-      const card = container.querySelector('.bg-warning-bg');
+      const card = container.querySelector('.bg-yellow-50');
       expect(card).toBeInTheDocument();
     });
 
@@ -77,7 +77,7 @@ describe('StatCard', () => {
         <StatCard title="Errors" value={3} icon={XCircle} variant="danger" />
       );
 
-      const card = container.querySelector('.bg-error-bg');
+      const card = container.querySelector('.bg-red-50');
       expect(card).toBeInTheDocument();
     });
   });
@@ -86,7 +86,7 @@ describe('StatCard', () => {
     it('should apply default icon color for default variant', () => {
       const { container } = render(<StatCard title="Test" value={100} icon={Users} />);
 
-      const icon = container.querySelector('.text-info');
+      const icon = container.querySelector('.text-blue-500');
       expect(icon).toBeInTheDocument();
     });
 
@@ -95,7 +95,7 @@ describe('StatCard', () => {
         <StatCard title="Test" value={100} icon={AlertTriangle} variant="warning" />
       );
 
-      const icon = container.querySelector('.text-warning');
+      const icon = container.querySelector('.text-yellow-500');
       expect(icon).toBeInTheDocument();
     });
 
@@ -104,7 +104,7 @@ describe('StatCard', () => {
         <StatCard title="Test" value={100} icon={XCircle} variant="danger" />
       );
 
-      const icon = container.querySelector('.text-error');
+      const icon = container.querySelector('.text-red-500');
       expect(icon).toBeInTheDocument();
     });
   });

@@ -1,17 +1,24 @@
 /**
- * OnboardingNavigation Unit Tests
+ * OnboardingStepIntro Unit Tests
  *
- * Tests for OnboardingNavigation component functionality.
+ * Tests for OnboardingStepIntro component functionality.
+ * This replaces the previous OnboardingNavigation test which tested
+ * a component that no longer exists. Navigation is now embedded in each step component.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { OnboardingNavigation } from '@/components/features/onboarding/OnboardingNavigation';
+import { OnboardingStepIntro } from '@features/onboarding/components/OnboardingStepIntro';
 
 // Mock Button component
-vi.mock('@/components/common/Button', () => ({
-  Button: ({ children, onClick, variant, className }: any) => (
-    <button onClick={onClick} data-variant={variant} className={className}>
+vi.mock('@shared/components/Button', () => ({
+  Button: ({ children, onClick, size, className }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    size?: string;
+    className?: string;
+  }) => (
+    <button onClick={onClick} data-size={size} className={className}>
       {children}
     </button>
   ),
@@ -22,103 +29,129 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'onboarding.previous': 'Previous',
-        'onboarding.next': 'Next',
-        'onboarding.start': 'Start',
+        'onboarding.step1.title': 'PickEat에 오신 걸 환영합니다!',
+        'onboarding.step1.subtitle': 'AI 기반 식사 추천 서비스',
+        'onboarding.step1.description': '기분, 날씨, 취향에 맞는 메뉴와 가게를 AI가 추천해드립니다.',
+        'onboarding.next': '다음',
+        'onboarding.skip': '건너뛰기',
       };
-      return translations[key] || key;
+      return translations[key] ?? key;
     },
   }),
 }));
 
-describe('OnboardingNavigation', () => {
-  const mockOnPrevious = vi.fn();
+describe('OnboardingStepIntro', () => {
   const mockOnNext = vi.fn();
-  const mockOnComplete = vi.fn();
+  const mockOnSkip = vi.fn();
 
   const defaultProps = {
-    currentIndex: 1,
-    totalSlides: 5,
-    onPrevious: mockOnPrevious,
     onNext: mockOnNext,
-    onComplete: mockOnComplete,
+    onSkip: mockOnSkip,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders Next button on non-last slides', () => {
-    render(<OnboardingNavigation {...defaultProps} />);
-    expect(screen.getByText('Next')).toBeInTheDocument();
+  it('renders step title', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    expect(screen.getByText('PickEat에 오신 걸 환영합니다!')).toBeInTheDocument();
   });
 
-  it('renders Previous button when not on first slide', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={2} />);
-    expect(screen.getByText('Previous')).toBeInTheDocument();
+  it('renders step subtitle', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    expect(screen.getByText('AI 기반 식사 추천 서비스')).toBeInTheDocument();
   });
 
-  it('does not render Previous button on first slide', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={0} />);
-    expect(screen.queryByText('Previous')).not.toBeInTheDocument();
+  it('renders step description', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    expect(screen.getByText('기분, 날씨, 취향에 맞는 메뉴와 가게를 AI가 추천해드립니다.')).toBeInTheDocument();
   });
 
-  it('renders Start button on last slide', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={4} totalSlides={5} />);
-    expect(screen.getByText('Start')).toBeInTheDocument();
-    expect(screen.queryByText('Next')).not.toBeInTheDocument();
+  it('renders next button', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    expect(screen.getByText('다음')).toBeInTheDocument();
   });
 
-  it('calls onNext when Next button is clicked', () => {
-    render(<OnboardingNavigation {...defaultProps} />);
-    const nextButton = screen.getByText('Next');
+  it('renders skip button', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    expect(screen.getByText('건너뛰기')).toBeInTheDocument();
+  });
+
+  it('calls onNext when next button is clicked', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
     fireEvent.click(nextButton);
     expect(mockOnNext).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onPrevious when Previous button is clicked', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={2} />);
-    const previousButton = screen.getByText('Previous');
-    fireEvent.click(previousButton);
-    expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+  it('calls onSkip when skip button is clicked', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const skipButton = screen.getByText('건너뛰기');
+    fireEvent.click(skipButton);
+    expect(mockOnSkip).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onComplete when Start button is clicked on last slide', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={4} />);
-    const startButton = screen.getByText('Start');
-    fireEvent.click(startButton);
-    expect(mockOnComplete).toHaveBeenCalledTimes(1);
+  it('renders hero icon with emoji', () => {
+    const { container } = render(<OnboardingStepIntro {...defaultProps} />);
+    const iconContainer = container.querySelector('.rounded-full');
+    expect(iconContainer).toBeInTheDocument();
+    expect(screen.getByRole('img', { hidden: true })).toBeInTheDocument();
   });
 
-  it('applies primary variant to Next button', () => {
-    render(<OnboardingNavigation {...defaultProps} />);
-    const nextButton = screen.getByText('Next');
-    expect(nextButton).toHaveAttribute('data-variant', 'primary');
+  it('renders icon with gradient background', () => {
+    const { container } = render(<OnboardingStepIntro {...defaultProps} />);
+    const gradient = container.querySelector('.bg-gradient-to-br');
+    expect(gradient).toBeInTheDocument();
   });
 
-  it('applies primary variant to Start button', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={4} />);
-    const startButton = screen.getByText('Start');
-    expect(startButton).toHaveAttribute('data-variant', 'primary');
+  it('renders fork and knife emoji with aria-label', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const emoji = screen.getByRole('img', { hidden: true });
+    expect(emoji).toHaveAttribute('aria-label', 'fork and knife');
   });
 
-  it('applies ghost variant to Previous button', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={2} />);
-    const previousButton = screen.getByText('Previous');
-    expect(previousButton).toHaveAttribute('data-variant', 'ghost');
+  it('renders next button with lg size', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
+    expect(nextButton).toHaveAttribute('data-size', 'lg');
   });
 
-  it('handles middle slide navigation', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={2} totalSlides={5} />);
-    expect(screen.getByText('Previous')).toBeInTheDocument();
-    expect(screen.getByText('Next')).toBeInTheDocument();
-    expect(screen.queryByText('Start')).not.toBeInTheDocument();
+  it('renders next button with w-full class', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
+    expect(nextButton.className).toContain('w-full');
   });
 
-  it('handles single slide navigation', () => {
-    render(<OnboardingNavigation {...defaultProps} currentIndex={0} totalSlides={1} />);
-    expect(screen.queryByText('Previous')).not.toBeInTheDocument();
-    expect(screen.queryByText('Next')).not.toBeInTheDocument();
-    expect(screen.getByText('Start')).toBeInTheDocument();
+  it('renders skip as a plain button with focus style', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const skipButton = screen.getByText('건너뛰기');
+    expect(skipButton.tagName).toBe('BUTTON');
+    expect(skipButton).toHaveAttribute('type', 'button');
+  });
+
+  it('has centered flex layout', () => {
+    const { container } = render(<OnboardingStepIntro {...defaultProps} />);
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper).toHaveClass('flex', 'flex-col', 'items-center', 'text-center');
+  });
+
+  it('renders title as h2 heading', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const heading = screen.getByRole('heading', { level: 2 });
+    expect(heading).toBeInTheDocument();
+    expect(heading.textContent).toContain('PickEat에 오신 걸 환영합니다!');
+  });
+
+  it('renders subtitle with orange color class', () => {
+    render(<OnboardingStepIntro {...defaultProps} />);
+    const subtitle = screen.getByText('AI 기반 식사 추천 서비스');
+    expect(subtitle).toHaveClass('text-orange-400');
+  });
+
+  it('renders actions container with flex column', () => {
+    const { container } = render(<OnboardingStepIntro {...defaultProps} />);
+    const actions = container.querySelector('.flex.w-full.flex-col.gap-3');
+    expect(actions).toBeInTheDocument();
   });
 });

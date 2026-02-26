@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { useToast } from '@/hooks/common/useToast';
+import { useErrorHandler } from '@shared/hooks/useErrorHandler';
+import { useToast } from '@shared/hooks/useToast';
 import { AxiosError } from 'axios';
 
-vi.mock('@/hooks/common/useToast');
+vi.mock('@shared/hooks/useToast');
 
 describe('useErrorHandler', () => {
   const mockToastError = vi.fn();
@@ -124,14 +124,15 @@ describe('useErrorHandler', () => {
 
       result.current.handleError({});
 
-      expect(mockToastError).toHaveBeenCalledWith('오류가 발생했습니다.', 5000);
+      expect(mockToastError).toHaveBeenCalledWith('오류가 발생했습니다', 5000);
     });
   });
 
   describe('handleSuccess', () => {
-    it('should call toast.success with message', () => {
+    it('should call toast.success with translated message from key', () => {
       const { result } = renderHook(() => useErrorHandler());
 
+      // handleSuccess takes a translation key; t('Success message') falls back to 'Success message'
       result.current.handleSuccess('Success message');
 
       expect(mockToastSuccess).toHaveBeenCalledWith('Success message', undefined);
@@ -140,7 +141,7 @@ describe('useErrorHandler', () => {
     it('should call toast.success with custom duration', () => {
       const { result } = renderHook(() => useErrorHandler());
 
-      result.current.handleSuccess('Success message', 3000);
+      result.current.handleSuccess('Success message', {}, 3000);
 
       expect(mockToastSuccess).toHaveBeenCalledWith('Success message', 3000);
     });

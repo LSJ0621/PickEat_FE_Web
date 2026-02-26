@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createMockEmailVerification } from '@tests/factories';
-import { EmailVerificationSection } from '@/components/features/auth/EmailVerificationSection';
+import { EmailVerificationSection } from '@features/auth/components/EmailVerificationSection';
 
 describe('EmailVerificationSection', () => {
 

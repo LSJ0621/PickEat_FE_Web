@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PageLoadingFallback } from '@/components/common/PageLoadingFallback';
+import { PageLoadingFallback } from '@shared/components/PageLoadingFallback';
 
 describe('PageLoadingFallback', () => {
   describe('렌더링 테스트', () => {
@@ -29,11 +29,12 @@ describe('PageLoadingFallback', () => {
       expect(wrapper).toHaveClass('justify-center');
     });
 
-    it('다크 배경이 적용된다', () => {
+    it('배경색이 적용된다', () => {
       const { container } = renderWithProviders(<PageLoadingFallback />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('bg-slate-950');
+      // Component uses design token bg-bg-primary
+      expect(wrapper).toHaveClass('bg-bg-primary');
     });
 
     it('스피너가 회전 애니메이션을 가진다', () => {
@@ -50,11 +51,12 @@ describe('PageLoadingFallback', () => {
       expect(spinner).toHaveClass('rounded-full');
     });
 
-    it('스피너가 오렌지색 테두리를 가진다', () => {
+    it('스피너가 브랜드 색상 테두리를 가진다', () => {
       renderWithProviders(<PageLoadingFallback />);
 
       const spinner = screen.getByTestId('loading-spinner');
-      expect(spinner).toHaveClass('border-orange-500');
+      // Component uses design token border-brand-primary
+      expect(spinner).toHaveClass('border-brand-primary');
     });
 
     it('스피너 상단이 투명하다', () => {
@@ -81,11 +83,12 @@ describe('PageLoadingFallback', () => {
   });
 
   describe('텍스트 스타일 테스트', () => {
-    it('로딩 텍스트가 회색이다', () => {
+    it('로딩 텍스트가 적절한 색상 클래스를 가진다', () => {
       renderWithProviders(<PageLoadingFallback />);
 
       const text = screen.getByText('페이지를 불러오는 중...');
-      expect(text).toHaveClass('text-gray-400');
+      // Component uses design token text-text-tertiary
+      expect(text).toHaveClass('text-text-tertiary');
     });
 
     it('로딩 텍스트가 스피너 아래에 위치한다', () => {

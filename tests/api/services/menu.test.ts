@@ -4,13 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { menuService } from '@/api/services/menu';
+import { menuService } from '@features/agent/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
 import {
   mockMenuRecommendation,
-  mockPlaceRecommendations,
   mockRestaurantBlogs,
   mockPlaceHistory,
   mockPlaceDetail,
@@ -62,45 +61,6 @@ describe('Menu Service', () => {
       );
 
       await expect(menuService.recommend('점심 메뉴')).rejects.toThrow();
-    });
-  });
-
-  describe('recommendPlaces', () => {
-    it('should get place recommendations successfully', async () => {
-      server.use(
-        http.get(`${BASE_URL}${ENDPOINTS.MENU.RECOMMEND_PLACES}`, () => {
-          return HttpResponse.json(mockPlaceRecommendations);
-        })
-      );
-
-      const result = await menuService.recommendPlaces({
-        query: '김치찌개',
-        historyId: 1,
-        menuName: '김치찌개',
-      });
-
-      expect(result.recommendations).toHaveLength(2);
-      expect(result.recommendations[0].placeId).toBe('ChIJ1234567890');
-      expect(result.recommendations[0].name).toBe('명동 김치찌개');
-    });
-
-    it('should fail with missing menu name', async () => {
-      server.use(
-        http.get(`${BASE_URL}${ENDPOINTS.MENU.RECOMMEND_PLACES}`, () => {
-          return HttpResponse.json(
-            { message: '메뉴 이름을 입력해주세요.' },
-            { status: 400 }
-          );
-        })
-      );
-
-      await expect(
-        menuService.recommendPlaces({
-          query: '',
-          historyId: 1,
-          menuName: '',
-        })
-      ).rejects.toThrow();
     });
   });
 

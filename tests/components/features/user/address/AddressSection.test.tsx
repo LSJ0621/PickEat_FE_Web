@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressSection } from '@/components/features/user/address/AddressSection';
+import { AddressSection } from '@features/user/components/address/AddressSection';
 import { createMockUserAddresses } from '@tests/factories';
 
 describe('AddressSection', () => {

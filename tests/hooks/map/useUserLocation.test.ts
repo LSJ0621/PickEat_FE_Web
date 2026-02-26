@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useUserLocation } from '@/hooks/map/useUserLocation';
-import { useAppSelector } from '@/store/hooks';
-import type { User } from '@/types/auth';
+import { useUserLocation } from '@features/map/hooks/useUserLocation';
+import { useAppSelector } from '@app/store/hooks';
+import type { User } from '@shared/types/auth';
 
-vi.mock('@/store/hooks');
+vi.mock('@app/store/hooks');
 
 describe('useUserLocation', () => {
   beforeEach(() => {

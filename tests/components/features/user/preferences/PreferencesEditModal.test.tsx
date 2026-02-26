@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PreferencesEditModal } from '@/components/features/user/preferences/PreferencesEditModal';
+import { PreferencesEditModal } from '@features/user/components/preferences/PreferencesEditModal';
 
 describe('PreferencesEditModal', () => {
   const defaultProps = {
@@ -118,8 +118,9 @@ describe('PreferencesEditModal', () => {
       renderWithProviders(<PreferencesEditModal {...defaultProps} />);
 
       await waitFor(() => {
-        // 한식, 중식, 매운 음식 3개의 삭제 버튼
-        const deleteButtons = screen.getAllByRole('button', { name: '×' });
+        // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+        // Since 'common.remove' has no translation, it falls back to "common.remove"
+        const deleteButtons = screen.getAllByRole('button', { name: /common\.remove/ });
         expect(deleteButtons.length).toBe(3);
       });
     });
@@ -215,11 +216,10 @@ describe('PreferencesEditModal', () => {
         expect(screen.getByText('한식')).toBeInTheDocument();
       });
 
-      // 한식 태그의 삭제 버튼 클릭
-      const likeTag = screen.getByText('한식').closest('span');
-      const deleteButton = likeTag?.querySelector('button');
+      // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+      const deleteButton = screen.getByRole('button', { name: '한식 common.remove' });
       expect(deleteButton).toBeInTheDocument();
-      await user.click(deleteButton!);
+      await user.click(deleteButton);
 
       expect(defaultProps.onRemoveLike).toHaveBeenCalledWith('한식');
     });
@@ -233,11 +233,10 @@ describe('PreferencesEditModal', () => {
         expect(screen.getByText('매운 음식')).toBeInTheDocument();
       });
 
-      // 매운 음식 태그의 삭제 버튼 클릭
-      const dislikeTag = screen.getByText('매운 음식').closest('span');
-      const deleteButton = dislikeTag?.querySelector('button');
+      // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+      const deleteButton = screen.getByRole('button', { name: '매운 음식 common.remove' });
       expect(deleteButton).toBeInTheDocument();
-      await user.click(deleteButton!);
+      await user.click(deleteButton);
 
       expect(defaultProps.onRemoveDislike).toHaveBeenCalledWith('매운 음식');
     });

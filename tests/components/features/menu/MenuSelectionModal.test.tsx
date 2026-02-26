@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { MenuSelectionModal } from '@/components/features/menu/MenuSelectionModal';
+import { MenuSelectionModal } from '@features/agent/components/menu/MenuSelectionModal';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 
@@ -12,7 +12,11 @@ describe('MenuSelectionModal', () => {
 
   const defaultProps = {
     open: true,
-    recommendations: ['김치찌개', '불고기', '비빔밥'],
+    recommendations: [
+      { menu: '김치찌개', condition: '한식이 당긴다면' },
+      { menu: '불고기', condition: '달콤한 맛이 좋다면' },
+      { menu: '비빔밥', condition: '건강하게 먹고 싶다면' },
+    ],
     historyId: 1,
     onClose: mockOnClose,
     onComplete: mockOnComplete,
@@ -35,14 +39,14 @@ describe('MenuSelectionModal', () => {
       renderWithProviders(<MenuSelectionModal {...defaultProps} />);
       // Portal renders to document.body after animation frame
       await waitFor(() => {
-        expect(document.body.querySelector('.fixed.inset-0.z-50')).toBeInTheDocument();
+        expect(document.body.querySelector('.fixed.inset-0')).toBeInTheDocument();
       });
       expect(screen.getByRole('heading', { name: '메뉴 선택하기' })).toBeInTheDocument();
     });
 
     it('should not render when closed', () => {
       renderWithProviders(<MenuSelectionModal {...defaultProps} open={false} />);
-      expect(document.body.querySelector('.fixed.inset-0.z-50')).not.toBeInTheDocument();
+      expect(document.body.querySelector('.fixed.inset-0')).not.toBeInTheDocument();
     });
 
     it('should render all menu recommendations', async () => {
@@ -68,7 +72,7 @@ describe('MenuSelectionModal', () => {
       renderWithProviders(<MenuSelectionModal {...defaultProps} />);
       await waitFor(() => {
         const lunchButton = screen.getByRole('button', { name: '점심' });
-        expect(lunchButton).toHaveClass('bg-orange-500');
+        expect(lunchButton).toHaveClass('bg-brand-primary');
       });
     });
 
@@ -77,6 +81,14 @@ describe('MenuSelectionModal', () => {
       await waitFor(() => {
         const closeButton = document.body.querySelector('button[aria-label="닫기"]');
         expect(closeButton).toBeInTheDocument();
+      });
+    });
+
+    it('should render in document body portal', async () => {
+      renderWithProviders(<MenuSelectionModal {...defaultProps} />);
+      await waitFor(() => {
+        const modalInBody = document.body.querySelector('.fixed.inset-0');
+        expect(modalInBody).toBeInTheDocument();
       });
     });
   });
@@ -91,13 +103,13 @@ describe('MenuSelectionModal', () => {
       });
 
       const menuButton = screen.getByText('김치찌개').closest('button');
-      expect(menuButton).not.toHaveClass('border-orange-400/60');
+      expect(menuButton).not.toHaveClass('border-brand-primary/60');
 
       if (menuButton) {
         await user.click(menuButton);
 
         await waitFor(() => {
-          expect(menuButton).toHaveClass('border-orange-400/60');
+          expect(menuButton).toHaveClass('border-brand-primary/60');
         });
       }
     });
@@ -115,12 +127,12 @@ describe('MenuSelectionModal', () => {
 
       await user.click(menuButton!);
       await waitFor(() => {
-        expect(menuButton).toHaveClass('border-orange-400/60');
+        expect(menuButton).toHaveClass('border-brand-primary/60');
       });
 
       await user.click(menuButton!);
       await waitFor(() => {
-        expect(menuButton).not.toHaveClass('border-orange-400/60');
+        expect(menuButton).not.toHaveClass('border-brand-primary/60');
       });
     });
 
@@ -141,8 +153,8 @@ describe('MenuSelectionModal', () => {
       await user.click(menu2!);
 
       await waitFor(() => {
-        expect(menu1).toHaveClass('border-orange-400/60');
-        expect(menu2).toHaveClass('border-orange-400/60');
+        expect(menu1).toHaveClass('border-brand-primary/60');
+        expect(menu2).toHaveClass('border-brand-primary/60');
       });
     });
 
@@ -194,7 +206,7 @@ describe('MenuSelectionModal', () => {
       const breakfastButton = screen.getByRole('button', { name: '아침' });
       await user.click(breakfastButton);
 
-      expect(breakfastButton).toHaveClass('bg-orange-500');
+      expect(breakfastButton).toHaveClass('bg-brand-primary');
     });
 
     it('should select dinner slot', async () => {
@@ -208,7 +220,7 @@ describe('MenuSelectionModal', () => {
       const dinnerButton = screen.getByRole('button', { name: '저녁' });
       await user.click(dinnerButton);
 
-      expect(dinnerButton).toHaveClass('bg-orange-500');
+      expect(dinnerButton).toHaveClass('bg-brand-primary');
     });
 
     it('should select etc slot', async () => {
@@ -222,7 +234,7 @@ describe('MenuSelectionModal', () => {
       const etcButton = screen.getByRole('button', { name: '기타' });
       await user.click(etcButton);
 
-      expect(etcButton).toHaveClass('bg-orange-500');
+      expect(etcButton).toHaveClass('bg-brand-primary');
     });
 
     it('should deselect previous slot when selecting new slot', async () => {
@@ -236,12 +248,12 @@ describe('MenuSelectionModal', () => {
       const lunchButton = screen.getByRole('button', { name: '점심' });
       const dinnerButton = screen.getByRole('button', { name: '저녁' });
 
-      expect(lunchButton).toHaveClass('bg-orange-500');
+      expect(lunchButton).toHaveClass('bg-brand-primary');
 
       await user.click(dinnerButton);
 
-      expect(dinnerButton).toHaveClass('bg-orange-500');
-      expect(lunchButton).not.toHaveClass('bg-orange-500');
+      expect(dinnerButton).toHaveClass('bg-brand-primary');
+      expect(lunchButton).not.toHaveClass('bg-brand-primary');
     });
   });
 
@@ -467,7 +479,7 @@ describe('MenuSelectionModal', () => {
       renderWithProviders(<MenuSelectionModal {...defaultProps} />);
 
       await waitFor(() => {
-        const modalInBody = document.body.querySelector('.fixed.inset-0.z-50');
+        const modalInBody = document.body.querySelector('.fixed.inset-0');
         expect(modalInBody).toBeInTheDocument();
       });
     });
@@ -475,13 +487,17 @@ describe('MenuSelectionModal', () => {
 
   describe('Scrollable Content', () => {
     it('should render menu list with scroll for many items', async () => {
-      const manyRecommendations = Array.from({ length: 20 }, (_, i) => `메뉴${i + 1}`);
+      const manyRecommendations = Array.from({ length: 20 }, (_, i) => ({
+        menu: `메뉴${i + 1}`,
+        condition: `조건 ${i + 1}`,
+      }));
       renderWithProviders(
         <MenuSelectionModal {...defaultProps} recommendations={manyRecommendations} />
       );
 
       await waitFor(() => {
-        const scrollContainer = document.body.querySelector('.max-h-96.overflow-y-auto');
+        // Component uses max-h-72 overflow-y-auto for the menu list
+        const scrollContainer = document.body.querySelector('.max-h-72.overflow-y-auto');
         expect(scrollContainer).toBeInTheDocument();
       });
     });
@@ -511,7 +527,7 @@ describe('MenuSelectionModal', () => {
         await user.keyboard('{Enter}');
 
         await waitFor(() => {
-          expect(menuButton).toHaveClass('border-orange-400/60');
+          expect(menuButton).toHaveClass('border-brand-primary/60');
         });
       }
     });

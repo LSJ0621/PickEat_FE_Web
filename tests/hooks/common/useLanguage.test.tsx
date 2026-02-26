@@ -9,15 +9,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { useLanguage } from '@/hooks/common/useLanguage';
-import { userService } from '@/api/services/user';
-import authReducer, { setCredentials } from '@/store/slices/authSlice';
-import agentReducer from '@/store/slices/agentSlice';
+import { useLanguage } from '@shared/hooks/useLanguage';
+import { userService } from '@features/user/api';
+import authReducer, { setCredentials } from '@app/store/slices/authSlice';
+import agentReducer from '@app/store/slices/agentSlice';
 import i18n from '@/i18n/config';
 import type { Language } from '@shared/types/common';
 
 // Mock dependencies
-vi.mock('@/api/services/user', () => ({
+vi.mock('@features/user/api', () => ({
   userService: {
     updateUserLanguage: vi.fn(),
   },
@@ -26,7 +26,7 @@ vi.mock('@/api/services/user', () => ({
 const mockErrorToast = vi.fn();
 const mockSuccessToast = vi.fn();
 
-vi.mock('@/hooks/common/useToast', () => ({
+vi.mock('@shared/hooks/useToast', () => ({
   useToast: () => ({
     error: mockErrorToast,
     success: mockSuccessToast,

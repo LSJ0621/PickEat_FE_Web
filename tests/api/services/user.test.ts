@@ -4,11 +4,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { userService } from '@/api/services/user';
+import { userService } from '@features/user/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
-import type { SelectedAddress } from '@/types/user';
+import type { SelectedAddress } from '@features/user/types';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -240,24 +240,26 @@ describe('User Service', () => {
       expect(result.addresses[0]).toHaveProperty('roadAddress');
     });
 
-    it('should handle array response format', async () => {
+    it('should handle addresses response format', async () => {
       server.use(
         http.get(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES}`, () => {
-          // Server returns array directly
-          return HttpResponse.json([
-            {
-              id: 1,
-              roadAddress: '서울시 강남구 테헤란로 123',
-              postalCode: '06236',
-              latitude: 37.5172,
-              longitude: 127.0473,
-              isDefault: true,
-              isSearchAddress: true,
-              alias: '회사',
-              createdAt: '2024-01-01T00:00:00.000Z',
-              updatedAt: '2024-01-01T00:00:00.000Z',
-            },
-          ]);
+          // Server returns addresses wrapped in object
+          return HttpResponse.json({
+            addresses: [
+              {
+                id: 1,
+                roadAddress: '서울시 강남구 테헤란로 123',
+                postalCode: '06236',
+                latitude: 37.5172,
+                longitude: 127.0473,
+                isDefault: true,
+                isSearchAddress: true,
+                alias: '회사',
+                createdAt: '2024-01-01T00:00:00.000Z',
+                updatedAt: '2024-01-01T00:00:00.000Z',
+              },
+            ],
+          });
         })
       );
 
@@ -359,18 +361,49 @@ describe('User Service', () => {
 
   describe('deleteAddresses', () => {
     it('should delete multiple addresses successfully', async () => {
+      server.use(
+        http.post(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES_BATCH_DELETE}`, async ({ request }) => {
+          const body = (await request.json()) as { ids: number[] };
+          return HttpResponse.json({
+            message: `${body.ids.length}개의 주소가 삭제되었습니다.`,
+          });
+        })
+      );
+
       const result = await userService.deleteAddresses([1, 2]);
 
       expect(result.message).toContain('2개의 주소가 삭제되었습니다.');
     });
 
     it('should delete single address', async () => {
+      server.use(
+        http.post(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES_BATCH_DELETE}`, async ({ request }) => {
+          const body = (await request.json()) as { ids: number[] };
+          return HttpResponse.json({
+            message: `${body.ids.length}개의 주소가 삭제되었습니다.`,
+          });
+        })
+      );
+
       const result = await userService.deleteAddresses([1]);
 
       expect(result.message).toContain('1개의 주소가 삭제되었습니다.');
     });
 
     it('should fail with empty array', async () => {
+      server.use(
+        http.post(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES_BATCH_DELETE}`, async ({ request }) => {
+          const body = (await request.json()) as { ids: number[] };
+          if (!body.ids || body.ids.length === 0) {
+            return HttpResponse.json(
+              { message: '삭제할 주소를 선택해주세요.' },
+              { status: 400 }
+            );
+          }
+          return HttpResponse.json({ message: '삭제되었습니다.' });
+        })
+      );
+
       await expect(userService.deleteAddresses([])).rejects.toThrow();
     });
   });

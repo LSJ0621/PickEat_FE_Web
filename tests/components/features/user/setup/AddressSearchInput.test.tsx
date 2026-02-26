@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressSearchInput } from '@/components/features/user/setup/AddressSearchInput';
+import { AddressSearchInput } from '@features/user/components/setup/AddressSearchInput';
 
 describe('AddressSearchInput', () => {
   const defaultProps = {
@@ -96,11 +96,12 @@ describe('AddressSearchInput', () => {
   });
 
   describe('로딩 상태 테스트', () => {
-    it('검색 중일 때 버튼에 로딩 표시가 나타난다', () => {
+    it('검색 중일 때 버튼이 비활성화된다', () => {
       renderWithProviders(<AddressSearchInput {...defaultProps} isSearching={true} />);
 
-      // 로딩 중일 때는 버튼 텍스트가 '로딩 중...'으로 변경됨
-      const button = screen.getByRole('button', { name: '로딩 중...' });
+      // Button uses aria-label="검색", isLoading disables the button
+      // The button content changes to "로딩 중..." but aria-label stays "검색"
+      const button = screen.getByRole('button', { name: '검색' });
       expect(button).toBeInTheDocument();
       expect(button).toBeDisabled();
     });
@@ -111,7 +112,8 @@ describe('AddressSearchInput', () => {
       renderWithProviders(<AddressSearchInput {...defaultProps} />);
 
       const input = screen.getByPlaceholderText('주소를 검색하세요');
-      expect(input).toHaveClass('rounded-2xl');
+      // Input uses rounded-xl (not rounded-2xl)
+      expect(input).toHaveClass('rounded-xl');
       expect(input).toHaveClass('border');
     });
 

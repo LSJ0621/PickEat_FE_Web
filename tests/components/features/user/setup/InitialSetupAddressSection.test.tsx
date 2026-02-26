@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { InitialSetupAddressSection } from '@/components/features/user/setup/InitialSetupAddressSection';
+import { InitialSetupAddressSection } from '@features/user/components/setup/InitialSetupAddressSection';
 import { createMockSelectedAddress } from '@tests/factories';
 
 // Mock useAddressSearch hook with dynamic state
@@ -10,7 +10,7 @@ let mockSearchResults: unknown[] = [];
 let mockHandleSelectAddress = vi.fn((addr) => addr);
 let mockClearSearch = vi.fn();
 
-vi.mock('@/hooks/address/useAddressSearch', () => ({
+vi.mock('@shared/hooks/address/useAddressSearch', () => ({
   useAddressSearch: () => ({
     addressQuery: '',
     searchResults: mockSearchResults,

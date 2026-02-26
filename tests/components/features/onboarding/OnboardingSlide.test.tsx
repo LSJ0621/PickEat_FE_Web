@@ -1,127 +1,169 @@
 /**
- * OnboardingSlide Unit Tests
+ * OnboardingStepFeatures Unit Tests
  *
- * Tests for OnboardingSlide component functionality.
+ * Tests for OnboardingStepFeatures component functionality.
+ * This replaces the previous OnboardingSlide test which tested
+ * a component that no longer exists. Feature slides are now
+ * discrete step components.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { OnboardingSlide } from '@/components/features/onboarding/OnboardingSlide';
-import { Sparkles } from 'lucide-react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { OnboardingStepFeatures } from '@features/onboarding/components/OnboardingStepFeatures';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'onboarding.intro.title': 'Welcome to PickEat',
-        'onboarding.intro.description': 'Your personal food recommendation assistant',
-        'onboarding.menuGuide.title': 'AI Menu Recommendations',
-        'onboarding.menuGuide.description': 'Get personalized menu suggestions',
-        'onboarding.menuGuide.promptExample': 'Recommend me a spicy Korean dish',
-        'menu.recommendation.placeholder': 'Ask for menu recommendations, etc',
+        'onboarding.step2.title': 'PickEat 주요 기능',
+        'onboarding.step2.feature1Title': 'AI 메뉴 추천',
+        'onboarding.step2.feature1Desc': '기분, 날씨, 취향을 반영한 메뉴를 실시간으로 제안합니다.',
+        'onboarding.step2.feature2Title': '지도 기반 탐색',
+        'onboarding.step2.feature2Desc': '원하는 메뉴를 고르면 근처 가게 후보를 AI가 선별합니다.',
+        'onboarding.step2.feature3Title': '취향 기억',
+        'onboarding.step2.feature3Desc': '추천받은 메뉴와 가게 이력을 한눈에 확인하고 재탐색할 수 있습니다.',
+        'onboarding.next': '다음',
+        'onboarding.prev': '이전',
       };
-      return translations[key] || key;
+      return translations[key] ?? key;
     },
   }),
 }));
 
-describe('OnboardingSlide', () => {
-  const defaultSlide = {
-    key: 'intro',
-    icon: Sparkles,
-    accentColor: 'brand-primary' as const,
+describe('OnboardingStepFeatures', () => {
+  const mockOnNext = vi.fn();
+  const mockOnPrev = vi.fn();
+
+  const defaultProps = {
+    onNext: mockOnNext,
+    onPrev: mockOnPrev,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders slide with title', () => {
-    render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    expect(screen.getByText('Welcome to PickEat')).toBeInTheDocument();
+  it('renders step title', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    expect(screen.getByText('PickEat 주요 기능')).toBeInTheDocument();
   });
 
-  it('renders slide with description', () => {
-    render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    expect(screen.getByText('Your personal food recommendation assistant')).toBeInTheDocument();
+  it('renders all three feature card titles', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    expect(screen.getByText('AI 메뉴 추천')).toBeInTheDocument();
+    expect(screen.getByText('지도 기반 탐색')).toBeInTheDocument();
+    expect(screen.getByText('취향 기억')).toBeInTheDocument();
   });
 
-  it('renders icon component', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    const iconContainer = container.querySelector('.h-20.w-20');
-    expect(iconContainer).toBeInTheDocument();
+  it('renders all three feature descriptions', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    expect(screen.getByText('기분, 날씨, 취향을 반영한 메뉴를 실시간으로 제안합니다.')).toBeInTheDocument();
+    expect(screen.getByText('원하는 메뉴를 고르면 근처 가게 후보를 AI가 선별합니다.')).toBeInTheDocument();
+    expect(screen.getByText('추천받은 메뉴와 가게 이력을 한눈에 확인하고 재탐색할 수 있습니다.')).toBeInTheDocument();
   });
 
-  it('applies active animation when isActive is true', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    const iconContainer = container.querySelector('.animate-onboarding-icon');
-    expect(iconContainer).toBeInTheDocument();
+  it('renders next button', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    expect(screen.getByText('다음')).toBeInTheDocument();
   });
 
-  it('does not apply animation when isActive is false', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={false} />);
-    const iconContainer = container.querySelector('.animate-onboarding-icon');
-    expect(iconContainer).not.toBeInTheDocument();
+  it('renders previous button', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    expect(screen.getByText('이전')).toBeInTheDocument();
   });
 
-  it('sets aria-hidden to true when not active', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={false} />);
-    const slideContainer = container.querySelector('[aria-hidden="true"]');
-    expect(slideContainer).toBeInTheDocument();
+  it('calls onNext when next button is clicked', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
+    fireEvent.click(nextButton);
+    expect(mockOnNext).toHaveBeenCalledTimes(1);
   });
 
-  it('sets aria-hidden to false when active', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    const slideContainer = container.querySelector('[aria-hidden="false"]');
-    expect(slideContainer).toBeInTheDocument();
+  it('calls onPrev when previous button is clicked', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const prevButton = screen.getByText('이전');
+    fireEvent.click(prevButton);
+    expect(mockOnPrev).toHaveBeenCalledTimes(1);
   });
 
-  it('applies brand-primary accent color class', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    const iconContainer = container.querySelector('.bg-brand-primary\\/10');
-    expect(iconContainer).toBeInTheDocument();
+  it('renders header section with text-center class', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const header = container.querySelector('.text-center');
+    expect(header).toBeInTheDocument();
   });
 
-  it('applies brand-coral accent color class', () => {
-    const coralSlide = { ...defaultSlide, accentColor: 'brand-coral' as const };
-    const { container } = render(<OnboardingSlide slide={coralSlide} isActive={true} />);
-    const iconContainer = container.querySelector('.bg-brand-coral\\/10');
-    expect(iconContainer).toBeInTheDocument();
+  it('renders title as h2 heading', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const heading = screen.getByRole('heading', { level: 2 });
+    expect(heading).toBeInTheDocument();
+    expect(heading.textContent).toBe('PickEat 주요 기능');
   });
 
-  it('applies brand-amber accent color class', () => {
-    const amberSlide = { ...defaultSlide, accentColor: 'brand-amber' as const };
-    const { container } = render(<OnboardingSlide slide={amberSlide} isActive={true} />);
-    const iconContainer = container.querySelector('.bg-brand-amber\\/10');
-    expect(iconContainer).toBeInTheDocument();
+  it('renders three feature cards', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const cards = container.querySelectorAll('.rounded-2xl.border');
+    expect(cards).toHaveLength(3);
   });
 
-  it('renders prompt example for menuGuide slide', () => {
-    const menuGuideSlide = { ...defaultSlide, key: 'menuGuide' };
-    render(<OnboardingSlide slide={menuGuideSlide} isActive={true} />);
-    expect(screen.getByText(/Recommend me a spicy Korean dish/)).toBeInTheDocument();
+  it('renders feature icons with aria-hidden', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const icons = container.querySelectorAll('[aria-hidden="true"]');
+    expect(icons.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('does not render prompt example for non-menuGuide slides', () => {
-    render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    expect(screen.queryByText(/Recommend me a spicy Korean dish/)).not.toBeInTheDocument();
+  it('renders navigation buttons with flex layout', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const navContainer = container.querySelector('.flex.gap-3');
+    expect(navContainer).toBeInTheDocument();
   });
 
-  it('translates slide title using i18n', () => {
-    const menuSlide = { ...defaultSlide, key: 'menuGuide' };
-    render(<OnboardingSlide slide={menuSlide} isActive={true} />);
-    expect(screen.getByText('AI Menu Recommendations')).toBeInTheDocument();
+  it('renders next button with gradient style', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
+    expect(nextButton.className).toContain('bg-gradient-to-r');
+    expect(nextButton.className).toContain('from-orange-500');
   });
 
-  it('translates slide description using i18n', () => {
-    const menuSlide = { ...defaultSlide, key: 'menuGuide' };
-    render(<OnboardingSlide slide={menuSlide} isActive={true} />);
-    expect(screen.getByText('Get personalized menu suggestions')).toBeInTheDocument();
+  it('renders previous button with border style', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const prevButton = screen.getByText('이전');
+    expect(prevButton.className).toContain('border');
+    expect(prevButton.className).toContain('border-border-default');
   });
 
-  it('renders with correct structure', () => {
-    const { container } = render(<OnboardingSlide slide={defaultSlide} isActive={true} />);
-    const slideDiv = container.querySelector('.flex.w-full.shrink-0.flex-col');
-    expect(slideDiv).toBeInTheDocument();
+  it('renders next button as type button', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const nextButton = screen.getByText('다음');
+    expect(nextButton).toHaveAttribute('type', 'button');
+  });
+
+  it('renders previous button as type button', () => {
+    render(<OnboardingStepFeatures {...defaultProps} />);
+    const prevButton = screen.getByText('이전');
+    expect(prevButton).toHaveAttribute('type', 'button');
+  });
+
+  it('renders first feature with orange color classes', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const orangeCard = container.querySelector('.bg-orange-500\\/15');
+    expect(orangeCard).toBeInTheDocument();
+  });
+
+  it('renders second feature with blue color classes', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const blueCard = container.querySelector('.bg-blue-500\\/15');
+    expect(blueCard).toBeInTheDocument();
+  });
+
+  it('renders third feature with rose color classes', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const roseCard = container.querySelector('.bg-rose-500\\/15');
+    expect(roseCard).toBeInTheDocument();
+  });
+
+  it('renders feature cards in a space-y container', () => {
+    const { container } = render(<OnboardingStepFeatures {...defaultProps} />);
+    const list = container.querySelector('.space-y-3');
+    expect(list).toBeInTheDocument();
   });
 });

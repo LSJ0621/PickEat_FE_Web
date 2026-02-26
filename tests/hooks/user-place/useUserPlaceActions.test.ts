@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useUserPlaceActions } from '@/hooks/user-place/useUserPlaceActions';
-import { userPlaceService } from '@/api/services/user-place';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useUserPlaceActions } from '@features/user-place/hooks/useUserPlaceActions';
+import { userPlaceService } from '@features/user-place/api';
+import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 
-vi.mock('@/api/services/user-place');
-vi.mock('@/hooks/useErrorHandler');
+vi.mock('@features/user-place/api');
+vi.mock('@shared/hooks/useErrorHandler');
 
 describe('useUserPlaceActions', () => {
   const mockHandleError = vi.fn();

@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressRegistrationModal } from '@/components/features/user/setup/AddressRegistrationModal';
+import { AddressRegistrationModal } from '@features/user/components/setup/AddressRegistrationModal';
 import { createMockSelectedAddress, createMockUserAddress } from '@tests/factories';
-import { userService } from '@/api/services/user';
+import { userService } from '@features/user/api';
 
 // Mock useAddressSearch hook
 const mockClearSearch = vi.fn();
@@ -16,7 +16,7 @@ const mockHandleSelectAddress = vi.fn((addr) => addr);
 // Store the mock return value so we can modify it in tests
 let mockSelectedAddress: ReturnType<typeof createMockSelectedAddress> | null = null;
 
-vi.mock('@/hooks/address/useAddressSearch', () => ({
+vi.mock('@shared/hooks/address/useAddressSearch', () => ({
   useAddressSearch: () => ({
     addressQuery: '',
     searchResults: [],
@@ -32,7 +32,7 @@ vi.mock('@/hooks/address/useAddressSearch', () => ({
 }));
 
 // Mock user service
-vi.mock('@/api/services/user', () => ({
+vi.mock('@features/user/api', () => ({
   userService: {
     setAddress: vi.fn().mockResolvedValue({ roadAddress: '서울시 강남구 테헤란로 123' }),
     getAddresses: vi.fn().mockResolvedValue([]),
@@ -594,19 +594,20 @@ describe('AddressRegistrationModal - Animation States', () => {
     mockSelectedAddress = null;
   });
 
-  it('모달이 열릴 때 enter 애니메이션 클래스가 적용된다', async () => {
+  it('모달이 열릴 때 모달이 렌더링된다', async () => {
     renderWithProviders(<AddressRegistrationModal open={true} onComplete={vi.fn()} />);
 
     await act(async () => {
       vi.advanceTimersByTime(100);
     });
 
-    // The modal should have the enter animation class
-    const backdrop = document.querySelector('.modal-backdrop-enter');
+    // The modal should be rendered when open (shouldRender=true)
+    // Component uses opacity-100/opacity-0 Tailwind classes instead of modal-backdrop-enter/exit
+    const backdrop = document.querySelector('[role="dialog"]');
     expect(backdrop).toBeInTheDocument();
   });
 
-  it('모달이 닫힐 때 exit 애니메이션 클래스가 적용된다', async () => {
+  it('모달이 닫힐 때 opacity-0 클래스가 적용된다', async () => {
     const { rerender } = renderWithProviders(<AddressRegistrationModal open={true} onComplete={vi.fn()} />);
 
     await act(async () => {
@@ -620,9 +621,11 @@ describe('AddressRegistrationModal - Animation States', () => {
       vi.advanceTimersByTime(100);
     });
 
-    // The modal should have the exit animation class
-    const backdrop = document.querySelector('.modal-backdrop-exit');
+    // When closing, isAnimating=false immediately, so opacity-0 class is applied
+    // (300ms timeout not yet elapsed, so shouldRender is still true)
+    const backdrop = document.querySelector('[role="dialog"]');
     expect(backdrop).toBeInTheDocument();
+    expect(backdrop?.className).toContain('opacity-0');
   });
 
   it('모달 닫힘 후 300ms가 지나면 shouldRender가 false가 된다', async () => {

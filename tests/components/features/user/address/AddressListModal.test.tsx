@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressListModal } from '@/components/features/user/address/AddressListModal';
+import { AddressListModal } from '@features/user/components/address/AddressListModal';
 import { createMockUserAddresses, createMockUserAddress } from '@tests/factories';
 
 describe('AddressListModal', () => {

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { UserList } from '@/components/features/admin/users/UserList';
-import type { AdminUserListItem } from '@/types/admin';
+import { UserList } from '@features/admin/components/users/UserList';
+import type { AdminUserListItem } from '@features/admin/types';
 
 // Mock UserListItem component
-vi.mock('@/components/features/admin/users/UserListItem', () => ({
+vi.mock('@features/admin/components/users/UserListItem', () => ({
   UserListItem: ({ user, onClick }: { user: AdminUserListItem; onClick: () => void }) => (
     <div data-testid={`user-item-${user.id}`} onClick={onClick}>
       {user.email}
@@ -111,8 +111,8 @@ describe('UserList', () => {
       expect(emptyState).toHaveClass(
         'rounded-lg',
         'border',
-        'border-[var(--border-default)]',
-        'bg-bg-surface',
+        'border-border-default',
+        'bg-bg-primary',
         'py-12'
       );
     });

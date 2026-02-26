@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PasswordInputSection } from '@/components/features/auth/PasswordInputSection';
-import { VALIDATION, ERROR_MESSAGES } from '@shared/utils/constants';
+import { PasswordInputSection } from '@features/auth/components/PasswordInputSection';
+import { VALIDATION } from '@shared/utils/constants';
 
 describe('PasswordInputSection', () => {
   const defaultProps = {
@@ -87,7 +87,7 @@ describe('PasswordInputSection', () => {
         <PasswordInputSection {...defaultProps} password="short" />
       );
 
-      expect(screen.getByText(`비밀번호는 최소 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).toBeInTheDocument();
+      expect(screen.getByText(`비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).toBeInTheDocument();
     });
 
     it('should not show validation hint when password is valid length', () => {
@@ -96,7 +96,7 @@ describe('PasswordInputSection', () => {
         <PasswordInputSection {...defaultProps} password={validPassword} />
       );
 
-      expect(screen.queryByText(`비밀번호는 최소 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
+      expect(screen.queryByText(`비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
     });
 
     it('should not show validation hint when password is empty', () => {
@@ -104,7 +104,7 @@ describe('PasswordInputSection', () => {
         <PasswordInputSection {...defaultProps} password="" />
       );
 
-      expect(screen.queryByText(`비밀번호는 최소 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
+      expect(screen.queryByText(`비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
     });
   });
 
@@ -165,7 +165,7 @@ describe('PasswordInputSection', () => {
         />
       );
 
-      expect(screen.getByText(ERROR_MESSAGES.PASSWORD_MISMATCH)).toBeInTheDocument();
+      expect(screen.getByText('비밀번호가 일치하지 않습니다.')).toBeInTheDocument();
     });
 
     it('should not show mismatch error when passwords match', () => {
@@ -177,7 +177,7 @@ describe('PasswordInputSection', () => {
         />
       );
 
-      expect(screen.queryByText(ERROR_MESSAGES.PASSWORD_MISMATCH)).not.toBeInTheDocument();
+      expect(screen.queryByText('비밀번호가 일치하지 않습니다.')).not.toBeInTheDocument();
     });
 
     it('should not show mismatch error when confirm password is empty', () => {
@@ -185,21 +185,21 @@ describe('PasswordInputSection', () => {
         <PasswordInputSection {...defaultProps} password="password123" confirmPassword="" />
       );
 
-      expect(screen.queryByText(ERROR_MESSAGES.PASSWORD_MISMATCH)).not.toBeInTheDocument();
+      expect(screen.queryByText('비밀번호가 일치하지 않습니다.')).not.toBeInTheDocument();
     });
 
-    it('should call onKeyPress when key is pressed', async () => {
+    it('should call onKeyDown when key is pressed', async () => {
       const user = userEvent.setup();
-      const onKeyPress = vi.fn();
+      const onKeyDown = vi.fn();
 
       renderWithProviders(
-        <PasswordInputSection {...defaultProps} onKeyPress={onKeyPress} />
+        <PasswordInputSection {...defaultProps} onKeyDown={onKeyDown} />
       );
 
       const confirmPasswordInput = screen.getByLabelText('비밀번호 확인');
       await user.type(confirmPasswordInput, '{Enter}');
 
-      expect(onKeyPress).toHaveBeenCalled();
+      expect(onKeyDown).toHaveBeenCalled();
     });
   });
 
@@ -213,8 +213,8 @@ describe('PasswordInputSection', () => {
         />
       );
 
-      expect(screen.getByText(`비밀번호는 최소 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).toBeInTheDocument();
-      expect(screen.getByText(ERROR_MESSAGES.PASSWORD_MISMATCH)).toBeInTheDocument();
+      expect(screen.getByText(`비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).toBeInTheDocument();
+      expect(screen.getByText('비밀번호가 일치하지 않습니다.')).toBeInTheDocument();
     });
 
     it('should only show mismatch error when password is valid but does not match', () => {
@@ -227,8 +227,8 @@ describe('PasswordInputSection', () => {
         />
       );
 
-      expect(screen.queryByText(`비밀번호는 최소 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
-      expect(screen.getByText(ERROR_MESSAGES.PASSWORD_MISMATCH)).toBeInTheDocument();
+      expect(screen.queryByText(`비밀번호는 ${VALIDATION.PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`)).not.toBeInTheDocument();
+      expect(screen.getByText('비밀번호가 일치하지 않습니다.')).toBeInTheDocument();
     });
   });
 
@@ -236,8 +236,8 @@ describe('PasswordInputSection', () => {
     it('should have default border when no errors', () => {
       renderWithProviders(<PasswordInputSection {...defaultProps} />);
 
-      expect(screen.getByLabelText('비밀번호')).toHaveClass('border-white/15');
-      expect(screen.getByLabelText('비밀번호 확인')).toHaveClass('border-white/15');
+      expect(screen.getByLabelText('비밀번호')).toHaveClass('border-border-default');
+      expect(screen.getByLabelText('비밀번호 확인')).toHaveClass('border-border-default');
     });
 
     it('should have error border on both inputs when both have errors', () => {
@@ -269,7 +269,7 @@ describe('PasswordInputSection', () => {
       renderWithProviders(<PasswordInputSection {...defaultProps} />);
 
       const passwordInput = screen.getByLabelText('비밀번호');
-      expect(passwordInput).toHaveClass('focus:border-orange-300/60', 'focus:outline-none', 'focus:ring-2', 'focus:ring-orange-400/60');
+      expect(passwordInput).toHaveClass('focus:border-border-focus');
     });
   });
 });

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { adminService } from '@/api/services/admin';
+import { adminService } from '@features/admin/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
@@ -16,7 +16,7 @@ import type {
   AdminUserListQuery,
   AdminUserPlaceListQuery,
   UpdateUserPlaceByAdminRequest,
-} from '@/types/admin';
+} from '@features/admin/types';
 
 const BASE_URL = 'http://localhost:3000';
 

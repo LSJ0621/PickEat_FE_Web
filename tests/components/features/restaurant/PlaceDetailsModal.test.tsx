@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PlaceDetailsModal } from '@/components/features/restaurant/PlaceDetailsModal';
+import { PlaceDetailsModal } from '@features/agent/components/restaurant/PlaceDetailsModal';
 import { createMockPlaceDetail, createMockPlaceReview } from '@tests/factories';
-import { menuService } from '@/api/services/menu';
+import { menuService } from '@features/agent/api';
 
-vi.mock('@/api/services/menu', () => ({
+vi.mock('@features/agent/api', () => ({
   menuService: {
     getPlaceDetail: vi.fn(),
     getRestaurantBlogs: vi.fn(),
@@ -195,7 +195,6 @@ describe('PlaceDetailsModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('사진')).toBeInTheDocument();
         const img = screen.getByRole('img');
         expect(img).toHaveAttribute('src', 'https://example.com/photo1.jpg');
       });

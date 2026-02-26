@@ -6,12 +6,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UserPlaceList } from '@/components/features/user-place/UserPlaceList';
-import type { UserPlace } from '@/types/user-place';
+import { UserPlaceList } from '@features/user-place/components/UserPlaceList';
+import type { UserPlace } from '@features/user-place/types';
 
 // Mock dependencies
-vi.mock('@/components/features/user-place/UserPlaceCard', () => ({
-  UserPlaceCard: ({ place, onClick }: any) => (
+vi.mock('@features/user-place/components/UserPlaceCard', () => ({
+  UserPlaceCard: ({ place, onClick }: { place: UserPlace; onClick: () => void }) => (
     <div
       data-testid={`place-card-${place.id}`}
       onClick={onClick}
@@ -22,20 +22,27 @@ vi.mock('@/components/features/user-place/UserPlaceCard', () => ({
   ),
 }));
 
-vi.mock('@/components/common/Button', () => ({
-  Button: ({ children, onClick, disabled }: any) => (
+vi.mock('@shared/components/Button', () => ({
+  Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) => (
     <button onClick={onClick} disabled={disabled}>
       {children}
     </button>
   ),
 }));
 
-vi.mock('@/components/common/EmptyState', () => ({
-  EmptyState: ({ title, description }: any) => (
-    <div data-testid="empty-state">
-      <p>{title}</p>
-      <p>{description}</p>
-    </div>
+vi.mock('@shared/ui/input', () => ({
+  Input: ({ value, onChange, placeholder, className }: {
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder?: string;
+    className?: string;
+  }) => (
+    <input
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+    />
   ),
 }));
 
@@ -43,13 +50,14 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'common.all': 'All',
-        'userPlace.status.PENDING': 'Pending',
-        'userPlace.status.APPROVED': 'Approved',
-        'userPlace.status.REJECTED': 'Rejected',
+        'common.all': '전체',
+        'common.previous': '이전',
+        'common.next': '다음',
+        'userPlace.status.PENDING': '검토중',
+        'userPlace.status.APPROVED': '승인',
+        'userPlace.status.REJECTED': '거절',
         'userPlace.searchPlaceholder': 'Search places...',
         'userPlace.noPlaces': 'No places found',
-        'userPlace.noPlacesDescription': 'Try adding a new place',
       };
       return translations[key] || key;
     },
@@ -104,7 +112,7 @@ describe('UserPlaceList', () => {
     render(<UserPlaceList {...defaultProps} />);
     const buttons = screen.getAllByRole('button');
     const filterButtons = buttons.filter(btn =>
-      ['All', 'Pending', 'Approved', 'Rejected'].includes(btn.textContent || '')
+      ['전체', '검토중', '승인', '거절'].includes(btn.textContent || '')
     );
     expect(filterButtons.length).toBe(4);
   });
@@ -126,7 +134,7 @@ describe('UserPlaceList', () => {
     render(<UserPlaceList {...defaultProps} />);
     const buttons = screen.getAllByRole('button');
     const pendingButton = buttons.find(btn =>
-      btn.textContent === 'Pending' && btn.className.includes('rounded-full')
+      btn.textContent === '검토중' && btn.className.includes('rounded-full')
     );
     fireEvent.click(pendingButton!);
     expect(mockOnStatusFilter).toHaveBeenCalledWith('PENDING');
@@ -134,7 +142,7 @@ describe('UserPlaceList', () => {
 
   it('calls onStatusFilter with undefined when All button is clicked', () => {
     render(<UserPlaceList {...defaultProps} />);
-    const allButton = screen.getByText('All');
+    const allButton = screen.getByText('전체');
     fireEvent.click(allButton);
     expect(mockOnStatusFilter).toHaveBeenCalledWith(undefined);
   });
@@ -143,7 +151,7 @@ describe('UserPlaceList', () => {
     render(<UserPlaceList {...defaultProps} status="APPROVED" />);
     const buttons = screen.getAllByRole('button');
     const approvedButton = buttons.find(btn =>
-      btn.textContent === 'Approved' && btn.className.includes('rounded-full')
+      btn.textContent === '승인' && btn.className.includes('rounded-full')
     );
     expect(approvedButton?.className).toContain('bg-brand-primary');
   });
@@ -161,15 +169,14 @@ describe('UserPlaceList', () => {
     expect(mockOnPlaceClick).toHaveBeenCalledWith(mockPlaces[0]);
   });
 
-  it('shows loading skeleton when isLoading is true', () => {
-    render(<UserPlaceList {...defaultProps} isLoading={true} />);
-    const skeletons = document.querySelectorAll('.animate-pulse');
-    expect(skeletons.length).toBeGreaterThan(0);
+  it('shows loading spinner when isLoading is true', () => {
+    const { container } = render(<UserPlaceList {...defaultProps} isLoading={true} />);
+    const spinner = container.querySelector('.animate-spin');
+    expect(spinner).toBeInTheDocument();
   });
 
   it('shows empty state when no places', () => {
     render(<UserPlaceList {...defaultProps} places={[]} />);
-    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     expect(screen.getByText('No places found')).toBeInTheDocument();
   });
 
@@ -183,28 +190,23 @@ describe('UserPlaceList', () => {
     expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
   });
 
-  it('calls onPageChange when next page button is clicked', () => {
+  it('calls onPageChange when next button is clicked', () => {
     render(<UserPlaceList {...defaultProps} page={1} totalPages={3} />);
-    const buttons = screen.getAllByRole('button');
-    const nextButton = buttons.find(btn => !btn.disabled && btn.querySelector('svg'));
-    if (nextButton) {
-      fireEvent.click(nextButton);
-      expect(mockOnPageChange).toHaveBeenCalled();
-    }
+    const nextButton = screen.getByText('다음');
+    fireEvent.click(nextButton);
+    expect(mockOnPageChange).toHaveBeenCalledWith(2);
   });
 
   it('disables previous button on first page', () => {
     render(<UserPlaceList {...defaultProps} page={1} totalPages={3} />);
-    const buttons = screen.getAllByRole('button');
-    const prevButton = buttons.find(btn => btn.disabled);
-    expect(prevButton).toBeDefined();
+    const prevButton = screen.getByText('이전');
+    expect(prevButton).toBeDisabled();
   });
 
   it('disables next button on last page', () => {
     render(<UserPlaceList {...defaultProps} page={3} totalPages={3} />);
-    const buttons = screen.getAllByRole('button');
-    const disabledButtons = buttons.filter(btn => btn.disabled);
-    expect(disabledButtons.length).toBeGreaterThan(0);
+    const nextButton = screen.getByText('다음');
+    expect(nextButton).toBeDisabled();
   });
 
   it('displays current search value', () => {

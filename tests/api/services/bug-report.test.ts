@@ -4,11 +4,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { bugReportService } from '@/api/services/bug-report';
+import { bugReportService } from '@features/bug-report/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
-import type { CreateBugReportRequest } from '@/types/bug-report';
+import type { CreateBugReportRequest } from '@features/bug-report/types';
 import { mockBugReports } from '@tests/mocks/handlers/bug-report';
 
 const BASE_URL = 'http://localhost:3000';

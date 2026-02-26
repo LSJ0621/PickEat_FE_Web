@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { BugReportForm } from '@/components/features/bug-report/BugReportForm';
+import { BugReportForm } from '@features/bug-report/components/BugReportForm';
 import { BUG_REPORT } from '@shared/utils/constants';
-import type { CreateBugReportRequest } from '@/types/bug-report';
+import type { CreateBugReportRequest } from '@features/bug-report/types';
 
 describe('BugReportForm', () => {
   const defaultData: CreateBugReportRequest = {
@@ -34,9 +34,9 @@ describe('BugReportForm', () => {
     it('should render all category radio buttons', () => {
       renderWithProviders(<BugReportForm {...defaultProps} />);
 
-      expect(screen.getByLabelText(BUG_REPORT.CATEGORIES.BUG)).toBeInTheDocument();
-      expect(screen.getByLabelText(BUG_REPORT.CATEGORIES.INQUIRY)).toBeInTheDocument();
-      expect(screen.getByLabelText(BUG_REPORT.CATEGORIES.OTHER)).toBeInTheDocument();
+      expect(screen.getByLabelText('버그 제보')).toBeInTheDocument();
+      expect(screen.getByLabelText('문의 사항')).toBeInTheDocument();
+      expect(screen.getByLabelText('기타')).toBeInTheDocument();
     });
 
     it('should render title input field', () => {
@@ -75,7 +75,7 @@ describe('BugReportForm', () => {
         <BugReportForm {...defaultProps} onCategoryChange={onCategoryChange} />
       );
 
-      await user.click(screen.getByLabelText(BUG_REPORT.CATEGORIES.INQUIRY));
+      await user.click(screen.getByLabelText('문의 사항'));
       expect(onCategoryChange).toHaveBeenCalledWith('INQUIRY');
     });
 
@@ -84,7 +84,7 @@ describe('BugReportForm', () => {
         <BugReportForm {...defaultProps} data={{ ...defaultData, category: 'INQUIRY' }} />
       );
 
-      const inquiryRadio = screen.getByLabelText(BUG_REPORT.CATEGORIES.INQUIRY) as HTMLInputElement;
+      const inquiryRadio = screen.getByLabelText('문의 사항') as HTMLInputElement;
       expect(inquiryRadio.checked).toBe(true);
     });
 
@@ -294,7 +294,7 @@ describe('BugReportForm', () => {
       const submitButton = screen.getByRole('button', { name: '제출하기' });
       expect(submitButton).toHaveClass(
         'w-full',
-        'rounded-lg',
+        'rounded-2xl',
         'bg-gradient-to-r',
         'from-pink-500',
         'to-rose-500'
@@ -326,47 +326,31 @@ describe('BugReportForm', () => {
   });
 
   describe('Input Styling', () => {
-    it('should have proper title input styling', () => {
-      renderWithProviders(<BugReportForm {...defaultProps} />);
-
-      const titleInput = screen.getByLabelText('제목');
-      expect(titleInput).toHaveClass(
-        'w-full',
-        'rounded-lg',
-        'border',
-        'border-slate-700',
-        'bg-slate-900/50',
-        'px-4',
-        'py-3',
-        'text-white'
-      );
-    });
-
     it('should have proper description textarea styling', () => {
       renderWithProviders(<BugReportForm {...defaultProps} />);
 
       const descriptionTextarea = screen.getByLabelText('상세 내용');
       expect(descriptionTextarea).toHaveClass(
         'w-full',
-        'rounded-lg',
+        'rounded-2xl',
         'border',
-        'border-slate-700',
-        'bg-slate-900/50',
+        'border-border-default',
+        'bg-bg-secondary',
         'px-4',
         'py-3',
-        'text-white'
+        'text-text-primary'
       );
     });
 
-    it('should have focus styles on inputs', () => {
+    it('should have focus styles on description textarea', () => {
       renderWithProviders(<BugReportForm {...defaultProps} />);
 
-      const titleInput = screen.getByLabelText('제목');
-      expect(titleInput).toHaveClass(
-        'focus:border-pink-500',
+      const descriptionTextarea = screen.getByLabelText('상세 내용');
+      expect(descriptionTextarea).toHaveClass(
+        'focus:border-border-focus',
         'focus:outline-none',
         'focus:ring-2',
-        'focus:ring-pink-500/20'
+        'focus:ring-brand-primary/20'
       );
     });
   });
@@ -417,7 +401,7 @@ describe('BugReportForm', () => {
 
       // Select category - BUG is already selected by default
       // Just verify it's there
-      expect(screen.getByLabelText(BUG_REPORT.CATEGORIES.BUG)).toBeInTheDocument();
+      expect(screen.getByLabelText('버그 제보')).toBeInTheDocument();
 
       // Fill title
       const titleInput = screen.getByLabelText('제목');

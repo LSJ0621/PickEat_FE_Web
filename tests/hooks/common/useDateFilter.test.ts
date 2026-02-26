@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDateFilter } from '@/hooks/common/useDateFilter';
+import { useDateFilter } from '@shared/hooks/useDateFilter';
 
 describe('useDateFilter', () => {
   beforeEach(() => {

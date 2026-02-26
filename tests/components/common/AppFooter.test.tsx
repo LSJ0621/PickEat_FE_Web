@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createAuthenticatedState, createUnauthenticatedState } from '@tests/factories';
-import { AppFooter } from '@/components/common/AppFooter';
+import { AppFooter } from '@shared/components/AppFooter';
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
@@ -30,7 +30,6 @@ describe('AppFooter', () => {
       expect(screen.getByText('홈')).toBeInTheDocument();
       expect(screen.getByText('에이전트')).toBeInTheDocument();
       expect(screen.getByText('추천 이력')).toBeInTheDocument();
-      expect(screen.getByText('버그 제보')).toBeInTheDocument();
       expect(screen.getByText('마이페이지')).toBeInTheDocument();
     });
 
@@ -80,20 +79,6 @@ describe('AppFooter', () => {
       });
 
       await user.click(screen.getByText('추천 이력'));
-
-      await waitFor(() => {
-        expect(screen.getByText('로그인이 필요한 서비스입니다')).toBeInTheDocument();
-      });
-    });
-
-    it('버그 제보 버튼을 클릭하면 인증 프롬프트가 표시된다', async () => {
-      const user = userEvent.setup();
-
-      renderWithProviders(<AppFooter />, {
-        preloadedState: createUnauthenticatedState(),
-      });
-
-      await user.click(screen.getByText('버그 제보'));
 
       await waitFor(() => {
         expect(screen.getByText('로그인이 필요한 서비스입니다')).toBeInTheDocument();
@@ -151,30 +136,6 @@ describe('AppFooter', () => {
 
       expect(mockNavigate).toHaveBeenCalledWith('/mypage');
     });
-
-    it('일반 사용자가 버그 제보를 클릭하면 /bug-report로 이동한다', async () => {
-      const user = userEvent.setup();
-
-      renderWithProviders(<AppFooter />, {
-        preloadedState: createAuthenticatedState({ role: 'USER' }),
-      });
-
-      await user.click(screen.getByText('버그 제보'));
-
-      expect(mockNavigate).toHaveBeenCalledWith('/bug-report');
-    });
-
-    it('관리자가 버그 제보를 클릭하면 /admin/bug-reports로 이동한다', async () => {
-      const user = userEvent.setup();
-
-      renderWithProviders(<AppFooter />, {
-        preloadedState: createAuthenticatedState({ role: 'ADMIN' }),
-      });
-
-      await user.click(screen.getByText('버그 제보'));
-
-      expect(mockNavigate).toHaveBeenCalledWith('/admin/bug-reports');
-    });
   });
 
   describe('인증 프롬프트 모달 테스트', () => {
@@ -226,7 +187,7 @@ describe('AppFooter', () => {
       });
 
       const buttons = screen.getAllByRole('button');
-      expect(buttons.length).toBeGreaterThanOrEqual(5);
+      expect(buttons.length).toBeGreaterThanOrEqual(4);
     });
 
     it('aria-hidden 속성이 있는 요소가 렌더링된다', () => {

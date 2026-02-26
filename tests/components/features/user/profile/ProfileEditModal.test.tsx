@@ -6,10 +6,10 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ProfileEditModal } from '@/components/features/user/profile/ProfileEditModal';
+import { ProfileEditModal } from '@features/user/components/profile/ProfileEditModal';
 
 // Mock dependencies
-vi.mock('@/components/common/Button', () => ({
+vi.mock('@shared/components/Button', () => ({
   Button: ({ children, onClick, isLoading, className }: any) => (
     <button onClick={onClick} disabled={isLoading} className={className} data-loading={isLoading}>
       {children}
@@ -17,7 +17,7 @@ vi.mock('@/components/common/Button', () => ({
   ),
 }));
 
-vi.mock('@/components/common/ModalCloseButton', () => ({
+vi.mock('@shared/components/ModalCloseButton', () => ({
   ModalCloseButton: ({ onClose }: any) => (
     <button onClick={onClose} aria-label="Close">
       X
@@ -25,7 +25,7 @@ vi.mock('@/components/common/ModalCloseButton', () => ({
   ),
 }));
 
-vi.mock('@/components/common/ScrollDatePicker', () => ({
+vi.mock('@shared/components/ScrollDatePicker', () => ({
   ScrollDatePicker: ({ value, onChange }: any) => (
     <div data-testid="scroll-date-picker">
       <input
@@ -38,18 +38,18 @@ vi.mock('@/components/common/ScrollDatePicker', () => ({
   ),
 }));
 
-vi.mock('@/hooks/common/useModalAnimation', () => ({
+vi.mock('@shared/hooks/useModalAnimation', () => ({
   useModalAnimation: (open: boolean) => ({
     isAnimating: open,
     shouldRender: open,
   }),
 }));
 
-vi.mock('@/hooks/common/useModalScrollLock', () => ({
+vi.mock('@shared/hooks/useModalScrollLock', () => ({
   useModalScrollLock: vi.fn(),
 }));
 
-vi.mock('@/hooks/common/useFocusTrap', () => ({
+vi.mock('@shared/hooks/useFocusTrap', () => ({
   useFocusTrap: () => ({ current: null }),
 }));
 
@@ -208,11 +208,11 @@ describe('ProfileEditModal', () => {
 
   it('calls onClose when backdrop is clicked', () => {
     render(<ProfileEditModal {...defaultProps} />);
-    const backdrop = screen.getByRole('dialog').parentElement;
-    if (backdrop) {
-      fireEvent.click(backdrop);
-      expect(mockOnClose).toHaveBeenCalledTimes(1);
-    }
+    // The dialog element IS the backdrop in this component
+    // Click on the dialog directly (the backdrop area) triggers onClose when target === currentTarget
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(dialog);
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
   it('resets form when modal reopens', () => {

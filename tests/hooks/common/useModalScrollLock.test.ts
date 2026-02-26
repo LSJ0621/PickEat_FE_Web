@@ -1,16 +1,21 @@
 /**
  * useModalScrollLock Hook 테스트
+ * Source uses position:fixed approach when isOpen=true.
+ * When isOpen=false the effect returns early without touching body styles.
+ * Cleanup restores all styles to '' when the effect re-runs or unmounts.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useModalScrollLock } from '@shared/hooks/useModalScrollLock';
 
 describe('useModalScrollLock', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    // Reset body overflow before each test
+    // Reset body styles before each test
     document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
   });
 
   it('should set body overflow to hidden when isOpen is true', () => {
@@ -19,13 +24,21 @@ describe('useModalScrollLock', () => {
     expect(document.body.style.overflow).toBe('hidden');
   });
 
-  it('should not set body overflow when isOpen is false', () => {
-    renderHook(() => useModalScrollLock(false));
+  it('should set body position to fixed when isOpen is true', () => {
+    renderHook(() => useModalScrollLock(true));
 
-    expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.position).toBe('fixed');
   });
 
-  it('should restore body overflow when isOpen changes from true to false', () => {
+  it('should not modify body styles when isOpen is false', () => {
+    renderHook(() => useModalScrollLock(false));
+
+    // When false the effect returns early without changing styles
+    expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.position).toBe('');
+  });
+
+  it('should restore body overflow to empty string when isOpen changes from true to false', () => {
     const { rerender } = renderHook(
       ({ isOpen }) => useModalScrollLock(isOpen),
       { initialProps: { isOpen: true } }
@@ -38,7 +51,20 @@ describe('useModalScrollLock', () => {
     expect(document.body.style.overflow).toBe('');
   });
 
-  it('should set body overflow when isOpen changes from false to true', () => {
+  it('should restore body position to empty string when isOpen changes from true to false', () => {
+    const { rerender } = renderHook(
+      ({ isOpen }) => useModalScrollLock(isOpen),
+      { initialProps: { isOpen: true } }
+    );
+
+    expect(document.body.style.position).toBe('fixed');
+
+    rerender({ isOpen: false });
+
+    expect(document.body.style.position).toBe('');
+  });
+
+  it('should set body overflow to hidden when isOpen changes from false to true', () => {
     const { rerender } = renderHook(
       ({ isOpen }) => useModalScrollLock(isOpen),
       { initialProps: { isOpen: false } }
@@ -158,19 +184,12 @@ describe('useModalScrollLock', () => {
     expect(document.body.style.overflow).toBe('hidden');
   });
 
-  it('should restore empty string when modal closes (not other values)', () => {
-    // 사전에 body overflow를 다른 값으로 설정
-    document.body.style.overflow = 'auto';
-
+  it('should restore empty string when modal closes', () => {
     const { rerender } = renderHook(
       ({ isOpen }) => useModalScrollLock(isOpen),
-      { initialProps: { isOpen: false } }
+      { initialProps: { isOpen: true } }
     );
 
-    // isOpen이 false일 때는 빈 문자열로 설정
-    expect(document.body.style.overflow).toBe('');
-
-    rerender({ isOpen: true });
     expect(document.body.style.overflow).toBe('hidden');
 
     rerender({ isOpen: false });

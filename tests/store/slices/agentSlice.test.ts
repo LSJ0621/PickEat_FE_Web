@@ -5,8 +5,6 @@ import agentReducer, {
   clearMenuRecommendations,
   setSelectedMenu,
   clearSelectedMenu,
-  setRestaurants,
-  setIsSearching,
   upsertAiRecommendations,
   setAiLoading,
   resetAiRecommendations,
@@ -14,10 +12,15 @@ import agentReducer, {
   setShowConfirmCard,
   setMenuSelectionCompleted,
   clearAgentState,
+  upsertSearchAiRecommendations,
+  setSearchAiLoading,
+  clearSearchAiRecommendations,
+  upsertCommunityAiRecommendations,
+  setCommunityAiLoading,
+  clearCommunityAiRecommendations,
   type MenuPlaceRecommendationGroup,
-} from '@/store/slices/agentSlice';
-import type { PlaceRecommendationItem } from '@/types/menu';
-import type { Restaurant } from '@/types/search';
+} from '@app/store/slices/agentSlice';
+import type { MenuRecommendationItemData, PlaceRecommendationItem } from '@features/agent/types';
 
 describe('agentSlice', () => {
   const initialState = {
@@ -25,13 +28,20 @@ describe('agentSlice', () => {
     menuRecommendationHistoryId: null,
     menuRecommendationPrompt: '',
     menuRecommendationRequestAddress: null,
-    menuRecommendationReason: null,
+    menuRecommendationIntro: null,
+    menuRecommendationClosing: null,
     isMenuRecommendationLoading: false,
     selectedMenu: null,
     menuHistoryId: null,
     menuRequestAddress: null,
-    restaurants: [],
-    isSearching: false,
+    searchAiRecommendationGroups: [],
+    isSearchAiLoading: false,
+    searchAiLoadingMenu: null,
+    searchAiRetrying: false,
+    communityAiRecommendationGroups: [],
+    isCommunityAiLoading: false,
+    communityAiLoadingMenu: null,
+    communityAiRetrying: false,
     aiRecommendationGroups: [],
     isAiLoading: false,
     aiLoadingMenu: null,
@@ -54,11 +64,16 @@ describe('agentSlice', () => {
   describe('setMenuRecommendations', () => {
     it('should set menu recommendations with all related data', () => {
       const payload = {
-        recommendations: ['김치찌개', '된장찌개', '순두부찌개'],
+        recommendations: [
+          { condition: '국물 요리가 먹고 싶다면', menu: '김치찌개' },
+          { condition: '구수한 맛을 원한다면', menu: '된장찌개' },
+          { condition: '부드러운 맛을 원한다면', menu: '순두부찌개' },
+        ] satisfies MenuRecommendationItemData[],
         historyId: 123,
         prompt: '오늘 점심 뭐 먹을까?',
         requestAddress: '서울시 강남구',
-        reason: '날씨가 추워서 따뜻한 국물 요리를 추천드립니다.',
+        intro: '날씨가 추워서 따뜻한 국물 요리를 추천드립니다.',
+        closing: '오늘도 맛있는 식사 되세요!',
       };
 
       const state = agentReducer(initialState, setMenuRecommendations(payload));
@@ -67,7 +82,8 @@ describe('agentSlice', () => {
       expect(state.menuRecommendationHistoryId).toBe(payload.historyId);
       expect(state.menuRecommendationPrompt).toBe(payload.prompt);
       expect(state.menuRecommendationRequestAddress).toBe(payload.requestAddress);
-      expect(state.menuRecommendationReason).toBe(payload.reason);
+      expect(state.menuRecommendationIntro).toBe(payload.intro);
+      expect(state.menuRecommendationClosing).toBe(payload.closing);
       expect(state.hasMenuSelectionCompleted).toBe(false);
     });
 
@@ -78,11 +94,12 @@ describe('agentSlice', () => {
       };
 
       const payload = {
-        recommendations: ['파스타'],
+        recommendations: [{ condition: '간편하게', menu: '파스타' }] satisfies MenuRecommendationItemData[],
         historyId: 456,
         prompt: 'test',
         requestAddress: null,
-        reason: 'test reason',
+        intro: 'test intro',
+        closing: 'test closing',
       };
 
       const state = agentReducer(stateWithSelection, setMenuRecommendations(payload));
@@ -91,11 +108,12 @@ describe('agentSlice', () => {
 
     it('should handle null requestAddress', () => {
       const payload = {
-        recommendations: ['치킨'],
+        recommendations: [{ condition: '바삭하게', menu: '치킨' }] satisfies MenuRecommendationItemData[],
         historyId: 789,
         prompt: 'test',
         requestAddress: null,
-        reason: 'test reason',
+        intro: 'test intro',
+        closing: 'test closing',
       };
 
       const state = agentReducer(initialState, setMenuRecommendations(payload));
@@ -123,11 +141,15 @@ describe('agentSlice', () => {
     it('should clear all menu recommendation related fields', () => {
       const stateWithData = {
         ...initialState,
-        menuRecommendations: ['김치찌개', '된장찌개'],
+        menuRecommendations: [
+          { condition: '매콤하게', menu: '김치찌개' },
+          { condition: '구수하게', menu: '된장찌개' },
+        ] satisfies MenuRecommendationItemData[],
         menuRecommendationHistoryId: 123,
         menuRecommendationPrompt: 'test prompt',
         menuRecommendationRequestAddress: '서울시',
-        menuRecommendationReason: 'test reason',
+        menuRecommendationIntro: 'test intro',
+        menuRecommendationClosing: 'test closing',
       };
 
       const state = agentReducer(stateWithData, clearMenuRecommendations());
@@ -136,7 +158,8 @@ describe('agentSlice', () => {
       expect(state.menuRecommendationHistoryId).toBeNull();
       expect(state.menuRecommendationPrompt).toBe('');
       expect(state.menuRecommendationRequestAddress).toBeNull();
-      expect(state.menuRecommendationReason).toBeNull();
+      expect(state.menuRecommendationIntro).toBeNull();
+      expect(state.menuRecommendationClosing).toBeNull();
     });
   });
 
@@ -157,12 +180,7 @@ describe('agentSlice', () => {
       expect(state.selectedPlace).toBeNull();
     });
 
-    it('should clear selectedPlace while keeping search results and AI recommendations', () => {
-      const restaurants: Restaurant[] = [
-        { name: '맛집1', address: '주소1' },
-        { name: '맛집2', address: '주소2' },
-      ];
-
+    it('should clear selectedPlace while keeping AI recommendations', () => {
       const aiGroups: MenuPlaceRecommendationGroup[] = [
         {
           menuName: '김치찌개',
@@ -174,7 +192,6 @@ describe('agentSlice', () => {
 
       const stateWithData = {
         ...initialState,
-        restaurants,
         aiRecommendationGroups: aiGroups,
         selectedPlace: { placeId: 'place1', name: '맛집1', reason: '맛있어요' },
       };
@@ -187,7 +204,6 @@ describe('agentSlice', () => {
 
       const state = agentReducer(stateWithData, setSelectedMenu(payload));
 
-      expect(state.restaurants).toEqual(restaurants);
       expect(state.aiRecommendationGroups).toEqual(aiGroups);
       expect(state.selectedPlace).toBeNull();
     });
@@ -220,65 +236,6 @@ describe('agentSlice', () => {
       expect(state.menuHistoryId).toBeNull();
       expect(state.menuRequestAddress).toBeNull();
       expect(state.selectedPlace).toBeNull();
-    });
-  });
-
-  describe('setRestaurants', () => {
-    it('should set restaurants array', () => {
-      const restaurants: Restaurant[] = [
-        {
-          name: '맛집1',
-          address: '주소1',
-          phone: '02-1234-5678',
-          latitude: 37.5,
-          longitude: 127.0,
-        },
-        {
-          name: '맛집2',
-          address: '주소2',
-          roadAddress: '도로명주소2',
-        },
-      ];
-
-      const state = agentReducer(initialState, setRestaurants(restaurants));
-      expect(state.restaurants).toEqual(restaurants);
-    });
-
-    it('should replace existing restaurants', () => {
-      const oldRestaurants: Restaurant[] = [
-        { name: '옛날맛집', address: '옛날주소' },
-      ];
-
-      const stateWithOldData = {
-        ...initialState,
-        restaurants: oldRestaurants,
-      };
-
-      const newRestaurants: Restaurant[] = [
-        { name: '새로운맛집', address: '새로운주소' },
-      ];
-
-      const state = agentReducer(stateWithOldData, setRestaurants(newRestaurants));
-      expect(state.restaurants).toEqual(newRestaurants);
-      expect(state.restaurants).not.toEqual(oldRestaurants);
-    });
-
-    it('should handle empty array', () => {
-      const state = agentReducer(initialState, setRestaurants([]));
-      expect(state.restaurants).toEqual([]);
-    });
-  });
-
-  describe('setIsSearching', () => {
-    it('should set searching to true', () => {
-      const state = agentReducer(initialState, setIsSearching(true));
-      expect(state.isSearching).toBe(true);
-    });
-
-    it('should set searching to false', () => {
-      const searchingState = { ...initialState, isSearching: true };
-      const state = agentReducer(searchingState, setIsSearching(false));
-      expect(state.isSearching).toBe(false);
     });
   });
 
@@ -410,7 +367,16 @@ describe('agentSlice', () => {
             ],
           },
         ],
+        searchAiRecommendationGroups: [
+          {
+            menuName: '김치찌개',
+            recommendations: [
+              { placeId: 'place1', name: '맛집1', reason: '이유1' },
+            ],
+          },
+        ],
         isAiLoading: true,
+        isSearchAiLoading: true,
         aiLoadingMenu: '김치찌개',
         selectedPlace: { placeId: 'place1', name: '맛집1', reason: '이유1' },
       };
@@ -418,9 +384,141 @@ describe('agentSlice', () => {
       const state = agentReducer(stateWithAiData, resetAiRecommendations());
 
       expect(state.aiRecommendationGroups).toEqual([]);
+      expect(state.searchAiRecommendationGroups).toEqual([]);
       expect(state.aiLoadingMenu).toBeNull();
       expect(state.isAiLoading).toBe(false);
       expect(state.selectedPlace).toBeNull();
+    });
+  });
+
+  describe('upsertSearchAiRecommendations', () => {
+    it('should add new search AI recommendation group', () => {
+      const payload = {
+        menuName: '김치찌개',
+        recommendations: [
+          { placeId: 'place1', name: '검색맛집1', reason: '검색이유1' },
+        ],
+      };
+
+      const state = agentReducer(initialState, upsertSearchAiRecommendations(payload));
+
+      expect(state.searchAiRecommendationGroups).toHaveLength(1);
+      expect(state.searchAiRecommendationGroups[0]).toEqual(payload);
+    });
+
+    it('should update existing search AI recommendation group', () => {
+      const existingGroups: MenuPlaceRecommendationGroup[] = [
+        {
+          menuName: '김치찌개',
+          recommendations: [{ placeId: 'old1', name: '옛날맛집', reason: '옛날이유' }],
+        },
+      ];
+
+      const stateWithGroups = {
+        ...initialState,
+        searchAiRecommendationGroups: existingGroups,
+      };
+
+      const payload = {
+        menuName: '김치찌개',
+        recommendations: [{ placeId: 'new1', name: '새맛집', reason: '새이유' }],
+      };
+
+      const state = agentReducer(stateWithGroups, upsertSearchAiRecommendations(payload));
+
+      expect(state.searchAiRecommendationGroups).toHaveLength(1);
+      expect(state.searchAiRecommendationGroups[0]).toEqual(payload);
+    });
+  });
+
+  describe('setSearchAiLoading', () => {
+    it('should set search AI loading state', () => {
+      const payload = { isLoading: true, menuName: '김치찌개' };
+      const state = agentReducer(initialState, setSearchAiLoading(payload));
+
+      expect(state.isSearchAiLoading).toBe(true);
+      expect(state.searchAiLoadingMenu).toBe('김치찌개');
+    });
+
+    it('should clear search AI loading state', () => {
+      const loadingState = {
+        ...initialState,
+        isSearchAiLoading: true,
+        searchAiLoadingMenu: '김치찌개',
+      };
+
+      const state = agentReducer(loadingState, setSearchAiLoading({ isLoading: false, menuName: null }));
+
+      expect(state.isSearchAiLoading).toBe(false);
+      expect(state.searchAiLoadingMenu).toBeNull();
+    });
+  });
+
+  describe('clearSearchAiRecommendations', () => {
+    it('should clear all search AI recommendation fields', () => {
+      const stateWithData = {
+        ...initialState,
+        searchAiRecommendationGroups: [
+          { menuName: '김치찌개', recommendations: [{ placeId: 'p1', name: '맛집', reason: '이유' }] },
+        ],
+        isSearchAiLoading: true,
+        searchAiLoadingMenu: '김치찌개',
+        searchAiRetrying: true,
+      };
+
+      const state = agentReducer(stateWithData, clearSearchAiRecommendations());
+
+      expect(state.searchAiRecommendationGroups).toEqual([]);
+      expect(state.isSearchAiLoading).toBe(false);
+      expect(state.searchAiLoadingMenu).toBeNull();
+      expect(state.searchAiRetrying).toBe(false);
+    });
+  });
+
+  describe('upsertCommunityAiRecommendations', () => {
+    it('should add new community AI recommendation group', () => {
+      const payload = {
+        menuName: '김치찌개',
+        recommendations: [
+          { placeId: 'place1', name: '커뮤니티맛집1', reason: '커뮤니티이유1' },
+        ],
+      };
+
+      const state = agentReducer(initialState, upsertCommunityAiRecommendations(payload));
+
+      expect(state.communityAiRecommendationGroups).toHaveLength(1);
+      expect(state.communityAiRecommendationGroups[0]).toEqual(payload);
+    });
+  });
+
+  describe('setCommunityAiLoading', () => {
+    it('should set community AI loading state', () => {
+      const payload = { isLoading: true, menuName: '김치찌개' };
+      const state = agentReducer(initialState, setCommunityAiLoading(payload));
+
+      expect(state.isCommunityAiLoading).toBe(true);
+      expect(state.communityAiLoadingMenu).toBe('김치찌개');
+    });
+  });
+
+  describe('clearCommunityAiRecommendations', () => {
+    it('should clear all community AI recommendation fields', () => {
+      const stateWithData = {
+        ...initialState,
+        communityAiRecommendationGroups: [
+          { menuName: '김치찌개', recommendations: [{ placeId: 'p1', name: '맛집', reason: '이유' }] },
+        ],
+        isCommunityAiLoading: true,
+        communityAiLoadingMenu: '김치찌개',
+        communityAiRetrying: true,
+      };
+
+      const state = agentReducer(stateWithData, clearCommunityAiRecommendations());
+
+      expect(state.communityAiRecommendationGroups).toEqual([]);
+      expect(state.isCommunityAiLoading).toBe(false);
+      expect(state.communityAiLoadingMenu).toBeNull();
+      expect(state.communityAiRetrying).toBe(false);
     });
   });
 
@@ -503,17 +601,27 @@ describe('agentSlice', () => {
   describe('clearAgentState', () => {
     it('should reset entire state to initial state', () => {
       const complexState = {
-        menuRecommendations: ['김치찌개', '된장찌개'],
+        menuRecommendations: [
+          { condition: '매콤하게', menu: '김치찌개' },
+          { condition: '구수하게', menu: '된장찌개' },
+        ] satisfies MenuRecommendationItemData[],
         menuRecommendationHistoryId: 123,
         menuRecommendationPrompt: 'test prompt',
         menuRecommendationRequestAddress: '서울시',
-        menuRecommendationReason: 'test reason',
+        menuRecommendationIntro: 'test intro',
+        menuRecommendationClosing: 'test closing',
         isMenuRecommendationLoading: true,
         selectedMenu: '김치찌개',
         menuHistoryId: 456,
         menuRequestAddress: '서울시 강남구',
-        restaurants: [{ name: '맛집', address: '주소' }],
-        isSearching: true,
+        searchAiRecommendationGroups: [],
+        isSearchAiLoading: false,
+        searchAiLoadingMenu: null,
+        searchAiRetrying: false,
+        communityAiRecommendationGroups: [],
+        isCommunityAiLoading: false,
+        communityAiLoadingMenu: null,
+        communityAiRetrying: false,
         aiRecommendationGroups: [
           {
             menuName: '김치찌개',
@@ -542,11 +650,15 @@ describe('agentSlice', () => {
       state = agentReducer(
         state,
         setMenuRecommendations({
-          recommendations: ['김치찌개', '된장찌개'],
+          recommendations: [
+            { condition: '매콤하게', menu: '김치찌개' },
+            { condition: '구수하게', menu: '된장찌개' },
+          ],
           historyId: 123,
           prompt: 'test',
           requestAddress: '서울시',
-          reason: 'test reason',
+          intro: 'test intro',
+          closing: 'test closing',
         })
       );
       expect(state.menuRecommendations).toHaveLength(2);
@@ -565,16 +677,25 @@ describe('agentSlice', () => {
       expect(state.selectedMenu).toBe('김치찌개');
       expect(state.showConfirmCard).toBe(true);
 
-      state = agentReducer(state, setIsSearching(true));
-      const restaurants: Restaurant[] = [
-        { name: '맛집1', address: '주소1' },
-        { name: '맛집2', address: '주소2' },
-      ];
-      state = agentReducer(state, setRestaurants(restaurants));
-      state = agentReducer(state, setIsSearching(false));
+      state = agentReducer(
+        state,
+        setSearchAiLoading({ isLoading: true, menuName: '김치찌개' })
+      );
+      state = agentReducer(
+        state,
+        upsertSearchAiRecommendations({
+          menuName: '김치찌개',
+          recommendations: [
+            { placeId: 'place1', name: '맛집1', reason: '이유1' },
+          ],
+        })
+      );
+      state = agentReducer(
+        state,
+        setSearchAiLoading({ isLoading: false, menuName: null })
+      );
 
-      expect(state.restaurants).toHaveLength(2);
-      expect(state.isSearching).toBe(false);
+      expect(state.searchAiRecommendationGroups).toHaveLength(1);
 
       state = agentReducer(
         state,
@@ -609,19 +730,19 @@ describe('agentSlice', () => {
     it('should preserve unrelated state when updating specific fields', () => {
       const stateWithData = {
         ...initialState,
-        menuRecommendations: ['김치찌개'],
+        menuRecommendations: [
+          { condition: '매콤하게', menu: '김치찌개' },
+        ] satisfies MenuRecommendationItemData[],
         menuRecommendationHistoryId: 123,
         selectedMenu: '김치찌개',
-        restaurants: [{ name: '맛집', address: '주소' }],
       };
 
-      const state = agentReducer(stateWithData, setIsSearching(true));
+      const state = agentReducer(stateWithData, setSearchAiLoading({ isLoading: true, menuName: '김치찌개' }));
 
-      expect(state.menuRecommendations).toEqual(['김치찌개']);
+      expect(state.menuRecommendations).toEqual([{ condition: '매콤하게', menu: '김치찌개' }]);
       expect(state.menuRecommendationHistoryId).toBe(123);
       expect(state.selectedMenu).toBe('김치찌개');
-      expect(state.restaurants).toEqual([{ name: '맛집', address: '주소' }]);
-      expect(state.isSearching).toBe(true);
+      expect(state.isSearchAiLoading).toBe(true);
     });
   });
 });

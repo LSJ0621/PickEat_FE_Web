@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useAddressList } from '@/hooks/address/useAddressList';
+import { useAddressList } from '@shared/hooks/address/useAddressList';
 import { createWrapper } from '@tests/utils/renderWithProviders';
-import { userService } from '@/api/services/user';
+import { userService } from '@features/user/api';
 import { createMockUserAddresses, createMockUserAddress } from '@tests/factories/address';
 
 // Mock dependencies
-vi.mock('@/api/services/user');
-vi.mock('@/hooks/useErrorHandler', () => ({
+vi.mock('@features/user/api');
+vi.mock('@shared/hooks/useErrorHandler', () => ({
   useErrorHandler: () => ({
     handleError: vi.fn(),
     handleSuccess: vi.fn(),

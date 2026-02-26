@@ -24,13 +24,21 @@ describe('STORAGE_KEYS', () => {
   });
 
   it('should have all required keys', () => {
-    expect(Object.keys(STORAGE_KEYS)).toEqual(['TOKEN', 'REFRESH_TOKEN', 'USER', 'THEME']);
+    expect(Object.keys(STORAGE_KEYS)).toEqual([
+      'TOKEN',
+      'REFRESH_TOKEN',
+      'USER',
+      'THEME',
+      'RATING_PROMPT_DISMISSED',
+      'RATING_PROMPT_NEVER_SHOW',
+      'ONBOARDING_COMPLETED',
+    ]);
   });
 });
 
 describe('API_CONFIG', () => {
   it('should have correct API configuration values', () => {
-    expect(API_CONFIG.TIMEOUT).toBe(10000);
+    expect(API_CONFIG.TIMEOUT).toBe(30000);
     expect(API_CONFIG.MAX_RETRY).toBe(3);
   });
 
@@ -183,15 +191,13 @@ describe('BUG_REPORT', () => {
     expect(BUG_REPORT.DESCRIPTION_MAX_LENGTH).toBeGreaterThan(BUG_REPORT.TITLE_MAX_LENGTH);
   });
 
-  it('should have all category values', () => {
-    expect(BUG_REPORT.CATEGORIES.BUG).toBe('버그 제보');
-    expect(BUG_REPORT.CATEGORIES.INQUIRY).toBe('문의 사항');
-    expect(BUG_REPORT.CATEGORIES.OTHER).toBe('기타');
+  it('should have all category keys', () => {
+    expect(BUG_REPORT.CATEGORY_KEYS).toEqual(['bug', 'inquiry', 'other']);
   });
 
-  it('should have non-empty category values', () => {
-    Object.values(BUG_REPORT.CATEGORIES).forEach((category) => {
-      expect(category.length).toBeGreaterThan(0);
+  it('should have non-empty category keys', () => {
+    BUG_REPORT.CATEGORY_KEYS.forEach((key) => {
+      expect(key.length).toBeGreaterThan(0);
     });
   });
 });

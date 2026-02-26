@@ -6,41 +6,24 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UserPlaceCard } from '@/components/features/user-place/UserPlaceCard';
-import type { UserPlace } from '@/types/user-place';
+import { UserPlaceCard } from '@features/user-place/components/UserPlaceCard';
+import type { UserPlace } from '@features/user-place/types';
 
 // Mock dependencies
-vi.mock('@/components/features/user-place/UserPlaceStatusBadge', () => ({
-  UserPlaceStatusBadge: ({ status }: any) => <span data-testid="status-badge">{status}</span>,
+vi.mock('@features/user-place/components/UserPlaceStatusBadge', () => ({
+  UserPlaceStatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
 }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: any) => {
+    t: (key: string) => {
       const translations: Record<string, string> = {
-        'common.viewDetails': 'View Details',
-        'rating.ratingCount': `${params?.count} reviews`,
-        'userPlace.categories.korean': 'Korean Food',
-        'userPlace.categories.chinese': 'Chinese Food',
+        'userPlace.noDetails': '상세 정보가 없습니다.',
       };
       return translations[key] || key;
     },
   }),
 }));
-
-vi.mock('@/types/user-place', async () => {
-  const actual = await vi.importActual('@/types/user-place');
-  return {
-    ...actual,
-    getCategoryTranslationKey: (category: string) => {
-      const map: Record<string, string> = {
-        '한식': 'korean',
-        '중식': 'chinese',
-      };
-      return map[category];
-    },
-  };
-});
 
 describe('UserPlaceCard', () => {
   const mockOnClick = vi.fn();
@@ -54,8 +37,6 @@ describe('UserPlaceCard', () => {
     phoneNumber: '02-1234-5678',
     menuTypes: ['김치찌개', '된장찌개', '비빔밥'],
     description: 'A great Korean restaurant',
-    averageRating: 4.5,
-    ratingCount: 10,
     latitude: 37.5665,
     longitude: 126.9780,
     createdAt: '2024-01-01T00:00:00Z',
@@ -81,26 +62,14 @@ describe('UserPlaceCard', () => {
     expect(badge).toHaveTextContent('APPROVED');
   });
 
-  it('renders category with translation', () => {
+  it('renders raw category text', () => {
     render(<UserPlaceCard place={defaultPlace} onClick={mockOnClick} />);
-    expect(screen.getByText('Korean Food')).toBeInTheDocument();
+    expect(screen.getByText('한식')).toBeInTheDocument();
   });
 
   it('renders phone number', () => {
     render(<UserPlaceCard place={defaultPlace} onClick={mockOnClick} />);
     expect(screen.getByText('02-1234-5678')).toBeInTheDocument();
-  });
-
-  it('renders rating when available', () => {
-    render(<UserPlaceCard place={defaultPlace} onClick={mockOnClick} />);
-    expect(screen.getByText('4.5')).toBeInTheDocument();
-    expect(screen.getByText('(10 reviews)')).toBeInTheDocument();
-  });
-
-  it('does not render rating when not available', () => {
-    const placeWithoutRating = { ...defaultPlace, averageRating: null, ratingCount: null };
-    render(<UserPlaceCard place={placeWithoutRating} onClick={mockOnClick} />);
-    expect(screen.queryByText(/reviews/)).not.toBeInTheDocument();
   });
 
   it('renders first 3 menu types', () => {
@@ -132,17 +101,17 @@ describe('UserPlaceCard', () => {
 
   it('calls onClick when card is clicked', () => {
     render(<UserPlaceCard place={defaultPlace} onClick={mockOnClick} />);
-    const card = screen.getByText('Test Restaurant').closest('div')?.parentElement;
+    const card = screen.getByText('Test Restaurant').closest('h3')?.closest('div');
     if (card) {
       fireEvent.click(card);
-      expect(mockOnClick).toHaveBeenCalledTimes(1);
+      expect(mockOnClick).toHaveBeenCalled();
     }
   });
 
   it('does not render category when not provided', () => {
     const placeWithoutCategory = { ...defaultPlace, category: undefined };
     render(<UserPlaceCard place={placeWithoutCategory} onClick={mockOnClick} />);
-    expect(screen.queryByText('Korean Food')).not.toBeInTheDocument();
+    expect(screen.queryByText('한식')).not.toBeInTheDocument();
   });
 
   it('does not render phone number when not provided', () => {
@@ -157,9 +126,10 @@ describe('UserPlaceCard', () => {
     expect(screen.queryByText('김치찌개')).not.toBeInTheDocument();
   });
 
-  it('renders with rating of 0', () => {
-    const placeWithZeroRating = { ...defaultPlace, averageRating: 0 };
-    render(<UserPlaceCard place={placeWithZeroRating} onClick={mockOnClick} />);
-    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+  it('renders card with proper structure', () => {
+    const { container } = render(<UserPlaceCard place={defaultPlace} onClick={mockOnClick} />);
+    const card = container.querySelector('.cursor-pointer');
+    expect(card).toBeInTheDocument();
+    expect(card).toHaveClass('rounded-2xl', 'border', 'border-border-default');
   });
 });

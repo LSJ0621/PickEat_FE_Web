@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { OAuthLoadingScreen } from '@/components/common/OAuthLoadingScreen';
+import { OAuthLoadingScreen } from '@shared/components/OAuthLoadingScreen';
 
 describe('OAuthLoadingScreen', () => {
   describe('카카오 로그인 렌더링 테스트', () => {

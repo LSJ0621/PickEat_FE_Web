@@ -3,8 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createMockBugReport, createMockBugReportWithImages } from '@tests/factories';
-import { BugReportListItem } from '@/components/features/admin/bug-reports/BugReportListItem';
-import { BUG_REPORT } from '@shared/utils/constants';
+import { BugReportListItem } from '@features/admin/components/bug-reports/BugReportListItem';
 
 describe('BugReportListItem', () => {
   const mockOnClick = vi.fn();
@@ -26,16 +25,16 @@ describe('BugReportListItem', () => {
       expect(screen.getByText('버그 상세 설명입니다.')).toBeInTheDocument();
     });
 
-    it('should render bug report category', () => {
+    it('should render bug report category for BUG', () => {
       const bugReport = createMockBugReport({ category: 'BUG' });
       renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
-      expect(screen.getByText(BUG_REPORT.CATEGORIES.BUG)).toBeInTheDocument();
+      expect(screen.getByText('버그 제보')).toBeInTheDocument();
     });
 
     it('should render different category types correctly', () => {
       const bugReport = createMockBugReport({ category: 'INQUIRY' });
       renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
-      expect(screen.getByText(BUG_REPORT.CATEGORIES.INQUIRY)).toBeInTheDocument();
+      expect(screen.getByText('문의 사항')).toBeInTheDocument();
     });
   });
 
@@ -56,14 +55,14 @@ describe('BugReportListItem', () => {
       const bugReport = createMockBugReport({ status: 'UNCONFIRMED' });
       renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
       const badge = screen.getByText('미확인');
-      expect(badge).toHaveClass('bg-red-500/20', 'text-red-400');
+      expect(badge).toHaveClass('bg-yellow-500/20', 'text-yellow-600');
     });
 
     it('should apply CONFIRMED status badge styling', () => {
       const bugReport = createMockBugReport({ status: 'CONFIRMED' });
       renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
       const badge = screen.getByText('확인');
-      expect(badge).toHaveClass('bg-green-500/20', 'text-green-400');
+      expect(badge).toHaveClass('bg-orange-500/20');
     });
   });
 
@@ -81,7 +80,7 @@ describe('BugReportListItem', () => {
         <BugReportListItem bugReport={bugReport} onClick={mockOnClick} />
       );
 
-      const dateElement = container.querySelector('.text-xs.text-slate-500');
+      const dateElement = container.querySelector('.text-xs.text-text-placeholder');
       expect(dateElement?.textContent).toBeTruthy();
     });
   });
@@ -188,18 +187,23 @@ describe('BugReportListItem', () => {
 
     it('should apply proper card styles', () => {
       const bugReport = createMockBugReport();
-      renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
+      const { container } = renderWithProviders(
+        <BugReportListItem bugReport={bugReport} onClick={mockOnClick} />
+      );
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('rounded-lg', 'border', 'border-slate-700');
+      const card = container.querySelector('.rounded-lg.border');
+      expect(card).toBeInTheDocument();
+      expect(card).toHaveClass('border-border-default');
     });
 
     it('should have transition effects', () => {
       const bugReport = createMockBugReport();
-      renderWithProviders(<BugReportListItem bugReport={bugReport} onClick={mockOnClick} />);
+      const { container } = renderWithProviders(
+        <BugReportListItem bugReport={bugReport} onClick={mockOnClick} />
+      );
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('transition');
+      const card = container.querySelector('.transition');
+      expect(card).toBeInTheDocument();
     });
 
     it('should render right arrow icon', () => {

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { PlaceBlogsSection } from '@/components/features/restaurant/PlaceBlogsSection';
+import { PlaceBlogsSection } from '@features/agent/components/restaurant/PlaceBlogsSection';
 import { createMockRestaurantBlog, createAuthenticatedState } from '@tests/factories';
-import { menuService } from '@/api/services/menu';
+import { menuService } from '@features/agent/api';
 
-vi.mock('@/api/services/menu', () => ({
+vi.mock('@features/agent/api', () => ({
   menuService: {
     getRestaurantBlogs: vi.fn(),
   },
@@ -165,7 +165,10 @@ describe('PlaceBlogsSection', () => {
       await waitFor(() => {
         expect(menuService.getRestaurantBlogs).toHaveBeenCalledWith(
           expect.stringContaining('김치찌개'),
-          '김치찌개'
+          '김치찌개',
+          expect.any(String),
+          undefined,
+          undefined
         );
       });
     });
@@ -184,7 +187,10 @@ describe('PlaceBlogsSection', () => {
       await waitFor(() => {
         expect(menuService.getRestaurantBlogs).toHaveBeenCalledWith(
           '서울시 강남구 김치찌개',
-          '김치찌개'
+          '김치찌개',
+          expect.any(String),
+          undefined,
+          undefined
         );
       });
     });

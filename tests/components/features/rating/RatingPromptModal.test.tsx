@@ -5,43 +5,41 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { RatingPromptModal } from '@/components/features/rating/RatingPromptModal';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { RatingPromptModal } from '@features/rating/components/RatingPromptModal';
 
 // Mock dependencies
-vi.mock('@/components/common/Button', () => ({
+vi.mock('@shared/components/Button', () => ({
   Button: ({ children, onClick, disabled, isLoading, className }: any) => (
-    <button onClick={onClick} disabled={disabled} className={className} data-loading={isLoading}>
+    <button onClick={onClick} disabled={disabled || isLoading} className={className} data-loading={isLoading}>
       {children}
     </button>
   ),
 }));
 
-vi.mock('@/components/features/rating/StarRatingInput', () => ({
-  StarRatingInput: ({ rating, onRatingChange, size }: any) => (
-    <div data-testid="star-rating-input" data-rating={rating} data-size={size}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button key={star} onClick={() => onRatingChange(star)} aria-label={`${star}점`}>
-          Star {star}
-        </button>
-      ))}
-    </div>
-  ),
-}));
-
-vi.mock('@/hooks/common/useModalAnimation', () => ({
+vi.mock('@shared/hooks/useModalAnimation', () => ({
   useModalAnimation: (open: boolean) => ({
     isAnimating: open,
     shouldRender: open,
   }),
 }));
 
-vi.mock('@/hooks/common/useModalScrollLock', () => ({
+vi.mock('@shared/hooks/useModalScrollLock', () => ({
   useModalScrollLock: vi.fn(),
 }));
 
-vi.mock('@/hooks/common/useFocusTrap', () => ({
+vi.mock('@shared/hooks/useFocusTrap', () => ({
   useFocusTrap: () => ({ current: null }),
+}));
+
+vi.mock('@shared/hooks/useEscapeKey', () => ({
+  useEscapeKey: (callback: () => void, active: boolean) => {
+    if (active) {
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') callback();
+      });
+    }
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -49,9 +47,11 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
         'common.close': 'Close',
-        'rating.promptTitle': ' was how?',
+        'rating.promptMessage': '방문은 어떠셨나요?',
         'rating.didNotVisit': 'Did not visit',
-        'rating.submit': 'Submit',
+        'rating.goToRate': 'Go to rate',
+        'rating.dismiss': 'Dismiss',
+        'rating.neverShowAgain': 'Never show again',
       };
       return translations[key] || key;
     },
@@ -59,16 +59,18 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('RatingPromptModal', () => {
-  const mockOnSubmit = vi.fn();
-  const mockOnSkip = vi.fn();
+  const mockOnGoToHistory = vi.fn();
+  const mockOnSkipPlace = vi.fn();
   const mockOnDismiss = vi.fn();
+  const mockOnNeverShow = vi.fn();
 
   const defaultProps = {
     open: true,
     placeName: 'Test Restaurant',
-    onSubmit: mockOnSubmit,
-    onSkip: mockOnSkip,
+    onGoToHistory: mockOnGoToHistory,
+    onSkipPlace: mockOnSkipPlace,
     onDismiss: mockOnDismiss,
+    onNeverShow: mockOnNeverShow,
     isSubmitting: false,
   };
 
@@ -88,53 +90,44 @@ describe('RatingPromptModal', () => {
 
   it('displays place name in title', () => {
     render(<RatingPromptModal {...defaultProps} />);
-    expect(screen.getByText(/Test Restaurant was how/)).toBeInTheDocument();
+    expect(screen.getByText('Test Restaurant')).toBeInTheDocument();
   });
 
-  it('renders StarRatingInput with large size', () => {
+  it('renders the place name as a heading', () => {
     render(<RatingPromptModal {...defaultProps} />);
-    const starInput = screen.getByTestId('star-rating-input');
-    expect(starInput).toHaveAttribute('data-size', 'lg');
+    const heading = screen.getByRole('heading');
+    expect(heading).toHaveTextContent('Test Restaurant');
   });
 
-  it('renders Skip and Submit buttons', () => {
+  it('renders Did not visit and Go to rate buttons', () => {
     render(<RatingPromptModal {...defaultProps} />);
     expect(screen.getByText('Did not visit')).toBeInTheDocument();
-    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText('Go to rate')).toBeInTheDocument();
   });
 
-  it('Submit button is disabled when no rating selected', () => {
+  it('renders prompt message', () => {
     render(<RatingPromptModal {...defaultProps} />);
-    const submitButton = screen.getByText('Submit');
-    expect(submitButton).toBeDisabled();
+    expect(screen.getByText('방문은 어떠셨나요?')).toBeInTheDocument();
   });
 
-  it('Submit button is enabled when rating is selected', () => {
+  it('renders Dismiss and Never show again buttons', () => {
     render(<RatingPromptModal {...defaultProps} />);
-    const star3 = screen.getByLabelText('3점');
-    fireEvent.click(star3);
-
-    const submitButton = screen.getByText('Submit');
-    expect(submitButton).not.toBeDisabled();
+    expect(screen.getByText('Dismiss')).toBeInTheDocument();
+    expect(screen.getByText('Never show again')).toBeInTheDocument();
   });
 
-  it('calls onSubmit with selected rating when Submit is clicked', () => {
-    render(<RatingPromptModal {...defaultProps} />);
-
-    const star4 = screen.getByLabelText('4점');
-    fireEvent.click(star4);
-
-    const submitButton = screen.getByText('Submit');
-    fireEvent.click(submitButton);
-
-    expect(mockOnSubmit).toHaveBeenCalledWith(4);
-  });
-
-  it('calls onSkip when Skip button is clicked', () => {
+  it('calls onSkipPlace when Did not visit is clicked', () => {
     render(<RatingPromptModal {...defaultProps} />);
     const skipButton = screen.getByText('Did not visit');
     fireEvent.click(skipButton);
-    expect(mockOnSkip).toHaveBeenCalledTimes(1);
+    expect(mockOnSkipPlace).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onGoToHistory when Go to rate is clicked', () => {
+    render(<RatingPromptModal {...defaultProps} />);
+    const goButton = screen.getByText('Go to rate');
+    fireEvent.click(goButton);
+    expect(mockOnGoToHistory).toHaveBeenCalledTimes(1);
   });
 
   it('calls onDismiss when close button is clicked', () => {
@@ -144,31 +137,24 @@ describe('RatingPromptModal', () => {
     expect(mockOnDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onDismiss when Escape key is pressed', () => {
+  it('calls onDismiss when Dismiss link is clicked', () => {
     render(<RatingPromptModal {...defaultProps} />);
-    fireEvent.keyDown(document, { key: 'Escape' });
+    const dismissButton = screen.getByText('Dismiss');
+    fireEvent.click(dismissButton);
     expect(mockOnDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('disables buttons when isSubmitting is true', () => {
-    render(<RatingPromptModal {...defaultProps} isSubmitting={true} />);
-
-    const star3 = screen.getByLabelText('3점');
-    fireEvent.click(star3);
-
-    const submitButton = screen.getByText('Submit');
-    const skipButton = screen.getByText('Did not visit');
-    const closeButton = screen.getByLabelText('Close');
-
-    expect(submitButton).toBeDisabled();
-    expect(skipButton).toBeDisabled();
-    expect(closeButton).toBeDisabled();
+  it('calls onNeverShow when Never show again is clicked', () => {
+    render(<RatingPromptModal {...defaultProps} />);
+    const neverShowButton = screen.getByText('Never show again');
+    fireEvent.click(neverShowButton);
+    expect(mockOnNeverShow).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading state on Submit button when isSubmitting', () => {
+  it('disables close button when isSubmitting is true', () => {
     render(<RatingPromptModal {...defaultProps} isSubmitting={true} />);
-    const submitButton = screen.getByText('Submit');
-    expect(submitButton).toHaveAttribute('data-loading', 'true');
+    const closeButton = screen.getByLabelText('Close');
+    expect(closeButton).toBeDisabled();
   });
 
   it('prevents onDismiss when clicking backdrop during submission', () => {
@@ -189,10 +175,9 @@ describe('RatingPromptModal', () => {
     }
   });
 
-  it('does not submit when Submit clicked without rating', () => {
-    render(<RatingPromptModal {...defaultProps} />);
-    const submitButton = screen.getByText('Submit');
-    fireEvent.click(submitButton);
-    expect(mockOnSubmit).not.toHaveBeenCalled();
+  it('disables Did not visit button when isSubmitting is true', () => {
+    render(<RatingPromptModal {...defaultProps} isSubmitting={true} />);
+    const skipButton = screen.getByText('Did not visit');
+    expect(skipButton).toBeDisabled();
   });
 });

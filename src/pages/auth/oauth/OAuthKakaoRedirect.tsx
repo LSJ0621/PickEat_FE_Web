@@ -1,0 +1,303 @@
+/**
+ * 카카오 OAuth 리다이렉트 페이지
+ */
+
+import { authService } from '@/api/services/auth';
+import { Button } from '@/components/common/Button';
+import { OAuthLoadingScreen } from '@/components/common/OAuthLoadingScreen';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useAppDispatch } from '@/store/hooks';
+import { setCredentials } from '@/store/slices/authSlice';
+import type { KakaoLoginResponse } from '@/types/auth';
+import { ERROR_MESSAGES } from '@/utils/constants';
+import { getApiErrorMessage } from '@/utils/translateMessage';
+import { isEmpty } from '@/utils/validation';
+import { isAxiosError } from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
+export const OAuthKakaoRedirect = () => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [needsName, setNeedsName] = useState(false);
+  const [name, setName] = useState('');
+  const [nameUpdating, setNameUpdating] = useState(false);
+  const [loginData, setLoginData] = useState<KakaoLoginResponse | null>(null);
+  const [showReRegisterModal, setShowReRegisterModal] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [reRegisterMessage, setReRegisterMessage] = useState(t('oauth.reRegister.message'));
+  const [isReRegistering, setIsReRegistering] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const hasProcessed = useRef(false); // 중복 요청 방지
+  const { handleError, handleSuccess } = useErrorHandler();
+
+  useEffect(() => {
+    // 이미 처리했으면 중복 실행 방지
+    if (hasProcessed.current) {
+      return;
+    }
+
+    const handleKakaoCallback = async () => {
+      // 처리 시작 표시
+      hasProcessed.current = true;
+
+      // URL에서 code 파라미터 추출
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      if (!code) {
+        setError(t('oauth.error.noCode'));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // 서버에 코드 전달하여 로그인
+        const data = await authService.kakaoLogin(code);
+
+        if (!data.token) {
+          throw new Error(t('oauth.error.noToken'));
+        }
+
+        setLoginData(data);
+
+        if (data.name === null) {
+          setNeedsName(true);
+          setLoading(false);
+          return;
+        }
+
+        dispatch(setCredentials({
+          user: {
+            email: data.email || '',
+            name: data.name || '',
+            address: data.address ?? null,
+            latitude: data.latitude ?? null,
+            longitude: data.longitude ?? null,
+            preferences: data.preferences ?? null,
+            preferredLanguage: 'ko',
+            createdAt: new Date().toISOString(),
+          },
+          token: data.token,
+        }));
+
+        navigate('/');
+      } catch (err: unknown) {
+
+        // RE_REGISTER_REQUIRED 에러 확인 (400 에러)
+        if (isAxiosError(err) && err.response?.status === 400) {
+          const errorData = err.response.data as {
+            error?: string;
+            message?: string;
+            email?: string;
+            name?: string;
+            data?: { email?: string; name?: string };
+          };
+          if (errorData?.error === 'RE_REGISTER_REQUIRED') {
+            const emailFromServer = errorData.email ?? errorData.data?.email ?? null;
+            setPendingEmail(emailFromServer);
+            setReRegisterMessage(errorData.message || t('oauth.reRegister.message'));
+            setShowReRegisterModal(true);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 그 외 에러 처리
+        handleError(err, 'OAuthKakaoRedirect');
+        const errorMessage = getApiErrorMessage(err, t('oauth.error.loginFailed'));
+        const statusCode = isAxiosError(err) ? err.response?.status : undefined;
+        setError(`${errorMessage}${statusCode ? ` (${t('oauth.error.statusCode')}: ${statusCode})` : ''}`);
+        setLoading(false);
+      }
+    };
+
+    handleKakaoCallback();
+
+    // cleanup 함수: 컴포넌트 언마운트 시 처리 취소 (필요시)
+    return () => {
+      // 필요시 요청 취소 로직 추가 가능
+    };
+  }, [navigate, dispatch, handleError]);
+
+  // 재가입 처리
+  const handleReRegister = async () => {
+    if (!pendingEmail) {
+      handleError(t('oauth.reRegister.noEmail'), 'OAuthKakaoRedirect');
+      return;
+    }
+
+    setIsReRegistering(true);
+    try {
+      // 소셜 재가입 API 호출 (이메일만 전송)
+      await authService.reRegisterSocial({
+        email: pendingEmail,
+      });
+
+      // 재가입 성공: 로그인 화면으로 이동 (자동 로그인 없음)
+      handleSuccess(t('oauth.reRegister.success'));
+      navigate('/login');
+    } catch (err: unknown) {
+      handleError(err, 'OAuthKakaoRedirect');
+      setIsReRegistering(false);
+    }
+  };
+
+  // 이름 입력 화면
+  const handleNameSubmit = async () => {
+    if (isEmpty(name)) {
+      handleError(ERROR_MESSAGES.NAME_REQUIRED, 'OAuthKakaoRedirect');
+      return;
+    }
+
+    setNameUpdating(true);
+    try {
+      const updatedUser = await authService.updateUser({ name: name.trim() });
+
+      if (!loginData?.token) {
+        throw new Error(t('oauth.error.noToken'));
+      }
+
+      dispatch(setCredentials({
+        user: {
+          email: loginData.email || '',
+          name: updatedUser.name || '',
+          address: loginData.address ?? null,
+          latitude: loginData.latitude ?? null,
+          longitude: loginData.longitude ?? null,
+          preferences: loginData.preferences ?? null,
+          preferredLanguage: 'ko',
+          createdAt: new Date().toISOString(),
+        },
+        token: loginData.token,
+      }));
+
+      // 메인 페이지로 이동
+      navigate('/');
+    } catch (err: unknown) {
+      handleError(err, 'OAuthKakaoRedirect');
+      setNameUpdating(false);
+    }
+  };
+
+  if (needsName) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 py-10 text-text-primary">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-300/30 via-orange-200/20 to-amber-100/20 blur-3xl animate-gradient" />
+          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-orange-200/20 via-amber-100/15 to-transparent blur-3xl animate-gradient" />
+        </div>
+        <div className="relative z-10 w-full max-w-md">
+          <div className="rounded-[32px] border border-border-default bg-bg-surface p-8 shadow-2xl shadow-black/10">
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 text-2xl font-bold text-text-inverse shadow-lg shadow-orange-500/30">
+                P
+              </div>
+              <h1 className="text-2xl font-semibold text-text-primary mb-2">{t('oauth.nameInput.title')}</h1>
+              <p className="text-sm text-text-secondary">{t('oauth.nameInput.description')}</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="name" className="mb-2 block text-sm font-medium text-text-primary">
+                  {t('auth.name')}
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('auth.namePlaceholder')}
+                  className="w-full rounded-2xl border border-border-default bg-bg-primary px-4 py-3 text-text-primary placeholder-text-placeholder transition focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !nameUpdating && name.trim()) {
+                      handleNameSubmit();
+                    }
+                  }}
+                />
+              </div>
+
+              <Button
+                onClick={handleNameSubmit}
+                isLoading={nameUpdating}
+                size="lg"
+                className="w-full"
+              >
+                {t('oauth.nameInput.submit')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <OAuthLoadingScreen provider="kakao" />;
+  }
+
+  if (showReRegisterModal) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center bg-bg-primary px-4 py-10 text-text-primary">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 left-0 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-orange-300/30 via-orange-200/20 to-amber-100/20 blur-3xl animate-gradient" />
+          <div className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-orange-200/20 via-amber-100/15 to-transparent blur-3xl animate-gradient" />
+        </div>
+        <div className="relative z-10 w-full max-w-md">
+          <div className="rounded-[32px] border border-border-default bg-bg-surface p-8 shadow-2xl shadow-black/10">
+            <h2 className="mb-4 text-2xl font-bold text-text-primary text-center">{t('oauth.reRegister.title')}</h2>
+            <p className="mb-6 text-text-secondary text-center">
+              {reRegisterMessage}
+            </p>
+            <div className="mb-6 rounded-2xl border border-border-default bg-bg-primary p-4">
+              <p className="text-sm text-text-secondary">{t('oauth.reRegister.emailLabel')}</p>
+              <p className="text-lg font-semibold text-text-primary">
+                {pendingEmail ?? t('oauth.reRegister.emailNotFound')}
+              </p>
+              <p className="mt-2 text-xs text-text-tertiary">
+                {t('oauth.reRegister.confirmDescription')}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/login')}
+                disabled={isReRegistering}
+                className="flex-1 rounded-2xl border border-border-default bg-transparent px-4 py-3 text-text-primary hover:bg-bg-hover transition disabled:opacity-50"
+              >
+                {t('oauth.reRegister.cancel')}
+              </button>
+              <button
+                onClick={handleReRegister}
+                disabled={isReRegistering}
+                className="flex-1 rounded-2xl bg-brand-primary px-4 py-3 text-text-inverse shadow-[0_10px_40px_rgba(255,107,53,0.35)] hover:shadow-[0_15px_45px_rgba(255,107,53,0.45)] hover:-translate-y-0.5 transition disabled:opacity-50"
+              >
+                {isReRegistering ? t('oauth.reRegister.processing') : t('oauth.reRegister.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
+        <div className="text-center max-w-md p-6">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-6 py-2 bg-brand-primary text-text-inverse rounded-lg font-semibold hover:bg-brand-secondary transition-colors"
+          >
+            {t('oauth.reRegister.backToLogin')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};

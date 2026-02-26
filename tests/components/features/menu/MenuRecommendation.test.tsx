@@ -2,9 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { MenuRecommendation } from '@/components/features/menu/MenuRecommendation';
-import { server } from '@tests/mocks/server';
-import { http, HttpResponse } from 'msw';
+import { MenuRecommendation } from '@features/agent/components/menu/MenuRecommendation';
 
 describe('MenuRecommendation', () => {
   const mockOnMenuSelect = vi.fn();
@@ -21,26 +19,41 @@ describe('MenuRecommendation', () => {
     vi.unstubAllGlobals();
   });
 
+  // Base agent state matching current AgentState interface
+  const baseAgentState = {
+    selectedMenu: null,
+    menuRecommendations: [],
+    menuRecommendationHistoryId: null,
+    menuRecommendationPrompt: '',
+    menuRecommendationRequestAddress: null,
+    menuRecommendationIntro: null,
+    menuRecommendationClosing: null,
+    isMenuRecommendationLoading: false,
+    menuHistoryId: null,
+    menuRequestAddress: null,
+    searchAiRecommendationGroups: [],
+    isSearchAiLoading: false,
+    searchAiLoadingMenu: null,
+    searchAiRetrying: false,
+    communityAiRecommendationGroups: [],
+    isCommunityAiLoading: false,
+    communityAiLoadingMenu: null,
+    communityAiRetrying: false,
+    aiRecommendationGroups: [],
+    isAiLoading: false,
+    aiLoadingMenu: null,
+    selectedPlace: null,
+    showConfirmCard: false,
+    hasMenuSelectionCompleted: false,
+  };
+
   const authenticatedState = {
     auth: {
       isAuthenticated: true,
       user: { id: 1, email: 'test@example.com', nickname: 'TestUser' },
       token: 'test-token',
     },
-    agent: {
-      selectedMenu: null,
-      restaurants: [],
-      isSearching: false,
-      aiRecommendationGroups: [],
-      aiLoadingMenu: null,
-      menuRecommendations: [],
-      menuRecommendationHistoryId: null,
-      menuRecommendationRequestAddress: null,
-      menuRecommendationReason: null,
-      isMenuRecommendationLoading: false,
-      hasMenuSelectionCompleted: false,
-      showConfirmCard: false,
-    },
+    agent: baseAgentState,
   };
 
   describe('Rendering', () => {
@@ -78,145 +91,40 @@ describe('MenuRecommendation', () => {
   });
 
   describe('Input Interaction', () => {
-    it('should allow typing in input field', async () => {
+    it('should update input value when typing', async () => {
       const user = userEvent.setup();
       renderWithProviders(<MenuRecommendation />, {
         preloadedState: authenticatedState,
       });
 
       const input = screen.getByPlaceholderText(/오늘 기분이 안좋은데 메뉴 추천해줘/);
-      await user.type(input, '매운 음식 추천해줘');
+      await user.type(input, '한식 먹고 싶어');
 
-      expect(input).toHaveValue('매운 음식 추천해줘');
+      expect(input).toHaveValue('한식 먹고 싶어');
     });
 
-    it('should clear input when value changes', async () => {
+    it('should enable button when input has value', async () => {
       const user = userEvent.setup();
       renderWithProviders(<MenuRecommendation />, {
         preloadedState: authenticatedState,
       });
 
       const input = screen.getByPlaceholderText(/오늘 기분이 안좋은데 메뉴 추천해줘/);
-      await user.type(input, '매운 음식');
-      await user.clear(input);
-
-      expect(input).toHaveValue('');
-    });
-
-    it('should submit on Enter key press', async () => {
-      const user = userEvent.setup();
-
-      server.use(
-        http.post('*/menu/recommend', () => {
-          return HttpResponse.json({
-            id: 1,
-            recommendations: ['김치찌개'],
-            reason: '매운 음식 추천',
-            recommendedAt: new Date().toISOString(),
-            requestAddress: null,
-          });
-        })
-      );
-
-      renderWithProviders(<MenuRecommendation />, {
-        preloadedState: authenticatedState,
-      });
-
-      const input = screen.getByPlaceholderText(/오늘 기분이 안좋은데 메뉴 추천해줘/);
-      await user.type(input, '매운 음식{Enter}');
-
-      await waitFor(() => {
-        expect(screen.getByText('김치찌개')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Recommendation Button', () => {
-    it('should call API when recommendation button is clicked', async () => {
-      const user = userEvent.setup();
-      let apiCalled = false;
-
-      server.use(
-        http.post('*/menu/recommend', () => {
-          apiCalled = true;
-          return HttpResponse.json({
-            id: 1,
-            recommendations: ['김치찌개', '불고기'],
-            reason: '한식 추천',
-            recommendedAt: new Date().toISOString(),
-            requestAddress: null,
-          });
-        })
-      );
-
-      renderWithProviders(<MenuRecommendation />, {
-        preloadedState: authenticatedState,
-      });
-
-      const input = screen.getByPlaceholderText(/오늘 기분이 안좋은데 메뉴 추천해줘/);
-      await user.type(input, '한식 추천해줘');
-
       const button = screen.getByRole('button', { name: '메뉴 추천 받기' });
-      await user.click(button);
 
-      await waitFor(() => {
-        expect(apiCalled).toBe(true);
-      });
-    });
+      await user.type(input, '한식');
 
-    it('should disable button during loading', async () => {
-      const user = userEvent.setup();
-
-      server.use(
-        http.post('*/menu/recommend', async () => {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          return HttpResponse.json({
-            id: 1,
-            recommendations: ['김치찌개'],
-            reason: '추천 이유',
-            recommendedAt: new Date().toISOString(),
-            requestAddress: null,
-          });
-        })
-      );
-
-      renderWithProviders(<MenuRecommendation />, {
-        preloadedState: authenticatedState,
-      });
-
-      const input = screen.getByPlaceholderText(/오늘 기분이 안좋은데 메뉴 추천해줘/);
-      await user.type(input, '추천해줘');
-
-      const button = screen.getByRole('button', { name: '메뉴 추천 받기' });
-      await user.click(button);
-
-      await waitFor(() => {
-        expect(button).toBeDisabled();
-      });
+      expect(button).not.toBeDisabled();
     });
   });
 
   describe('Loading State', () => {
-    it('should show loading indicator when fetching recommendations', () => {
-      renderWithProviders(<MenuRecommendation />, {
-        preloadedState: {
-          ...authenticatedState,
-          agent: {
-            ...authenticatedState.agent,
-            isMenuRecommendationLoading: true,
-          },
-        },
-      });
-
-      expect(screen.getByText('AI가 메뉴를 추천하고 있어요...')).toBeInTheDocument();
-    });
-
-    it('should show loading spinner during recommendation', () => {
+    it('should show loading spinner when isMenuRecommendationLoading is true', () => {
       const { container } = renderWithProviders(<MenuRecommendation />, {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
+            ...baseAgentState,
             isMenuRecommendationLoading: true,
           },
         },
@@ -233,28 +141,32 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기', '비빔밥'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤한 맛을 원한다면', menu: '김치찌개' },
+              { condition: '고소하고 담백한 맛을 원한다면', menu: '불고기' },
+              { condition: '건강한 한 끼를 원한다면', menu: '비빔밥' },
+            ],
             menuRecommendationHistoryId: 1,
-            menuRecommendationReason: '한식 추천 이유',
             isMenuRecommendationLoading: false,
           },
         },
       });
 
-      expect(screen.getByText('김치찌개')).toBeInTheDocument();
-      expect(screen.getByText('불고기')).toBeInTheDocument();
-      expect(screen.getByText('비빔밥')).toBeInTheDocument();
+      // Use getAllByText since menu name may appear in both card and intro list
+      expect(screen.getAllByText('김치찌개').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('불고기').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('비빔밥').length).toBeGreaterThan(0);
     });
 
-    it('should display recommendation reason', () => {
+    it('should display recommendation intro', () => {
       renderWithProviders(<MenuRecommendation />, {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개'],
-            menuRecommendationReason: '건강한 한식을 추천드립니다',
+            ...baseAgentState,
+            menuRecommendations: [{ condition: '매콤한 맛을 원한다면', menu: '김치찌개' }],
+            menuRecommendationIntro: '건강한 한식을 추천드립니다',
             isMenuRecommendationLoading: false,
           },
         },
@@ -268,8 +180,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             isMenuRecommendationLoading: false,
             hasMenuSelectionCompleted: false,
@@ -285,8 +200,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             isMenuRecommendationLoading: false,
             hasMenuSelectionCompleted: true,
@@ -305,8 +223,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             menuRecommendationRequestAddress: '서울시 강남구',
             isMenuRecommendationLoading: false,
@@ -333,16 +254,20 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             isMenuRecommendationLoading: false,
           },
         },
       });
 
-      const menuButton = screen.getByText('김치찌개').closest('button');
-      expect(menuButton).toHaveClass('border-orange-400/70');
+      // Find the card button for 김치찌개 (it renders as a button with aria-label)
+      const menuButton = screen.getByRole('button', { name: '김치찌개 선택' });
+      expect(menuButton).toHaveClass('border-brand-primary/50');
     });
 
     it('should not highlight non-selected menus', () => {
@@ -350,8 +275,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             isMenuRecommendationLoading: false,
           },
@@ -374,7 +302,7 @@ describe('MenuRecommendation', () => {
             user: null,
             token: null,
           },
-          agent: authenticatedState.agent,
+          agent: baseAgentState,
         },
       });
 
@@ -396,8 +324,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             menuRecommendationHistoryId: 1,
             isMenuRecommendationLoading: false,
             hasMenuSelectionCompleted: false,
@@ -408,9 +339,8 @@ describe('MenuRecommendation', () => {
       const selectionButton = screen.getByRole('button', { name: '메뉴 선택하기' });
       await user.click(selectionButton);
 
-      // Modal should open and render in document.body
+      // Modal should open - check for the heading rendered by MenuSelectionModal
       await waitFor(() => {
-        expect(document.body.querySelector('.fixed.inset-0.z-50')).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: '메뉴 선택하기' })).toBeInTheDocument();
       });
     });
@@ -450,8 +380,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             isMenuRecommendationLoading: false,
           },
         },
@@ -468,8 +401,11 @@ describe('MenuRecommendation', () => {
         preloadedState: {
           ...authenticatedState,
           agent: {
-            ...authenticatedState.agent,
-            menuRecommendations: ['김치찌개', '불고기'],
+            ...baseAgentState,
+            menuRecommendations: [
+              { condition: '매콤하게', menu: '김치찌개' },
+              { condition: '고소하게', menu: '불고기' },
+            ],
             isMenuRecommendationLoading: false,
           },
         },

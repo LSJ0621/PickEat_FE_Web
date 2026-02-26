@@ -12,12 +12,12 @@ import authReducer, {
   setError,
   initializeAuth,
   logoutAsync,
-} from '@/store/slices/authSlice';
+} from '@app/store/slices/authSlice';
 import { setupStore } from '@tests/utils/renderWithProviders';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
-import type { User } from '@/types/auth';
+import type { User } from '@shared/types/auth';
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -417,9 +417,11 @@ describe('authSlice', () => {
       expect(state.isAuthenticated).toBe(false);
     });
 
-    it('should return null and remove token when token is expired', async () => {
-      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJyb2xlIjoiVVNFUiIsImV4cCI6MTAwMDAwMH0.test';
-      localStorage.setItem('token', expiredToken);
+    it('should return null and remove token when token is malformed', async () => {
+      // Source does not check token expiration client-side; it checks if token can be decoded.
+      // A malformed JWT (not decodable) causes initializeAuth to remove token and return null.
+      const malformedToken = 'not.a.valid.jwt.token';
+      localStorage.setItem('token', malformedToken);
 
       const store = setupStore();
       const result = await store.dispatch(initializeAuth());
@@ -539,17 +541,27 @@ describe('authSlice', () => {
           error: null,
         },
         agent: {
-          menuRecommendations: ['김치찌개', '된장찌개'],
+          menuRecommendations: [
+            { condition: '매콤하게', menu: '김치찌개' },
+            { condition: '구수하게', menu: '된장찌개' },
+          ],
           menuRecommendationHistoryId: 123,
           menuRecommendationPrompt: '',
           menuRecommendationRequestAddress: null,
-          menuRecommendationReason: null,
+          menuRecommendationIntro: null,
+          menuRecommendationClosing: null,
           isMenuRecommendationLoading: false,
           selectedMenu: '김치찌개',
           menuHistoryId: null,
           menuRequestAddress: null,
-          restaurants: [],
-          isSearching: false,
+          searchAiRecommendationGroups: [],
+          isSearchAiLoading: false,
+          searchAiLoadingMenu: null,
+          searchAiRetrying: false,
+          communityAiRecommendationGroups: [],
+          isCommunityAiLoading: false,
+          communityAiLoadingMenu: null,
+          communityAiRetrying: false,
           aiRecommendationGroups: [],
           isAiLoading: false,
           aiLoadingMenu: null,

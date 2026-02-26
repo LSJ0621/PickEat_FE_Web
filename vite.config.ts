@@ -1,22 +1,12 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { createHtmlPlugin } from 'vite-plugin-html'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-
+export default defineConfig(() => {
   return {
     plugins: [
       react(),
-      createHtmlPlugin({
-        inject: {
-          data: {
-            VITE_GOOGLE_API_KEY: env.VITE_GOOGLE_API_KEY || env.GOOGLE_API_KEY,
-          },
-        },
-      }),
     ],
     server: {
       port: 8080,
@@ -43,6 +33,16 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            // Chart 라이브러리 분리
+            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+              return 'chart-vendor';
+            }
+
+            // 애니메이션 라이브러리 분리
+            if (id.includes('node_modules/framer-motion')) {
+              return 'animation-vendor';
+            }
+
             // Admin 번들 분리 - admin 관련 페이지/컴포넌트를 별도 chunk로
             if (
               id.includes('/features/admin/') ||

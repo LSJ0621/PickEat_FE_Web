@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useVerificationTimer } from '@/hooks/auth/useVerificationTimer';
+import { useVerificationTimer } from '@features/auth/hooks/useVerificationTimer';
 
 describe('useVerificationTimer', () => {
   beforeEach(() => {

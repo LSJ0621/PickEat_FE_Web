@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { LanguageSelector } from '@shared/components/LanguageSelector';
 import type { Language } from '@shared/types/common';
 
 // Mock useLanguage hook
@@ -19,7 +19,7 @@ const mockUseLanguage = vi.fn(() => ({
   isEnglish: false,
 }));
 
-vi.mock('@/hooks/common/useLanguage', () => ({
+vi.mock('@shared/hooks/useLanguage', () => ({
   useLanguage: () => mockUseLanguage(),
 }));
 

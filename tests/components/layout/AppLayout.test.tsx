@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createUnauthenticatedState, createAuthenticatedState } from '@tests/factories';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { AppLayout } from '@app/layouts/AppLayout';
 
 // Mock the useNavigate and useLocation from react-router-dom
 const mockNavigate = vi.fn();

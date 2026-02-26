@@ -161,7 +161,7 @@ export const mockMenuSelections: MenuSelection[] = [
 ];
 
 export const menuHandlers = [
-  // Menu recommendation
+  // Menu recommendation (non-streaming fallback)
   http.post(`${BASE_URL}${ENDPOINTS.MENU.RECOMMEND}`, async ({ request }) => {
     const body = (await request.json()) as { prompt: string };
 
@@ -175,20 +175,34 @@ export const menuHandlers = [
     return HttpResponse.json(mockMenuRecommendation);
   }),
 
-  // Place recommendations
-  http.get(`${BASE_URL}${ENDPOINTS.MENU.RECOMMEND_PLACES}`, ({ request }) => {
-    const url = new URL(request.url);
-    const query = url.searchParams.get('query');
-    const menuName = url.searchParams.get('menuName');
+  // Menu recommendation streaming (SSE)
+  http.post(`${BASE_URL}${ENDPOINTS.MENU.RECOMMEND_STREAM}`, async ({ request }) => {
+    const body = (await request.json()) as { prompt: string };
 
-    if (!query && !menuName) {
+    if (!body.prompt || body.prompt.trim().length === 0) {
       return HttpResponse.json(
-        { message: '검색어 또는 메뉴 이름을 입력해주세요.' },
+        { message: '프롬프트를 입력해주세요.' },
         { status: 400 }
       );
     }
 
-    return HttpResponse.json(mockPlaceRecommendations);
+    const encoder = new TextEncoder();
+    const resultEvent = JSON.stringify({ type: 'result', data: mockMenuRecommendation });
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`data: ${resultEvent}\n\n`));
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    });
   }),
 
   // Restaurant blogs

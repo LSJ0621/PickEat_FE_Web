@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createMockBugReports } from '@tests/factories';
-import { BugReportList } from '@/components/features/admin/bug-reports/BugReportList';
+import { BugReportList } from '@features/admin/components/bug-reports/BugReportList';
 
 describe('BugReportList', () => {
   const mockOnItemClick = vi.fn();

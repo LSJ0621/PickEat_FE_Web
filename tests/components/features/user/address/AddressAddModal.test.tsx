@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressAddModal } from '@/components/features/user/address/AddressAddModal';
+import { AddressAddModal } from '@features/user/components/address/AddressAddModal';
 import {
   createMockUserAddresses,
   createMockAddressSearchResult,

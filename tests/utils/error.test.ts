@@ -36,7 +36,7 @@ describe('extractErrorMessage', () => {
 
   it('should return fallback message when error is unknown type', () => {
     const result = extractErrorMessage(null);
-    expect(result).toBe('오류가 발생했습니다.');
+    expect(result).toBe('오류가 발생했습니다');
   });
 
   it('should return custom fallback message', () => {
@@ -46,12 +46,12 @@ describe('extractErrorMessage', () => {
 
   it('should return fallback message when error is empty object', () => {
     const result = extractErrorMessage({});
-    expect(result).toBe('오류가 발생했습니다.');
+    expect(result).toBe('오류가 발생했습니다');
   });
 
   it('should return fallback message when error is undefined', () => {
     const result = extractErrorMessage(undefined);
-    expect(result).toBe('오류가 발생했습니다.');
+    expect(result).toBe('오류가 발생했습니다');
   });
 
   it('should handle error with only response but no data', () => {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { BugReportImageGallery } from '@/components/features/admin/bug-reports/BugReportImageGallery';
+import { BugReportImageGallery } from '@features/admin/components/bug-reports/BugReportImageGallery';
 
 describe('BugReportImageGallery', () => {
   beforeEach(() => {
@@ -227,7 +227,7 @@ describe('BugReportImageGallery', () => {
       renderWithProviders(<BugReportImageGallery images={images} />);
 
       const thumbnail1Button = screen.getByAltText('썸네일 1').closest('button');
-      expect(thumbnail1Button).toHaveClass('border-pink-500');
+      expect(thumbnail1Button).toHaveClass('border-brand-primary');
     });
 
     it('should change highlighted thumbnail when navigating', async () => {
@@ -243,7 +243,7 @@ describe('BugReportImageGallery', () => {
 
       await waitFor(() => {
         const thumbnail2Button = screen.getByAltText('썸네일 2').closest('button');
-        expect(thumbnail2Button).toHaveClass('border-pink-500');
+        expect(thumbnail2Button).toHaveClass('border-brand-primary');
       });
     });
   });

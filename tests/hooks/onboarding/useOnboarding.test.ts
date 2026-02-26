@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useOnboarding } from '@/hooks/onboarding/useOnboarding';
+import { useOnboarding } from '@features/onboarding/hooks/useOnboarding';
 import { STORAGE_KEYS } from '@shared/utils/constants';
 
 describe('useOnboarding', () => {
@@ -18,223 +18,254 @@ describe('useOnboarding', () => {
   });
 
   describe('초기 상태', () => {
-    it('should initialize with showOnboarding false', () => {
+    it('should initialize with isOpen false', () => {
       const { result } = renderHook(() => useOnboarding());
 
-      expect(result.current.showOnboarding).toBe(false);
+      expect(result.current.isOpen).toBe(false);
+    });
+
+    it('should initialize with currentStep 0', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      expect(result.current.currentStep).toBe(0);
     });
 
     it('should provide all required functions', () => {
       const { result } = renderHook(() => useOnboarding());
 
-      expect(typeof result.current.openOnboarding).toBe('function');
-      expect(typeof result.current.closeOnboarding).toBe('function');
-      expect(typeof result.current.checkNeedsOnboarding).toBe('function');
+      expect(typeof result.current.checkOnboarding).toBe('function');
+      expect(typeof result.current.nextStep).toBe('function');
+      expect(typeof result.current.prevStep).toBe('function');
+      expect(typeof result.current.complete).toBe('function');
+      expect(typeof result.current.skip).toBe('function');
+    });
+
+    it('should have correct totalSteps', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      expect(result.current.totalSteps).toBe(5);
     });
   });
 
-  describe('openOnboarding', () => {
-    it('should set showOnboarding to true', () => {
+  describe('checkOnboarding', () => {
+    it('should open onboarding when ONBOARDING_COMPLETED is not set', () => {
       const { result } = renderHook(() => useOnboarding());
 
-      expect(result.current.showOnboarding).toBe(false);
-
       act(() => {
-        result.current.openOnboarding();
+        result.current.checkOnboarding();
       });
 
-      expect(result.current.showOnboarding).toBe(true);
+      expect(result.current.isOpen).toBe(true);
+      expect(result.current.currentStep).toBe(0);
     });
 
-    it('should be callable multiple times', () => {
+    it('should not open onboarding when ONBOARDING_COMPLETED is set', () => {
+      localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
+
       const { result } = renderHook(() => useOnboarding());
 
       act(() => {
-        result.current.openOnboarding();
+        result.current.checkOnboarding();
       });
 
-      expect(result.current.showOnboarding).toBe(true);
-
-      act(() => {
-        result.current.openOnboarding();
-      });
-
-      expect(result.current.showOnboarding).toBe(true);
+      expect(result.current.isOpen).toBe(false);
     });
   });
 
-  describe('closeOnboarding', () => {
-    it('should set showOnboarding to false', () => {
+  describe('nextStep', () => {
+    it('should increment currentStep', () => {
       const { result } = renderHook(() => useOnboarding());
 
       act(() => {
-        result.current.openOnboarding();
+        result.current.checkOnboarding();
       });
-
-      expect(result.current.showOnboarding).toBe(true);
 
       act(() => {
-        result.current.closeOnboarding();
+        result.current.nextStep();
       });
 
-      expect(result.current.showOnboarding).toBe(false);
+      expect(result.current.currentStep).toBe(1);
     });
 
-    it('should remove NEEDS_ONBOARDING from localStorage', () => {
-      localStorage.setItem(STORAGE_KEYS.NEEDS_ONBOARDING, 'true');
-
+    it('should not exceed totalSteps - 1', () => {
       const { result } = renderHook(() => useOnboarding());
 
       act(() => {
-        result.current.closeOnboarding();
+        result.current.checkOnboarding();
       });
 
-      expect(localStorage.getItem(STORAGE_KEYS.NEEDS_ONBOARDING)).toBeNull();
-    });
+      // Advance to the last step
+      for (let i = 0; i < 10; i++) {
+        act(() => {
+          result.current.nextStep();
+        });
+      }
 
-    it('should handle localStorage errors silently', () => {
-      const { result } = renderHook(() => useOnboarding());
-
-      const originalRemoveItem = Storage.prototype.removeItem;
-      Storage.prototype.removeItem = vi.fn(() => {
-        throw new Error('localStorage error');
-      });
-
-      act(() => {
-        result.current.closeOnboarding();
-      });
-
-      expect(result.current.showOnboarding).toBe(false);
-
-      Storage.prototype.removeItem = originalRemoveItem;
-    });
-
-    it('should be callable when already closed', () => {
-      const { result } = renderHook(() => useOnboarding());
-
-      expect(result.current.showOnboarding).toBe(false);
-
-      act(() => {
-        result.current.closeOnboarding();
-      });
-
-      expect(result.current.showOnboarding).toBe(false);
+      expect(result.current.currentStep).toBe(result.current.totalSteps - 1);
     });
   });
 
-  describe('checkNeedsOnboarding', () => {
-    it('should return true when NEEDS_ONBOARDING is "true"', () => {
-      localStorage.setItem(STORAGE_KEYS.NEEDS_ONBOARDING, 'true');
-
+  describe('prevStep', () => {
+    it('should decrement currentStep', () => {
       const { result } = renderHook(() => useOnboarding());
 
-      const needsOnboarding = result.current.checkNeedsOnboarding();
-
-      expect(needsOnboarding).toBe(true);
-    });
-
-    it('should return false when NEEDS_ONBOARDING is not set', () => {
-      const { result } = renderHook(() => useOnboarding());
-
-      const needsOnboarding = result.current.checkNeedsOnboarding();
-
-      expect(needsOnboarding).toBe(false);
-    });
-
-    it('should return false when NEEDS_ONBOARDING is "false"', () => {
-      localStorage.setItem(STORAGE_KEYS.NEEDS_ONBOARDING, 'false');
-
-      const { result } = renderHook(() => useOnboarding());
-
-      const needsOnboarding = result.current.checkNeedsOnboarding();
-
-      expect(needsOnboarding).toBe(false);
-    });
-
-    it('should return false when NEEDS_ONBOARDING has other value', () => {
-      localStorage.setItem(STORAGE_KEYS.NEEDS_ONBOARDING, 'something-else');
-
-      const { result } = renderHook(() => useOnboarding());
-
-      const needsOnboarding = result.current.checkNeedsOnboarding();
-
-      expect(needsOnboarding).toBe(false);
-    });
-
-    it('should handle localStorage errors and return false', () => {
-      const { result } = renderHook(() => useOnboarding());
-
-      const originalGetItem = Storage.prototype.getItem;
-      Storage.prototype.getItem = vi.fn(() => {
-        throw new Error('localStorage error');
+      act(() => {
+        result.current.checkOnboarding();
+        result.current.nextStep();
+        result.current.nextStep();
       });
 
-      const needsOnboarding = result.current.checkNeedsOnboarding();
+      expect(result.current.currentStep).toBe(2);
 
-      expect(needsOnboarding).toBe(false);
+      act(() => {
+        result.current.prevStep();
+      });
 
-      Storage.prototype.getItem = originalGetItem;
+      expect(result.current.currentStep).toBe(1);
+    });
+
+    it('should not go below 0', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.checkOnboarding();
+        result.current.prevStep();
+        result.current.prevStep();
+      });
+
+      expect(result.current.currentStep).toBe(0);
+    });
+  });
+
+  describe('complete', () => {
+    it('should close onboarding', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.checkOnboarding();
+      });
+
+      expect(result.current.isOpen).toBe(true);
+
+      act(() => {
+        result.current.complete();
+      });
+
+      expect(result.current.isOpen).toBe(false);
+    });
+
+    it('should set ONBOARDING_COMPLETED in localStorage', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.complete();
+      });
+
+      expect(localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)).toBe('true');
+    });
+
+    it('should reset currentStep to 0', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.checkOnboarding();
+        result.current.nextStep();
+        result.current.nextStep();
+      });
+
+      expect(result.current.currentStep).toBe(2);
+
+      act(() => {
+        result.current.complete();
+      });
+
+      expect(result.current.currentStep).toBe(0);
+    });
+  });
+
+  describe('skip', () => {
+    it('should close onboarding', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.checkOnboarding();
+      });
+
+      expect(result.current.isOpen).toBe(true);
+
+      act(() => {
+        result.current.skip();
+      });
+
+      expect(result.current.isOpen).toBe(false);
+    });
+
+    it('should set ONBOARDING_COMPLETED in localStorage', () => {
+      const { result } = renderHook(() => useOnboarding());
+
+      act(() => {
+        result.current.skip();
+      });
+
+      expect(localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)).toBe('true');
     });
   });
 
   describe('실제 사용 시나리오', () => {
     it('should handle complete onboarding flow', () => {
-      localStorage.setItem(STORAGE_KEYS.NEEDS_ONBOARDING, 'true');
-
       const { result } = renderHook(() => useOnboarding());
 
-      // Check if onboarding is needed
-      const needsOnboarding = result.current.checkNeedsOnboarding();
-      expect(needsOnboarding).toBe(true);
-
-      // Open onboarding
+      // Check if onboarding is needed (no completed flag)
       act(() => {
-        result.current.openOnboarding();
+        result.current.checkOnboarding();
       });
 
-      expect(result.current.showOnboarding).toBe(true);
+      expect(result.current.isOpen).toBe(true);
 
-      // User completes onboarding, close it
+      // User goes through steps
       act(() => {
-        result.current.closeOnboarding();
+        result.current.nextStep();
+        result.current.nextStep();
       });
 
-      expect(result.current.showOnboarding).toBe(false);
-      expect(localStorage.getItem(STORAGE_KEYS.NEEDS_ONBOARDING)).toBeNull();
+      expect(result.current.currentStep).toBe(2);
+
+      // User completes onboarding
+      act(() => {
+        result.current.complete();
+      });
+
+      expect(result.current.isOpen).toBe(false);
+      expect(localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)).toBe('true');
     });
 
-    it('should handle user closing and reopening onboarding', () => {
+    it('should not show onboarding when already completed', () => {
+      localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
+
       const { result } = renderHook(() => useOnboarding());
 
-      // Open onboarding
       act(() => {
-        result.current.openOnboarding();
+        result.current.checkOnboarding();
       });
 
-      expect(result.current.showOnboarding).toBe(true);
-
-      // User closes it
-      act(() => {
-        result.current.closeOnboarding();
-      });
-
-      expect(result.current.showOnboarding).toBe(false);
-
-      // User opens it again
-      act(() => {
-        result.current.openOnboarding();
-      });
-
-      expect(result.current.showOnboarding).toBe(true);
+      expect(result.current.isOpen).toBe(false);
     });
 
-    it('should handle case when no onboarding is needed', () => {
+    it('should handle user skipping onboarding', () => {
       const { result } = renderHook(() => useOnboarding());
 
-      const needsOnboarding = result.current.checkNeedsOnboarding();
+      act(() => {
+        result.current.checkOnboarding();
+      });
 
-      expect(needsOnboarding).toBe(false);
-      expect(result.current.showOnboarding).toBe(false);
+      expect(result.current.isOpen).toBe(true);
+
+      act(() => {
+        result.current.skip();
+      });
+
+      expect(result.current.isOpen).toBe(false);
+      expect(localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED)).toBe('true');
     });
   });
 
@@ -242,15 +273,19 @@ describe('useOnboarding', () => {
     it('should maintain function references across re-renders', () => {
       const { result, rerender } = renderHook(() => useOnboarding());
 
-      const openOnboardingRef = result.current.openOnboarding;
-      const closeOnboardingRef = result.current.closeOnboarding;
-      const checkNeedsOnboardingRef = result.current.checkNeedsOnboarding;
+      const checkOnboardingRef = result.current.checkOnboarding;
+      const nextStepRef = result.current.nextStep;
+      const prevStepRef = result.current.prevStep;
+      const completeRef = result.current.complete;
+      const skipRef = result.current.skip;
 
       rerender();
 
-      expect(result.current.openOnboarding).toBe(openOnboardingRef);
-      expect(result.current.closeOnboarding).toBe(closeOnboardingRef);
-      expect(result.current.checkNeedsOnboarding).toBe(checkNeedsOnboardingRef);
+      expect(result.current.checkOnboarding).toBe(checkOnboardingRef);
+      expect(result.current.nextStep).toBe(nextStepRef);
+      expect(result.current.prevStep).toBe(prevStepRef);
+      expect(result.current.complete).toBe(completeRef);
+      expect(result.current.skip).toBe(skipRef);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { BugReportListSkeleton } from '@/components/features/admin/bug-reports/BugReportListSkeleton';
+import { BugReportListSkeleton } from '@features/admin/components/bug-reports/BugReportListSkeleton';
 
 describe('BugReportListSkeleton', () => {
   describe('Rendering', () => {
@@ -60,7 +60,7 @@ describe('BugReportListSkeleton', () => {
 
     it('should apply proper border styling', () => {
       const { container } = renderWithProviders(<BugReportListSkeleton />);
-      const skeletonItems = container.querySelectorAll('.border-slate-700');
+      const skeletonItems = container.querySelectorAll('.border-border-default');
       expect(skeletonItems.length).toBeGreaterThan(0);
     });
 
@@ -72,7 +72,7 @@ describe('BugReportListSkeleton', () => {
 
     it('should apply background color to skeleton elements', () => {
       const { container } = renderWithProviders(<BugReportListSkeleton />);
-      const skeletonElements = container.querySelectorAll('.bg-slate-700');
+      const skeletonElements = container.querySelectorAll('.bg-bg-secondary');
       expect(skeletonElements.length).toBeGreaterThan(0);
     });
 
@@ -160,9 +160,9 @@ describe('BugReportListSkeleton', () => {
       expect(firstItem.className).toBe(lastItem.className);
     });
 
-    it('should render all items with same styling', () => {
+    it('should render all items with same background surface', () => {
       const { container } = renderWithProviders(<BugReportListSkeleton />);
-      const skeletonItems = container.querySelectorAll('.bg-slate-900\\/50');
+      const skeletonItems = container.querySelectorAll('.bg-bg-surface');
       expect(skeletonItems).toHaveLength(5);
     });
   });

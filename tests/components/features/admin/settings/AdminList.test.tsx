@@ -1,23 +1,23 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AdminList } from '@/components/features/admin/settings/AdminList';
-import type { AdminUser } from '@/types/admin-settings';
+import { AdminList } from '@features/admin/components/settings/AdminList';
+import type { AdminUser } from '@features/admin/types-settings';
 
 // Mock AdminListItem component
-vi.mock('@/components/features/admin/settings/AdminListItem', () => ({
+vi.mock('@features/admin/components/settings/AdminListItem', () => ({
   AdminListItem: ({
     admin,
-    currentUserEmail,
+    currentUserId,
     onRemove,
   }: {
     admin: AdminUser;
-    currentUserEmail?: string;
+    currentUserId?: number;
     onRemove: (admin: AdminUser) => void;
   }) => (
     <div data-testid={`admin-item-${admin.id}`}>
       <span>{admin.email}</span>
-      {admin.email !== currentUserEmail && (
+      {admin.id !== currentUserId && (
         <button onClick={() => onRemove(admin)} data-testid={`remove-${admin.id}`}>
           Remove
         </button>
@@ -100,8 +100,7 @@ describe('AdminList', () => {
       const mockOnRemove = vi.fn();
       render(<AdminList admins={[]} onRemove={mockOnRemove} />);
 
-      expect(screen.getByText('등록된 관리자가 없습니다')).toBeInTheDocument();
-      expect(screen.getByText('관리자를 추가하여 시스템을 관리하세요')).toBeInTheDocument();
+      expect(screen.getByText('등록된 관리자가 없습니다.')).toBeInTheDocument();
     });
 
     it('should not render admin items when empty', () => {
@@ -114,24 +113,24 @@ describe('AdminList', () => {
   });
 
   describe('Current User Handling', () => {
-    it('should pass currentUserEmail to AdminListItem', () => {
+    it('should pass currentUserId to AdminListItem', () => {
       const mockOnRemove = vi.fn();
       render(
         <AdminList
           admins={mockAdmins}
-          currentUserEmail="admin1@example.com"
+          currentUserId={1}
           onRemove={mockOnRemove}
         />
       );
 
-      // Current user should not have remove button
+      // Current user (id=1) should not have remove button
       expect(screen.queryByTestId('remove-1')).not.toBeInTheDocument();
       // Other admins should have remove button
       expect(screen.getByTestId('remove-2')).toBeInTheDocument();
       expect(screen.getByTestId('remove-3')).toBeInTheDocument();
     });
 
-    it('should handle when currentUserEmail is not provided', () => {
+    it('should handle when currentUserId is not provided', () => {
       const mockOnRemove = vi.fn();
       render(<AdminList admins={mockAdmins} onRemove={mockOnRemove} />);
 
@@ -141,12 +140,12 @@ describe('AdminList', () => {
       expect(screen.getByTestId('remove-3')).toBeInTheDocument();
     });
 
-    it('should handle when currentUserEmail does not match any admin', () => {
+    it('should handle when currentUserId does not match any admin', () => {
       const mockOnRemove = vi.fn();
       render(
         <AdminList
           admins={mockAdmins}
-          currentUserEmail="nonexistent@example.com"
+          currentUserId={999}
           onRemove={mockOnRemove}
         />
       );
@@ -197,7 +196,7 @@ describe('AdminList', () => {
       render(
         <AdminList
           admins={mockAdmins}
-          currentUserEmail="admin1@example.com"
+          currentUserId={1}
           onRemove={mockOnRemove}
         />
       );
@@ -233,7 +232,7 @@ describe('AdminList', () => {
       render(<AdminList admins={singleAdmin} onRemove={mockOnRemove} />);
 
       expect(screen.getByTestId('admin-item-1')).toBeInTheDocument();
-      expect(screen.queryByText('등록된 관리자가 없습니다')).not.toBeInTheDocument();
+      expect(screen.queryByText('등록된 관리자가 없습니다.')).not.toBeInTheDocument();
     });
 
     it('should handle inactive admins', () => {
@@ -266,18 +265,21 @@ describe('AdminList', () => {
       }).not.toThrow();
     });
 
-    it('should handle admin with same email but different case', () => {
+    it('should handle admin id comparison correctly', () => {
       const mockOnRemove = vi.fn();
       render(
         <AdminList
           admins={mockAdmins}
-          currentUserEmail="ADMIN1@EXAMPLE.COM"
+          currentUserId={2}
           onRemove={mockOnRemove}
         />
       );
 
-      // Should be case-sensitive, so all should have remove button
+      // Admin 2 is current user, should not have remove button
+      expect(screen.queryByTestId('remove-2')).not.toBeInTheDocument();
+      // Others should have remove button
       expect(screen.getByTestId('remove-1')).toBeInTheDocument();
+      expect(screen.getByTestId('remove-3')).toBeInTheDocument();
     });
   });
 
@@ -315,7 +317,7 @@ describe('AdminList', () => {
         render(
           <AdminList
             admins={mockAdmins}
-            currentUserEmail="admin1@example.com"
+            currentUserId={1}
             onRemove={mockOnRemove}
           />
         );

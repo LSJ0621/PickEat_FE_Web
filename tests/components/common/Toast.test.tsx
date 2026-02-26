@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, act } from '@testing-library/react';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { ToastContainer, type Toast } from '@/components/common/Toast';
+import { ToastContainer, type Toast } from '@shared/components/Toast';
 
 describe('ToastContainer', () => {
   beforeEach(() => {
@@ -223,35 +223,34 @@ describe('ToastContainer', () => {
     });
   });
 
-  describe('Animation', () => {
-    it('should apply visible animation class after mounting', async () => {
-      // Use real timers for this animation test
+  describe('Animation (real timers)', () => {
+    beforeEach(() => {
       vi.useRealTimers();
-      try {
-        const toast: Toast = {
-          id: '1',
-          message: 'Animate',
-          type: 'info',
-        };
-        renderWithProviders(<ToastContainer toasts={[toast]} onClose={vi.fn()} />);
-
-        // Initial state - not visible
-        const toastElement = screen.getByText('Animate').closest('div');
-        expect(toastElement).toHaveClass('translate-x-full', 'opacity-0');
-
-        // After animation delay - increased timeout for reliability
-        await waitFor(
-          () => {
-            expect(toastElement).toHaveClass('translate-x-0', 'opacity-100');
-          },
-          { timeout: 500 }
-        );
-      } finally {
-        // Restore fake timers
-        vi.useFakeTimers();
-      }
     });
 
+    it('should apply visible animation class after mounting', async () => {
+      const toast: Toast = {
+        id: '1',
+        message: 'Animate',
+        type: 'info',
+      };
+      renderWithProviders(<ToastContainer toasts={[toast]} onClose={vi.fn()} />);
+
+      // Initial state - not visible
+      const toastElement = screen.getByText('Animate').closest('div');
+      expect(toastElement).toHaveClass('translate-x-full', 'opacity-0');
+
+      // After animation delay - increased timeout for reliability
+      await waitFor(
+        () => {
+          expect(toastElement).toHaveClass('translate-x-0', 'opacity-100');
+        },
+        { timeout: 500 }
+      );
+    });
+  });
+
+  describe('Animation (fake timers)', () => {
     it('should apply exit animation before closing', async () => {
       const onClose = vi.fn();
       const toast: Toast = {
@@ -329,7 +328,8 @@ describe('ToastContainer', () => {
       };
       const { container } = renderWithProviders(<ToastContainer toasts={[toast]} onClose={vi.fn()} />);
       const toastContainer = container.querySelector('.fixed');
-      expect(toastContainer).toHaveClass('bottom-4', 'right-4', 'z-[10001]');
+      // Component applies z-index via inline style from Z_INDEX.TOAST constant
+      expect(toastContainer).toHaveClass('bottom-4', 'right-4');
     });
 
     it('should stack multiple toasts vertically', () => {

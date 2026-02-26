@@ -4,16 +4,16 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useHistoryAiHistory } from '@/hooks/history/useHistoryAiHistory';
-import { menuService } from '@/api/services/menu';
+import { useHistoryAiHistory } from '@features/history/hooks/useHistoryAiHistory';
+import { menuService } from '@features/agent/api';
 import { createMockRecommendationHistory, createAuthenticatedState } from '@tests/factories/user';
 import { createMockPlaceHistory } from '@tests/factories/menu';
 import { setupStore, createWrapper as createTestWrapper } from '@tests/utils/renderWithProviders';
-import { ToastProvider } from '@/components/common/ToastProvider';
+import { ToastProvider } from '@shared/components/ToastProvider';
 import type { ReactNode } from 'react';
-import type { PlaceHistoryResponse } from '@/types/menu';
+import type { PlaceHistoryResponse } from '@features/agent/types';
 
-vi.mock('@/api/services/menu');
+vi.mock('@features/agent/api');
 
 describe('useHistoryAiHistory', () => {
   const mockHistoryItem = createMockRecommendationHistory();

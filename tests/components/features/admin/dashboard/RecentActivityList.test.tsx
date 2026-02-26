@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { RecentActivityList } from '@/components/features/admin/dashboard/RecentActivityList';
-import type { RecentActivities } from '@/types/admin';
+import { RecentActivityList } from '@features/admin/components/dashboard/RecentActivityList';
+import type { RecentActivities } from '@features/admin/types';
 
 const mockNavigate = vi.fn();
 
@@ -141,7 +141,7 @@ describe('RecentActivityList', () => {
 
       renderWithProviders(<RecentActivityList activities={emptyActivities} />);
 
-      expect(screen.getByText('최근 가입한 사용자가 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('최근 가입한 사용자가 없습니다.')).toBeInTheDocument();
     });
   });
 
@@ -206,7 +206,7 @@ describe('RecentActivityList', () => {
       renderWithProviders(<RecentActivityList activities={emptyActivities} />);
       await user.click(screen.getByText('버그 리포트'));
 
-      expect(screen.getByText('최근 버그 리포트가 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('최근 버그 리포트가 없습니다.')).toBeInTheDocument();
     });
   });
 
@@ -232,7 +232,7 @@ describe('RecentActivityList', () => {
       renderWithProviders(<RecentActivityList activities={emptyActivities} />);
       await user.click(screen.getByText('최근 탈퇴자'));
 
-      expect(screen.getByText('최근 탈퇴한 사용자가 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('최근 탈퇴한 사용자가 없습니다.')).toBeInTheDocument();
     });
   });
 
@@ -261,8 +261,12 @@ describe('RecentActivityList', () => {
 
       await user.click(screen.getByText('버그 리포트'));
 
-      // 10 days ago should show as date
-      const oldDate = new Date(Date.now() - 10 * 86400000).toLocaleDateString('ko-KR');
+      // 10 days ago should show as YYYY-MM-DD formatted date
+      const tenDaysAgo = new Date(Date.now() - 10 * 86400000);
+      const year = tenDaysAgo.getFullYear();
+      const month = String(tenDaysAgo.getMonth() + 1).padStart(2, '0');
+      const day = String(tenDaysAgo.getDate()).padStart(2, '0');
+      const oldDate = `${year}-${month}-${day}`;
       expect(screen.getByText(oldDate)).toBeInTheDocument();
     });
   });
@@ -273,7 +277,8 @@ describe('RecentActivityList', () => {
         <RecentActivityList activities={mockActivities} />
       );
 
-      const userItems = container.querySelectorAll('.hover\\:bg-bg-hover');
+      // User items have hover:bg-bg-hover class via transition-colors
+      const userItems = container.querySelectorAll('.transition-colors');
       expect(userItems.length).toBeGreaterThan(0);
     });
 
@@ -298,7 +303,7 @@ describe('RecentActivityList', () => {
 
       renderWithProviders(<RecentActivityList activities={emptyActivities} />);
 
-      expect(screen.getByText('최근 가입한 사용자가 없습니다')).toBeInTheDocument();
+      expect(screen.getByText('최근 가입한 사용자가 없습니다.')).toBeInTheDocument();
     });
 
     it('should handle activities with single item', () => {

@@ -9,10 +9,19 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        minForks: 2,
+        maxForks: 6,
+        isolate: true,
+        execArgv: ['--max-old-space-size=3072', '--expose-gc'],
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -42,6 +51,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, './src/shared'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@app': path.resolve(__dirname, './src/app'),
       '@tests': path.resolve(__dirname, './tests'),
     },
   },

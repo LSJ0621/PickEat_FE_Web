@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { AddressSearchResults } from '@/components/common/AddressSearchResults';
+import { AddressSearchResults } from '@shared/components/AddressSearchResults';
 import { createMockAddressSearchResult } from '@tests/factories';
 
 describe('AddressSearchResults', () => {

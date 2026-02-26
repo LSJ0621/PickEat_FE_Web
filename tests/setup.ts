@@ -9,10 +9,20 @@ beforeAll(async () => {
   await i18n.changeLanguage('ko');
   server.listen({ onUnhandledRequest: 'error' });
 });
-afterAll(() => server.close());
+afterAll(() => {
+  server.close();
+  vi.resetModules();
+  if (global.gc) {
+    global.gc();
+  }
+});
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+  localStorageMock.clear();
+  sessionStorageMock.clear();
 });
 
 // localStorage mock

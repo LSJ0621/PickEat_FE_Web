@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useAddressSearch } from '@/hooks/address/useAddressSearch';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { userService } from '@/api/services/user';
-import type { AddressSearchResult, SelectedAddress } from '@/types/user';
+import { useAddressSearch } from '@shared/hooks/address/useAddressSearch';
+import { useErrorHandler } from '@shared/hooks/useErrorHandler';
+import { userService } from '@features/user/api';
+import type { AddressSearchResult, SelectedAddress } from '@features/user/types';
 
-vi.mock('@/api/services/user');
-vi.mock('@/hooks/useErrorHandler');
+vi.mock('@features/user/api');
+vi.mock('@shared/hooks/useErrorHandler');
 
 describe('useAddressSearch', () => {
   const mockHandleError = vi.fn();
@@ -94,7 +94,7 @@ describe('useAddressSearch', () => {
         await result.current.handleSearch();
       });
 
-      expect(userService.searchAddress).toHaveBeenCalledWith('서울시');
+      expect(userService.searchAddress).toHaveBeenCalledWith('서울시', expect.anything());
       expect(result.current.searchResults).toEqual(mockAddresses);
       expect(result.current.hasSearchedAddress).toBe(true);
       expect(result.current.isSearching).toBe(false);

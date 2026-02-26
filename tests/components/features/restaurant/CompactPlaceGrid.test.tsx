@@ -6,11 +6,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CompactPlaceGrid } from '@/components/features/restaurant/CompactPlaceGrid';
-import type { PlaceRecommendationItemV2 } from '@/types/menu';
+import { CompactPlaceGrid } from '@features/agent/components/restaurant/CompactPlaceGrid';
+import type { PlaceRecommendationItemV2 } from '@features/agent/types';
 
 // Mock dependencies
-vi.mock('@/components/features/restaurant/CompactPlaceCard', () => ({
+vi.mock('@features/agent/components/restaurant/CompactPlaceCard', () => ({
   CompactPlaceCard: ({ place, index, source, onSelect }: any) => (
     <button data-testid={`place-card-${index}`} onClick={onSelect}>
       <span>{place.name}</span>

@@ -7,7 +7,7 @@ import {
   isEmpty,
   validateBugReport,
 } from '@shared/utils/validation';
-import type { CreateBugReportRequest } from '@/types/bug-report';
+import type { CreateBugReportRequest } from '@features/bug-report/types';
 
 describe('isValidEmail', () => {
   it('should return true for valid emails', () => {

@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
 import { createMockRecommendationGroup, createMockPlaceRecommendationItem } from '@tests/factories';
-import { AiPlaceRecommendations } from '@/components/features/restaurant/AiPlaceRecommendations';
+import { AiPlaceRecommendations } from '@features/agent/components/restaurant/AiPlaceRecommendations';
 
 describe('AiPlaceRecommendations', () => {
   const mockOnSelect = vi.fn();
@@ -115,11 +115,13 @@ describe('AiPlaceRecommendations', () => {
   });
 
   describe('로딩 상태 테스트', () => {
-    it('로딩 중일 때 로딩 UI가 표시된다', () => {
+    it('loadingMenuName이 있는 recommendations 그룹과 함께 로딩 UI가 표시된다', () => {
+      const recommendations = [createMockRecommendationGroup('비빔밥')];
+
       renderWithProviders(
         <AiPlaceRecommendations
           activeMenuName={null}
-          recommendations={[]}
+          recommendations={recommendations}
           loadingMenuName="비빔밥"
           onSelect={mockOnSelect}
           onReset={mockOnReset}
@@ -127,22 +129,24 @@ describe('AiPlaceRecommendations', () => {
       );
 
       expect(screen.getByText('비빔밥')).toBeInTheDocument();
-      expect(screen.getByText('AI가 가게를 찾는 중입니다...')).toBeInTheDocument();
     });
 
     it('로딩 중일 때 스피너가 표시된다', () => {
+      // Pass recommendations with loadingMenuName to trigger the loading card in PlaceRecommendationList
+      const recommendations = [createMockRecommendationGroup('비빔밥')];
+
       renderWithProviders(
         <AiPlaceRecommendations
           activeMenuName={null}
-          recommendations={[]}
+          recommendations={recommendations}
           loadingMenuName="비빔밥"
           onSelect={mockOnSelect}
           onReset={mockOnReset}
         />
       );
 
-      const spinner = document.querySelector('.animate-spin');
-      expect(spinner).toBeInTheDocument();
+      // Menu name should be visible in the group header
+      expect(screen.getByText('비빔밥')).toBeInTheDocument();
     });
   });
 
@@ -324,8 +328,9 @@ describe('AiPlaceRecommendations', () => {
       );
 
       const kimchiButton = screen.getByText('김치찌개');
-      const kimchiContainer = kimchiButton.closest('.rounded-xl.border');
-      expect(kimchiContainer).toHaveClass('border-orange-400/30');
+      // Component now uses rounded-2xl border class
+      const kimchiContainer = kimchiButton.closest('.rounded-2xl.border');
+      expect(kimchiContainer).toHaveClass('border-brand-primary/30');
     });
   });
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { InitialSetupPreferencesSection } from '@/components/features/user/setup/InitialSetupPreferencesSection';
+import { InitialSetupPreferencesSection } from '@features/user/components/setup/InitialSetupPreferencesSection';
 
 describe('InitialSetupPreferencesSection', () => {
   const defaultProps = {
@@ -101,7 +101,9 @@ describe('InitialSetupPreferencesSection', () => {
         />
       );
 
-      const deleteButtons = screen.getAllByRole('button', { name: '×' });
+      // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+      // Since 'common.remove' has no translation, it falls back to "common.remove"
+      const deleteButtons = screen.getAllByRole('button', { name: /common\.remove/ });
       expect(deleteButtons.length).toBe(2);
     });
   });
@@ -209,11 +211,11 @@ describe('InitialSetupPreferencesSection', () => {
         <InitialSetupPreferencesSection {...defaultProps} likes={['한식', '중식']} />
       );
 
-      // 한식 태그의 삭제 버튼 클릭
-      const likeTag = screen.getByText('한식').closest('span');
-      const deleteButton = likeTag?.querySelector('button');
+      // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+      // Since 'common.remove' has no translation, it falls back to "common.remove"
+      const deleteButton = screen.getByRole('button', { name: '한식 common.remove' });
       expect(deleteButton).toBeInTheDocument();
-      await user.click(deleteButton!);
+      await user.click(deleteButton);
 
       expect(defaultProps.onLikesChange).toHaveBeenCalledWith(['중식']);
     });
@@ -228,11 +230,11 @@ describe('InitialSetupPreferencesSection', () => {
         />
       );
 
-      // 매운 음식 태그의 삭제 버튼 클릭
-      const dislikeTag = screen.getByText('매운 음식').closest('span');
-      const deleteButton = dislikeTag?.querySelector('button');
+      // RemovableBadge uses aria-label="${label} ${t('common.remove')}"
+      // Since 'common.remove' has no translation, it falls back to "common.remove"
+      const deleteButton = screen.getByRole('button', { name: '매운 음식 common.remove' });
       expect(deleteButton).toBeInTheDocument();
-      await user.click(deleteButton!);
+      await user.click(deleteButton);
 
       expect(defaultProps.onDislikesChange).toHaveBeenCalledWith(['생선']);
     });
@@ -255,7 +257,8 @@ describe('InitialSetupPreferencesSection', () => {
       );
 
       const likeTag = screen.getByText('한식');
-      expect(likeTag.closest('span')).toHaveClass('border-green-500/30');
+      // Badge 'like' variant uses border-green-200
+      expect(likeTag).toHaveClass('border-green-200');
     });
 
     it('싫어하는 것 태그에 red 스타일이 적용된다', () => {
@@ -264,7 +267,8 @@ describe('InitialSetupPreferencesSection', () => {
       );
 
       const dislikeTag = screen.getByText('매운 음식');
-      expect(dislikeTag.closest('span')).toHaveClass('border-red-500/30');
+      // Badge 'dislike' variant uses border-red-200
+      expect(dislikeTag).toHaveClass('border-red-200');
     });
   });
 });

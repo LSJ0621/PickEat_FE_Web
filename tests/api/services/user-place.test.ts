@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { userPlaceService } from '@/api/services/user-place';
+import { userPlaceService } from '@features/user-place/api';
 import { server } from '@tests/mocks/server';
 import { http, HttpResponse } from 'msw';
 import { ENDPOINTS } from '@shared/api/endpoints';
@@ -15,7 +15,7 @@ import type {
   UpdateUserPlaceRequest,
   UserPlaceListQuery,
   UserPlace,
-} from '@/types/user-place';
+} from '@features/user-place/types';
 
 const BASE_URL = 'http://localhost:3000';
 

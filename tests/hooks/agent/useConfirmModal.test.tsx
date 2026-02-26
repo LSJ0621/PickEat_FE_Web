@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { setupStore, createWrapper } from '@tests/utils/renderWithProviders';
-import { useConfirmModal } from '@/hooks/agent/useConfirmModal';
-import { setShowConfirmCard, setSelectedMenu } from '@/store/slices/agentSlice';
+import { useConfirmModal } from '@features/agent/hooks/useConfirmModal';
+import { setShowConfirmCard, setSelectedMenu } from '@app/store/slices/agentSlice';
 import { createMockAgentState } from '@tests/factories/agent';
 
 describe('useConfirmModal', () => {

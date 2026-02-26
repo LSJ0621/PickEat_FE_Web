@@ -1,0 +1,229 @@
+/**
+ * 주소 등록 모달 컴포넌트
+ * 로그인 후 주소가 없을 때 주소를 등록하는 모달
+ */
+
+import { userService } from '@/api/services/user';
+import { AddressSearchInput } from './AddressSearchInput';
+import { AddressSearchResults } from '@/components/common/AddressSearchResults';
+import { Button } from '@/components/common/Button';
+import { useAddressSearch } from '@/hooks/address/useAddressSearch';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useModalScrollLock } from '@/hooks/common/useModalScrollLock';
+import { useAppDispatch } from '@/store/hooks';
+import { updateUser } from '@/store/slices/authSlice';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+
+interface AddressRegistrationModalProps {
+  open: boolean;
+  onComplete: () => void;
+  onClose?: () => void;
+}
+
+export const AddressRegistrationModal = ({
+  open,
+  onComplete,
+  onClose,
+}: AddressRegistrationModalProps) => {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const addressSearch = useAddressSearch();
+  const { handleError, handleSuccess } = useErrorHandler();
+
+  const [alias, setAlias] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      // 모달이 닫히면 상태 초기화
+      addressSearch.clearSearch();
+      addressSearch.setSelectedAddress(null);
+      setAlias('');
+    }
+    // Follow project convention: use [hook.method] not [hook] to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, addressSearch.clearSearch, addressSearch.setSelectedAddress]);
+
+  // 모달 열림/닫힘 시 body 스크롤 방지
+  useModalScrollLock(open);
+
+  const handleSave = async () => {
+    if (!addressSearch.selectedAddress) {
+      handleError(t('validation.address.required'), 'AddressRegistration');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // 처음 주소 등록이므로 PATCH /user/address 사용 (자동으로 기본주소로 설정됨)
+      const addressResult = await userService.setAddress(addressSearch.selectedAddress);
+      
+      // 별칭이 있으면 주소 리스트를 조회해서 방금 추가된 주소에 별칭 설정
+      if (alias.trim()) {
+        try {
+          const addressesResponse = await userService.getAddresses();
+          // 응답이 배열인지 객체인지 확인
+          const addresses = Array.isArray(addressesResponse) 
+            ? addressesResponse 
+            : addressesResponse?.addresses || [];
+          
+          const newAddress = addresses.find(
+            (addr) => addr.roadAddress === addressResult.roadAddress
+          );
+          
+          if (newAddress) {
+            await userService.updateAddress(newAddress.id, { alias: alias.trim() });
+          }
+        } catch {
+          // 별칭 설정 실패해도 주소 저장은 성공한 것으로 처리
+        }
+      }
+
+      const latitudeValue = addressSearch.selectedAddress.latitude ? parseFloat(addressSearch.selectedAddress.latitude) : null;
+      const longitudeValue = addressSearch.selectedAddress.longitude ? parseFloat(addressSearch.selectedAddress.longitude) : null;
+      const normalizedLatitude = latitudeValue !== null && !Number.isNaN(latitudeValue) ? latitudeValue : null;
+      const normalizedLongitude = longitudeValue !== null && !Number.isNaN(longitudeValue) ? longitudeValue : null;
+
+      dispatch(
+        updateUser({
+          address: addressResult.roadAddress,
+          latitude: normalizedLatitude,
+          longitude: normalizedLongitude,
+        })
+      );
+
+      handleSuccess(t('setup.address.registered'));
+      onComplete();
+    } catch (error: unknown) {
+      handleError(error, 'AddressRegistration');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 ${
+        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+      }`}
+    >
+      <div
+        className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[var(--radius-xl)] border-border-default bg-bg-primary p-8 shadow-[var(--shadow-card)] ${
+          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+        }`}
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-text-primary">{t('setup.address.titleModal')}</h2>
+            <p className="mt-2 text-sm text-text-tertiary">
+              {t('setup.address.descriptionModal')}
+            </p>
+          </div>
+
+          {/* 주소 검색 섹션 */}
+          <div className="rounded-[var(--radius-lg)] border-border-default bg-bg-secondary p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-text-primary">{t('setup.address.search')}</h3>
+              <p className="mt-1 text-sm text-text-tertiary">{t('setup.address.searchDesc')}</p>
+            </div>
+            <div className="space-y-3">
+              <AddressSearchInput
+                addressQuery={addressSearch.addressQuery}
+                isSearching={addressSearch.isSearching}
+                onAddressQueryChange={addressSearch.setAddressQuery}
+                onSearch={addressSearch.handleSearch}
+              />
+
+              <AddressSearchResults
+                searchResults={addressSearch.searchResults}
+                isSearching={addressSearch.isSearching}
+                hasSearchedAddress={addressSearch.hasSearchedAddress}
+                onSelectAddress={addressSearch.handleSelectAddress}
+              />
+
+              {addressSearch.selectedAddress && (
+                <div className="rounded-[var(--radius-md)] border-status-success/30 bg-status-success/10 p-4">
+                  <p className="text-xs text-status-success">{t('setup.address.selected')}</p>
+                  <p className="mt-1 text-text-primary font-medium">
+                    {addressSearch.selectedAddress.roadAddress || addressSearch.selectedAddress.address}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 별칭 입력 섹션 */}
+          {addressSearch.selectedAddress && (
+            <div className="rounded-[var(--radius-lg)] border-border-default bg-bg-secondary p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-text-primary">{t('setup.address.alias')}</h3>
+                <p className="mt-1 text-sm text-text-tertiary">
+                  {t('setup.address.aliasDescription')}
+                </p>
+              </div>
+              <input
+                type="text"
+                value={alias}
+                onChange={(e) => setAlias(e.target.value)}
+                placeholder={t('setup.address.aliasPlaceholder')}
+                maxLength={20}
+                className="w-full rounded-[var(--radius-md)] border-border-default bg-bg-surface px-4 py-3 text-text-primary placeholder-text-tertiary transition focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+              />
+            </div>
+          )}
+
+          {/* 버튼 */}
+          <div className="flex gap-3">
+            {onClose && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onClose}
+                disabled={isSaving}
+                className="flex-1"
+              >
+                {t('common.cancel')}
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleSave}
+              isLoading={isSaving}
+              disabled={!addressSearch.selectedAddress || isSaving}
+              className="flex-1"
+            >
+              {t('setup.register')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+

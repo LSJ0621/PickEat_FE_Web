@@ -10,6 +10,7 @@ test.describe('Smoke Test', () => {
     await page.goto(ROUTES.HOME);
     // 페이지가 정상적으로 로드되었는지 확인
     await expect(page).toHaveURL(ROUTES.HOME);
+    await expect(page).toHaveTitle('pickeat_web');
   });
 
   test('로그인 페이지 로드', async ({ page }) => {

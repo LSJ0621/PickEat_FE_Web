@@ -31,6 +31,7 @@ coverage/
 
 # Claude Code local settings
 .claude/settings.local.json
+.mcp.json
 
 # Playwright E2E test artifacts
 /playwright-report/
@@ -41,3 +42,7 @@ coverage/
 # E2E test plans (auto-generated)
 /e2e-test-plan/
 *.plan.md
+
+# Generated files
+repomix-output.xml
+tests/code-review-reports/

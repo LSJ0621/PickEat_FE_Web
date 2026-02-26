@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { usePlaceDetails } from '@/hooks/place/usePlaceDetails';
-import { menuService } from '@/api/services/menu';
-import type { PlaceDetail } from '@/types/menu';
+import { usePlaceDetails } from '@features/agent/hooks/usePlaceDetails';
+import { menuService } from '@features/agent/api';
+import type { PlaceDetail } from '@features/agent/types';
 
-vi.mock('@/api/services/menu');
-vi.mock('@/hooks/common/usePrevious', () => ({
+vi.mock('@features/agent/api');
+vi.mock('@shared/hooks/usePrevious', () => ({
   usePrevious: vi.fn(() => undefined), // First render returns undefined
 }));
 
@@ -328,7 +328,7 @@ describe('usePlaceDetails', () => {
       });
 
       // Mock usePrevious to return the same placeId (simulating rerender without change)
-      const { usePrevious } = await import('@/hooks/common/usePrevious');
+      const { usePrevious } = await import('@shared/hooks/usePrevious');
       vi.mocked(usePrevious).mockReturnValue('place123');
 
       renderHook(() => usePlaceDetails('place123'));

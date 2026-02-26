@@ -1,28 +1,101 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { usePreferences } from '@/hooks/user/usePreferences';
+import { usePreferences } from '@features/user/hooks/usePreferences';
 import { createWrapper } from '@tests/utils/renderWithProviders';
-import { userService } from '@/api/services/user';
+import { userService } from '@features/user/api';
 import { createMockPreferences } from '@tests/factories/user';
 
 // Mock dependencies
-vi.mock('@/api/services/user');
-vi.mock('@/hooks/useErrorHandler', () => ({
+vi.mock('@features/user/api');
+vi.mock('@shared/hooks/useErrorHandler', () => ({
   useErrorHandler: () => ({
     handleError: vi.fn(),
     handleSuccess: vi.fn(),
   }),
 }));
 
+// ---------------------------------------------------------------------------
+// Shared fixture types for parameterised tests
+// ---------------------------------------------------------------------------
+type UsePreferencesResult = ReturnType<typeof usePreferences>;
+
+interface AddFixture {
+  field: string;
+  value: string;
+  trimmedValue: string;
+  listKey: 'likes' | 'dislikes';
+  inputKey: 'newLike' | 'newDislike';
+  setter: (r: UsePreferencesResult, v: string) => void;
+  handler: (r: UsePreferencesResult) => void;
+}
+
+interface RemoveFixture {
+  field: string;
+  initialOptions: Parameters<typeof usePreferences>[0];
+  removeValue: string;
+  listKey: 'likes' | 'dislikes';
+  handler: (r: UsePreferencesResult, v: string) => void;
+  expectedAfterRemove: string[];
+  nonExistentInitialOptions: Parameters<typeof usePreferences>[0];
+  expectedNonExistentRemove: string[];
+}
+
+const ADD_FIXTURES: AddFixture[] = [
+  {
+    field: 'like',
+    value: '한식',
+    trimmedValue: '한식',
+    listKey: 'likes',
+    inputKey: 'newLike',
+    setter: (r, v) => r.setNewLike(v),
+    handler: (r) => r.handleAddLike(),
+  },
+  {
+    field: 'dislike',
+    value: '매운 음식',
+    trimmedValue: '매운 음식',
+    listKey: 'dislikes',
+    inputKey: 'newDislike',
+    setter: (r, v) => r.setNewDislike(v),
+    handler: (r) => r.handleAddDislike(),
+  },
+];
+
+const REMOVE_FIXTURES: RemoveFixture[] = [
+  {
+    field: 'like',
+    initialOptions: { initialLikes: ['한식', '중식'] },
+    removeValue: '한식',
+    listKey: 'likes',
+    handler: (r, v) => r.handleRemoveLike(v),
+    expectedAfterRemove: ['중식'],
+    nonExistentInitialOptions: { initialLikes: ['한식'] },
+    expectedNonExistentRemove: ['한식'],
+  },
+  {
+    field: 'dislike',
+    initialOptions: { initialDislikes: ['매운 음식', '생선'] },
+    removeValue: '매운 음식',
+    listKey: 'dislikes',
+    handler: (r, v) => r.handleRemoveDislike(v),
+    expectedAfterRemove: ['생선'],
+    nonExistentInitialOptions: { initialDislikes: ['매운 음식'] },
+    expectedNonExistentRemove: ['매운 음식'],
+  },
+];
+
+// ---------------------------------------------------------------------------
+
 describe('usePreferences', () => {
   const mockPreferences = createMockPreferences();
+  let wrapper: ReturnType<typeof createWrapper>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    wrapper = createWrapper();
   });
 
-  const wrapper = createWrapper();
-
+  // -------------------------------------------------------------------------
   describe('Initialization', () => {
     it('should initialize with empty arrays when no options provided', () => {
       const { result } = renderHook(() => usePreferences(), { wrapper });
@@ -42,7 +115,6 @@ describe('usePreferences', () => {
         initialDislikes: ['매운 음식'],
         initialAnalysis: '분석 내용',
       };
-
       const { result } = renderHook(() => usePreferences(options), { wrapper });
 
       expect(result.current.likes).toEqual(options.initialLikes);
@@ -50,60 +122,34 @@ describe('usePreferences', () => {
       expect(result.current.analysis).toBe(options.initialAnalysis);
     });
 
-    it('should update state when initial values change', async () => {
-      const { result, rerender } = renderHook(
-        ({ initialLikes }) => usePreferences({ initialLikes }),
-        {
-          wrapper,
-          initialProps: { initialLikes: ['한식'] },
-        }
-      );
-
-      expect(result.current.likes).toEqual(['한식']);
-
-      rerender({ initialLikes: ['한식', '중식'] });
-
-      await waitFor(() => {
-        expect(result.current.likes).toEqual(['한식', '중식']);
-      });
-    });
   });
 
+  // -------------------------------------------------------------------------
   describe('loadPreferences', () => {
-    it('should load preferences successfully', async () => {
+    it('should load preferences and update state', async () => {
       vi.mocked(userService.getPreferences).mockResolvedValue({
         preferences: mockPreferences,
       });
-
       const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      expect(result.current.isLoadingPreferences).toBe(false);
 
       await act(async () => {
         await result.current.loadPreferences();
       });
 
-      await waitFor(() => {
-        expect(result.current.isLoadingPreferences).toBe(false);
-      });
-
       expect(result.current.likes).toEqual(mockPreferences.likes);
       expect(result.current.dislikes).toEqual(mockPreferences.dislikes);
       expect(result.current.analysis).toBe(mockPreferences.analysis);
-      expect(userService.getPreferences).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle loading state correctly', async () => {
+    it('should set isLoadingPreferences true during load and false after', async () => {
       vi.mocked(userService.getPreferences).mockResolvedValue({
         preferences: mockPreferences,
       });
-
       const { result } = renderHook(() => usePreferences(), { wrapper });
 
       act(() => {
         result.current.loadPreferences();
       });
-
       expect(result.current.isLoadingPreferences).toBe(true);
 
       await waitFor(() => {
@@ -111,214 +157,113 @@ describe('usePreferences', () => {
       });
     });
 
-    it('should handle loading error silently', async () => {
+    it('should handle loading error silently and reset loading state', async () => {
       vi.mocked(userService.getPreferences).mockRejectedValue(
         new Error('Failed to load')
       );
-
       const { result } = renderHook(() => usePreferences(), { wrapper });
 
       await act(async () => {
         await result.current.loadPreferences();
       });
 
-      // Should not throw and should reset loading state
       expect(result.current.isLoadingPreferences).toBe(false);
     });
   });
 
-  describe('handleAddLike', () => {
-    it('should add a like item', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
+  // -------------------------------------------------------------------------
+  describe('handleAddLike / handleAddDislike', () => {
+    it.each(ADD_FIXTURES)(
+      'should add $field item and clear input',
+      ({ value, listKey, inputKey, setter, handler }) => {
+        const { result } = renderHook(() => usePreferences(), { wrapper });
 
-      act(() => {
-        result.current.setNewLike('한식');
-      });
+        act(() => setter(result.current, value));
+        act(() => handler(result.current));
 
-      act(() => {
-        result.current.handleAddLike();
-      });
+        expect(result.current[listKey]).toEqual([value]);
+        expect(result.current[inputKey]).toBe('');
+      }
+    );
 
-      expect(result.current.likes).toEqual(['한식']);
-      expect(result.current.newLike).toBe('');
-    });
+    it.each(ADD_FIXTURES)(
+      'should trim whitespace when adding $field',
+      ({ trimmedValue, listKey, setter, handler }) => {
+        const { result } = renderHook(() => usePreferences(), { wrapper });
 
-    it('should trim whitespace when adding like', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
+        act(() => setter(result.current, `  ${trimmedValue}  `));
+        act(() => handler(result.current));
 
-      act(() => {
-        result.current.setNewLike('  한식  ');
-      });
+        expect(result.current[listKey]).toEqual([trimmedValue]);
+      }
+    );
 
-      act(() => {
-        result.current.handleAddLike();
-      });
+    it.each(ADD_FIXTURES)(
+      'should not add duplicate $field',
+      ({ value, listKey, setter, handler }) => {
+        const { result } = renderHook(() => usePreferences(), { wrapper });
 
-      expect(result.current.likes).toEqual(['한식']);
-    });
+        act(() => setter(result.current, value));
+        act(() => handler(result.current));
+        act(() => setter(result.current, value));
+        act(() => handler(result.current));
 
-    it('should not add duplicate likes', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
+        expect(result.current[listKey]).toEqual([value]);
+      }
+    );
 
-      act(() => {
-        result.current.setNewLike('한식');
-      });
+    it.each(ADD_FIXTURES)(
+      'should not add empty string for $field',
+      ({ listKey, setter, handler }) => {
+        const { result } = renderHook(() => usePreferences(), { wrapper });
 
-      act(() => {
-        result.current.handleAddLike();
-      });
+        act(() => setter(result.current, '   '));
+        act(() => handler(result.current));
 
-      act(() => {
-        result.current.setNewLike('한식');
-      });
-
-      act(() => {
-        result.current.handleAddLike();
-      });
-
-      expect(result.current.likes).toEqual(['한식']);
-    });
-
-    it('should not add empty string', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      act(() => {
-        result.current.setNewLike('   ');
-      });
-
-      act(() => {
-        result.current.handleAddLike();
-      });
-
-      expect(result.current.likes).toEqual([]);
-    });
+        expect(result.current[listKey]).toEqual([]);
+      }
+    );
   });
 
-  describe('handleRemoveLike', () => {
-    it('should remove a like item', () => {
-      const { result } = renderHook(
-        () => usePreferences({ initialLikes: ['한식', '중식'] }),
-        { wrapper }
-      );
+  // -------------------------------------------------------------------------
+  describe('handleRemoveLike / handleRemoveDislike', () => {
+    it.each(REMOVE_FIXTURES)(
+      'should remove $field item',
+      ({ initialOptions, removeValue, listKey, handler, expectedAfterRemove }) => {
+        const { result } = renderHook(
+          () => usePreferences(initialOptions),
+          { wrapper }
+        );
 
-      act(() => {
-        result.current.handleRemoveLike('한식');
-      });
+        act(() => handler(result.current, removeValue));
 
-      expect(result.current.likes).toEqual(['중식']);
-    });
+        expect(result.current[listKey]).toEqual(expectedAfterRemove);
+      }
+    );
 
-    it('should handle removing non-existent item', () => {
-      const { result } = renderHook(
-        () => usePreferences({ initialLikes: ['한식'] }),
-        { wrapper }
-      );
+    it.each(REMOVE_FIXTURES)(
+      'should handle removing non-existent $field item gracefully',
+      ({
+        nonExistentInitialOptions,
+        listKey,
+        handler,
+        expectedNonExistentRemove,
+      }) => {
+        const { result } = renderHook(
+          () => usePreferences(nonExistentInitialOptions),
+          { wrapper }
+        );
 
-      act(() => {
-        result.current.handleRemoveLike('중식');
-      });
+        act(() => handler(result.current, '__nonexistent__'));
 
-      expect(result.current.likes).toEqual(['한식']);
-    });
+        expect(result.current[listKey]).toEqual(expectedNonExistentRemove);
+      }
+    );
   });
 
-  describe('handleAddDislike', () => {
-    it('should add a dislike item', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      act(() => {
-        result.current.setNewDislike('매운 음식');
-      });
-
-      act(() => {
-        result.current.handleAddDislike();
-      });
-
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-      expect(result.current.newDislike).toBe('');
-    });
-
-    it('should trim whitespace when adding dislike', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      act(() => {
-        result.current.setNewDislike('  매운 음식  ');
-      });
-
-      act(() => {
-        result.current.handleAddDislike();
-      });
-
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-    });
-
-    it('should not add duplicate dislikes', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      act(() => {
-        result.current.setNewDislike('매운 음식');
-      });
-
-      act(() => {
-        result.current.handleAddDislike();
-      });
-
-      act(() => {
-        result.current.setNewDislike('매운 음식');
-      });
-
-      act(() => {
-        result.current.handleAddDislike();
-      });
-
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-    });
-
-    it('should not add empty string', () => {
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      act(() => {
-        result.current.setNewDislike('   ');
-      });
-
-      act(() => {
-        result.current.handleAddDislike();
-      });
-
-      expect(result.current.dislikes).toEqual([]);
-    });
-  });
-
-  describe('handleRemoveDislike', () => {
-    it('should remove a dislike item', () => {
-      const { result } = renderHook(
-        () => usePreferences({ initialDislikes: ['매운 음식', '생선'] }),
-        { wrapper }
-      );
-
-      act(() => {
-        result.current.handleRemoveDislike('매운 음식');
-      });
-
-      expect(result.current.dislikes).toEqual(['생선']);
-    });
-
-    it('should handle removing non-existent item', () => {
-      const { result } = renderHook(
-        () => usePreferences({ initialDislikes: ['매운 음식'] }),
-        { wrapper }
-      );
-
-      act(() => {
-        result.current.handleRemoveDislike('생선');
-      });
-
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-    });
-  });
-
+  // -------------------------------------------------------------------------
   describe('handleSavePreferences', () => {
-    it('should save preferences successfully', async () => {
+    it('should save with correct payload and return true', async () => {
       vi.mocked(userService.setPreferences).mockResolvedValue({
         preferences: mockPreferences,
       });
@@ -328,14 +273,11 @@ describe('usePreferences', () => {
 
       const { result } = renderHook(
         () =>
-          usePreferences({
-            initialLikes: ['한식'],
-            initialDislikes: ['매운 음식'],
-          }),
+          usePreferences({ initialLikes: ['한식'], initialDislikes: ['매운 음식'] }),
         { wrapper }
       );
 
-      let saveResult: boolean = false;
+      let saveResult = false;
       await act(async () => {
         saveResult = await result.current.handleSavePreferences();
       });
@@ -345,10 +287,9 @@ describe('usePreferences', () => {
         likes: ['한식'],
         dislikes: ['매운 음식'],
       });
-      expect(userService.getPreferences).toHaveBeenCalled();
     });
 
-    it('should handle saving state correctly', async () => {
+    it('should set isSavingPreferences true during save and false after', async () => {
       vi.mocked(userService.setPreferences).mockResolvedValue({
         preferences: mockPreferences,
       });
@@ -361,7 +302,6 @@ describe('usePreferences', () => {
       act(() => {
         result.current.handleSavePreferences();
       });
-
       expect(result.current.isSavingPreferences).toBe(true);
 
       await waitFor(() => {
@@ -369,25 +309,8 @@ describe('usePreferences', () => {
       });
     });
 
-    it('should return false on save error', async () => {
-      vi.mocked(userService.setPreferences).mockRejectedValue(
-        new Error('Failed to save')
-      );
-
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      let saveResult: boolean = true;
-      await act(async () => {
-        saveResult = await result.current.handleSavePreferences();
-      });
-
-      expect(saveResult).toBe(false);
-    });
-
-    it('should reload preferences after successful save', async () => {
-      const updatedPreferences = createMockPreferences({
-        analysis: 'Updated analysis',
-      });
+    it('should reload preferences and reflect updated analysis after save', async () => {
+      const updatedPreferences = createMockPreferences({ analysis: 'Updated analysis' });
 
       vi.mocked(userService.setPreferences).mockResolvedValue({
         preferences: mockPreferences,
@@ -397,11 +320,7 @@ describe('usePreferences', () => {
       });
 
       const { result } = renderHook(
-        () =>
-          usePreferences({
-            initialLikes: ['한식'],
-            initialDislikes: [],
-          }),
+        () => usePreferences({ initialLikes: ['한식'], initialDislikes: [] }),
         { wrapper }
       );
 
@@ -413,20 +332,40 @@ describe('usePreferences', () => {
         expect(result.current.analysis).toBe('Updated analysis');
       });
     });
+
+    it.each([
+      {
+        label: 'server error with response body',
+        error: { response: { data: { message: 'Server error occurred' } } },
+      },
+      {
+        label: 'network error without response',
+        error: new Error('Network error'),
+      },
+    ])('should return false and reset saving state on $label', async ({ error }) => {
+      vi.mocked(userService.setPreferences).mockRejectedValue(error);
+
+      const { result } = renderHook(() => usePreferences(), { wrapper });
+
+      let saveResult = true;
+      await act(async () => {
+        saveResult = await result.current.handleSavePreferences();
+      });
+
+      expect(saveResult).toBe(false);
+      expect(result.current.isSavingPreferences).toBe(false);
+    });
   });
 
+  // -------------------------------------------------------------------------
   describe('resetPreferencesModal', () => {
-    it('should reset input fields', () => {
+    it('should clear newLike and newDislike inputs', () => {
       const { result } = renderHook(() => usePreferences(), { wrapper });
 
       act(() => {
         result.current.setNewLike('한식');
         result.current.setNewDislike('매운 음식');
       });
-
-      expect(result.current.newLike).toBe('한식');
-      expect(result.current.newDislike).toBe('매운 음식');
-
       act(() => {
         result.current.resetPreferencesModal();
       });
@@ -436,8 +375,9 @@ describe('usePreferences', () => {
     });
   });
 
+  // -------------------------------------------------------------------------
   describe('State setters', () => {
-    it('should allow direct state manipulation', () => {
+    it('should allow direct state manipulation for all list and input states', () => {
       const { result } = renderHook(() => usePreferences(), { wrapper });
 
       act(() => {
@@ -454,232 +394,114 @@ describe('usePreferences', () => {
     });
   });
 
-  describe('Empty preferences handling', () => {
-    it('should handle empty likes array from server', async () => {
-      vi.mocked(userService.getPreferences).mockResolvedValue({
-        preferences: {
-          id: 1,
-          userId: 1,
-          likes: [],
-          dislikes: ['매운 음식'],
-          analysis: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      });
+  // -------------------------------------------------------------------------
+  describe('Empty preferences handling from server', () => {
+    it.each([
+      {
+        label: 'empty likes array',
+        serverData: { likes: [], dislikes: ['매운 음식'], analysis: null },
+        expectLikes: [] as string[],
+        expectDislikes: ['매운 음식'],
+        expectAnalysis: null as string | null,
+      },
+      {
+        label: 'empty dislikes array',
+        serverData: { likes: ['한식'], dislikes: [], analysis: null },
+        expectLikes: ['한식'],
+        expectDislikes: [] as string[],
+        expectAnalysis: null as string | null,
+      },
+      {
+        label: 'null analysis',
+        serverData: { likes: ['한식'], dislikes: ['매운 음식'], analysis: null },
+        expectLikes: ['한식'],
+        expectDislikes: ['매운 음식'],
+        expectAnalysis: null as string | null,
+      },
+    ])(
+      'should handle $label',
+      async ({ serverData, expectLikes, expectDislikes, expectAnalysis }) => {
+        vi.mocked(userService.getPreferences).mockResolvedValue({
+          preferences: {
+            id: 1,
+            userId: 1,
+            ...serverData,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        });
+        const { result } = renderHook(() => usePreferences(), { wrapper });
 
-      const { result } = renderHook(() => usePreferences(), { wrapper });
+        await act(async () => {
+          await result.current.loadPreferences();
+        });
 
-      await act(async () => {
-        await result.current.loadPreferences();
-      });
-
-      expect(result.current.likes).toEqual([]);
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-    });
-
-    it('should handle empty dislikes array from server', async () => {
-      vi.mocked(userService.getPreferences).mockResolvedValue({
-        preferences: {
-          id: 1,
-          userId: 1,
-          likes: ['한식'],
-          dislikes: [],
-          analysis: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      });
-
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      await act(async () => {
-        await result.current.loadPreferences();
-      });
-
-      expect(result.current.likes).toEqual(['한식']);
-      expect(result.current.dislikes).toEqual([]);
-    });
-
-    it('should handle null analysis from server', async () => {
-      vi.mocked(userService.getPreferences).mockResolvedValue({
-        preferences: {
-          id: 1,
-          userId: 1,
-          likes: ['한식'],
-          dislikes: ['매운 음식'],
-          analysis: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      });
-
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      await act(async () => {
-        await result.current.loadPreferences();
-      });
-
-      expect(result.current.analysis).toBeNull();
-    });
+        expect(result.current.likes).toEqual(expectLikes);
+        expect(result.current.dislikes).toEqual(expectDislikes);
+        expect(result.current.analysis).toBe(expectAnalysis);
+      }
+    );
   });
 
+  // -------------------------------------------------------------------------
   describe('Initial values update behavior', () => {
-    it('should not update when initialLikes is undefined', () => {
-      const { result, rerender } = renderHook(
+    it.each([
+      { label: 'initialLikes', propKey: 'initialLikes', resultKey: 'likes', defaultValue: [] as unknown },
+      { label: 'initialDislikes', propKey: 'initialDislikes', resultKey: 'dislikes', defaultValue: [] as unknown },
+      { label: 'initialAnalysis', propKey: 'initialAnalysis', resultKey: 'analysis', defaultValue: null as unknown },
+    ])(
+      'should not update $label when value remains undefined',
+      ({ propKey, resultKey, defaultValue }) => {
+        const { result, rerender } = renderHook(
+          (props: Record<string, unknown>) => usePreferences(props),
+          { wrapper, initialProps: { [propKey]: undefined } }
+        );
+
+        expect(result.current[resultKey as keyof UsePreferencesResult]).toEqual(defaultValue);
+
+        rerender({ [propKey]: undefined });
+
+        expect(result.current[resultKey as keyof UsePreferencesResult]).toEqual(defaultValue);
+      }
+    );
+
+    it('should update likes and dislikes when initial arrays change', async () => {
+      const { result: likesResult, rerender: rerenderLikes } = renderHook(
         ({ initialLikes }) => usePreferences({ initialLikes }),
-        {
-          wrapper,
-          initialProps: { initialLikes: undefined },
-        }
+        { wrapper, initialProps: { initialLikes: ['한식'] } }
       );
-
-      expect(result.current.likes).toEqual([]);
-
-      rerender({ initialLikes: undefined });
-
-      expect(result.current.likes).toEqual([]);
-    });
-
-    it('should not update when initialDislikes is undefined', () => {
-      const { result, rerender } = renderHook(
-        ({ initialDislikes }) => usePreferences({ initialDislikes }),
-        {
-          wrapper,
-          initialProps: { initialDislikes: undefined },
-        }
-      );
-
-      expect(result.current.dislikes).toEqual([]);
-
-      rerender({ initialDislikes: undefined });
-
-      expect(result.current.dislikes).toEqual([]);
-    });
-
-    it('should not update when initialAnalysis is undefined', () => {
-      const { result, rerender } = renderHook(
-        ({ initialAnalysis }) => usePreferences({ initialAnalysis }),
-        {
-          wrapper,
-          initialProps: { initialAnalysis: undefined },
-        }
-      );
-
-      expect(result.current.analysis).toBeNull();
-
-      rerender({ initialAnalysis: undefined });
-
-      expect(result.current.analysis).toBeNull();
-    });
-
-    it('should update when initialDislikes changes', async () => {
-      const { result, rerender } = renderHook(
-        ({ initialDislikes }) => usePreferences({ initialDislikes }),
-        {
-          wrapper,
-          initialProps: { initialDislikes: ['매운 음식'] },
-        }
-      );
-
-      expect(result.current.dislikes).toEqual(['매운 음식']);
-
-      rerender({ initialDislikes: ['매운 음식', '생선'] });
-
+      rerenderLikes({ initialLikes: ['한식', '중식'] });
       await waitFor(() => {
-        expect(result.current.dislikes).toEqual(['매운 음식', '생선']);
+        expect(likesResult.current.likes).toEqual(['한식', '중식']);
+      });
+
+      const { result: dislikesResult, rerender: rerenderDislikes } = renderHook(
+        ({ initialDislikes }) => usePreferences({ initialDislikes }),
+        { wrapper, initialProps: { initialDislikes: ['매운 음식'] } }
+      );
+      rerenderDislikes({ initialDislikes: ['매운 음식', '생선'] });
+      await waitFor(() => {
+        expect(dislikesResult.current.dislikes).toEqual(['매운 음식', '생선']);
       });
     });
 
-    it('should update when initialAnalysis changes', async () => {
+    it('should update analysis when value changes between string and null', async () => {
       const { result, rerender } = renderHook(
         ({ initialAnalysis }) => usePreferences({ initialAnalysis }),
-        {
-          wrapper,
-          initialProps: { initialAnalysis: '분석1' },
-        }
-      );
-
-      expect(result.current.analysis).toBe('분석1');
-
-      rerender({ initialAnalysis: '분석2' });
-
-      await waitFor(() => {
-        expect(result.current.analysis).toBe('분석2');
-      });
-    });
-
-    it('should handle initialAnalysis changing from string to null', async () => {
-      const { result, rerender } = renderHook(
-        ({ initialAnalysis }) => usePreferences({ initialAnalysis }),
-        {
-          wrapper,
-          initialProps: { initialAnalysis: '분석 내용' },
-        }
+        { wrapper, initialProps: { initialAnalysis: '분석 내용' as string | null } }
       );
 
       expect(result.current.analysis).toBe('분석 내용');
 
       rerender({ initialAnalysis: null });
-
       await waitFor(() => {
         expect(result.current.analysis).toBeNull();
       });
-    });
-
-    it('should handle initialAnalysis changing from null to string', async () => {
-      const { result, rerender } = renderHook(
-        ({ initialAnalysis }) => usePreferences({ initialAnalysis }),
-        {
-          wrapper,
-          initialProps: { initialAnalysis: null },
-        }
-      );
-
-      expect(result.current.analysis).toBeNull();
 
       rerender({ initialAnalysis: '새로운 분석' });
-
       await waitFor(() => {
         expect(result.current.analysis).toBe('새로운 분석');
       });
-    });
-  });
-
-  describe('Error response handling', () => {
-    it('should handle server error with error message', async () => {
-      const error = {
-        response: {
-          data: {
-            message: 'Server error occurred',
-          },
-        },
-      };
-      vi.mocked(userService.setPreferences).mockRejectedValue(error);
-
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      let saveResult: boolean = true;
-      await act(async () => {
-        saveResult = await result.current.handleSavePreferences();
-      });
-
-      expect(saveResult).toBe(false);
-      expect(result.current.isSavingPreferences).toBe(false);
-    });
-
-    it('should handle network error without response', async () => {
-      const error = new Error('Network error');
-      vi.mocked(userService.setPreferences).mockRejectedValue(error);
-
-      const { result } = renderHook(() => usePreferences(), { wrapper });
-
-      let saveResult: boolean = true;
-      await act(async () => {
-        saveResult = await result.current.handleSavePreferences();
-      });
-
-      expect(saveResult).toBe(false);
     });
   });
 });

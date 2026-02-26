@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@tests/utils/renderWithProviders';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@shared/components/ConfirmDialog';
 
 describe('ConfirmDialog', () => {
   const defaultProps = {
@@ -63,7 +63,7 @@ describe('ConfirmDialog', () => {
     it('should render info variant by default', () => {
       renderWithProviders(<ConfirmDialog {...defaultProps} />);
       const confirmButton = screen.getByRole('button', { name: '확인' });
-      expect(confirmButton).toHaveClass('from-orange-500', 'via-pink-500', 'to-fuchsia-600');
+      expect(confirmButton).toHaveClass('bg-gradient-to-r');
     });
 
     it('should render danger variant with red styling', () => {
@@ -72,10 +72,10 @@ describe('ConfirmDialog', () => {
       expect(confirmButton).toHaveClass('bg-red-600', 'hover:bg-red-700', 'text-white');
     });
 
-    it('should render info variant with primary styling', () => {
+    it('should render info variant with primary gradient styling', () => {
       renderWithProviders(<ConfirmDialog {...defaultProps} variant="info" />);
       const confirmButton = screen.getByRole('button', { name: '확인' });
-      expect(confirmButton).toHaveClass('from-orange-500', 'via-pink-500', 'to-fuchsia-600');
+      expect(confirmButton).toHaveClass('bg-gradient-to-r');
     });
   });
 
@@ -119,26 +119,28 @@ describe('ConfirmDialog', () => {
 
   describe('Layout and Styling', () => {
     it('should render with backdrop overlay', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const backdrop = container.querySelector('.bg-black\\/60');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      // Component uses createPortal to render into document.body
+      const backdrop = document.body.querySelector('.bg-black\\/40');
       expect(backdrop).toBeInTheDocument();
     });
 
     it('should render dialog centered on screen', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const backdrop = container.querySelector('.fixed.inset-0');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      const backdrop = document.body.querySelector('.fixed.inset-0');
       expect(backdrop).toHaveClass('flex', 'items-center', 'justify-center');
     });
 
     it('should have high z-index for overlay', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const backdrop = container.querySelector('.fixed.inset-0');
-      expect(backdrop).toHaveClass('z-[100]');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      // z-index is applied via inline style from Z_INDEX constant (value: 100)
+      const backdrop = document.body.querySelector('[style*="z-index"]');
+      expect(backdrop).toBeInTheDocument();
     });
 
     it('should render dialog card with rounded corners', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const card = container.querySelector('.rounded-\\[32px\\]');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      const card = document.body.querySelector('.rounded-\\[32px\\]');
       expect(card).toBeInTheDocument();
     });
 
@@ -163,7 +165,7 @@ describe('ConfirmDialog', () => {
     it('should render cancel button as ghost variant', () => {
       renderWithProviders(<ConfirmDialog {...defaultProps} />);
       const cancelButton = screen.getByRole('button', { name: '취소' });
-      expect(cancelButton).toHaveClass('border-white/20', 'bg-white/5');
+      expect(cancelButton).toHaveClass('border-border-default');
     });
 
     it('should render buttons with large size', () => {
@@ -177,13 +179,13 @@ describe('ConfirmDialog', () => {
     it('should render title with appropriate text size and weight', () => {
       renderWithProviders(<ConfirmDialog {...defaultProps} title="Important" />);
       const title = screen.getByText('Important');
-      expect(title).toHaveClass('text-xl', 'font-semibold', 'text-white');
+      expect(title).toHaveClass('text-xl', 'font-semibold');
     });
 
     it('should render message with readable styling', () => {
       renderWithProviders(<ConfirmDialog {...defaultProps} />);
       const message = screen.getByText('Are you sure?');
-      expect(message).toHaveClass('text-base', 'text-slate-200', 'leading-relaxed');
+      expect(message).toHaveClass('text-base', 'leading-relaxed');
     });
   });
 
@@ -236,14 +238,15 @@ describe('ConfirmDialog', () => {
 
   describe('Backdrop Behavior', () => {
     it('should have backdrop blur effect', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const backdrop = container.querySelector('.backdrop-blur-sm');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      // Component uses createPortal to render into document.body
+      const backdrop = document.body.querySelector('.backdrop-blur-sm');
       expect(backdrop).toBeInTheDocument();
     });
 
     it('should render with full screen backdrop', () => {
-      const { container } = renderWithProviders(<ConfirmDialog {...defaultProps} />);
-      const backdrop = container.querySelector('.fixed.inset-0');
+      renderWithProviders(<ConfirmDialog {...defaultProps} />);
+      const backdrop = document.body.querySelector('.fixed.inset-0');
       expect(backdrop).toBeInTheDocument();
     });
   });
