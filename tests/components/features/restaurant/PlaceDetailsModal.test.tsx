@@ -13,43 +13,13 @@ vi.mock('@features/agent/api', () => ({
   },
 }));
 
-// Mock naver maps
-function setupNaverMapsMock() {
-  const mockNaverMaps = {
-    LatLng: function(this: { lat: number; lng: number }, lat: number, lng: number) {
-      this.lat = lat;
-      this.lng = lng;
-    },
-    Map: function() {
-      return {
-        setCenter: vi.fn(),
-        setZoom: vi.fn(),
-      };
-    },
-    Marker: function() { return {}; },
-    Event: {
-      trigger: vi.fn(),
-    },
-  };
-
-  (window as unknown as { naver: { maps: typeof mockNaverMaps } }).naver = {
-    maps: mockNaverMaps,
-  };
-}
-
 describe('PlaceDetailsModal', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    setupNaverMapsMock();
     // Mock blogs API
     vi.mocked(menuService.getRestaurantBlogs).mockResolvedValue({ blogs: [] });
-  });
-
-  afterEach(() => {
-    // Set to undefined instead of delete since jsdom doesn't allow deletion
-    (window as unknown as { naver: unknown }).naver = undefined;
   });
 
   describe('렌더링 테스트', () => {

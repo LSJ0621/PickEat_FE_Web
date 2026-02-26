@@ -133,32 +133,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Naver Maps SDK mock
-const naverMapsMock = {
-  maps: {
-    Map: vi.fn().mockImplementation(() => ({
-      setCenter: vi.fn(),
-      setZoom: vi.fn(),
-      panTo: vi.fn(),
-      destroy: vi.fn(),
-    })),
-    LatLng: vi.fn().mockImplementation((lat: number, lng: number) => ({ lat, lng })),
-    Marker: vi.fn().mockImplementation(() => ({
-      setMap: vi.fn(),
-      setPosition: vi.fn(),
-    })),
-    InfoWindow: vi.fn().mockImplementation(() => ({
-      open: vi.fn(),
-      close: vi.fn(),
-    })),
-    Event: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-  },
-};
-Object.defineProperty(window, 'naver', { value: naverMapsMock, writable: true });
-
 // Google Maps mock
 vi.mock('@googlemaps/js-api-loader', () => ({
   Loader: vi.fn().mockImplementation(() => ({
@@ -170,4 +144,3 @@ vi.mock('@googlemaps/js-api-loader', () => ({
 vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3000');
 vi.stubEnv('VITE_KAKAO_CLIENT_ID', 'mock-kakao-client-id');
 vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'mock-google-client-id');
-vi.stubEnv('VITE_NAVER_MAP_CLIENT_ID', 'mock-naver-map-client-id');
