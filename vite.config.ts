@@ -34,20 +34,15 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Chart 라이브러리 (React 비의존, lazy-load 대상)
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
-              return 'chart-vendor';
-            }
-
-            // Admin 번들 (lazy-load 라우트)
+            // Admin 번들 (앱 코드, lazy-load 라우트 - React 로드 순서 무관)
             if (
               id.includes('/features/admin/') ||
               id.includes('/app/layouts/AdminLayout')
             ) {
               return 'admin';
             }
-
-            // 나머지 node_modules는 Rollup 자동 분할에 위임
+            // node_modules는 Rollup 자동 분할에 위임
+            // (수동 분리 시 청크 간 로드 순서 미보장으로 런타임 에러 발생)
           },
         },
       },
