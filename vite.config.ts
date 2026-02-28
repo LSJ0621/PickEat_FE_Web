@@ -18,6 +18,7 @@ export default defineConfig(() => {
         '@features': path.resolve(__dirname, './src/features'),
         '@app': path.resolve(__dirname, './src/app'),
       },
+      dedupe: ['react', 'react-dom'],
     },
     optimizeDeps: {
       include: [
@@ -51,25 +52,21 @@ export default defineConfig(() => {
               return 'admin';
             }
 
-            // React 생태계
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
-              return 'react-vendor';
-            }
-
-            // Redux 생태계
-            if (id.includes('node_modules/@reduxjs/toolkit') || id.includes('node_modules/react-redux')) {
-              return 'redux-vendor';
-            }
-
-            // UI 라이브러리 - 모든 @radix-ui/* 패키지를 단일 청크로 묶어
-            // 내부 패키지(@radix-ui/react-primitive 등)가 다른 청크에 분산되어
-            // 발생하는 TDZ(Temporal Dead Zone) 런타임 에러를 방지한다.
+            // React + UI 라이브러리 (같은 청크로 묶어 로드 순서 보장)
             if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router-dom/') ||
               id.includes('node_modules/@radix-ui/') ||
               id.includes('node_modules/class-variance-authority') ||
               id.includes('node_modules/lucide-react')
             ) {
               return 'ui-vendor';
+            }
+
+            // Redux 생태계
+            if (id.includes('node_modules/@reduxjs/toolkit') || id.includes('node_modules/react-redux')) {
+              return 'redux-vendor';
             }
 
             // 유틸리티
