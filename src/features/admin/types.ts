@@ -138,6 +138,7 @@ export interface AdminUserPlaceListItem {
   lastRejectedAt?: string;
   createdAt: string;
   updatedAt: string;
+  version: number; // For optimistic locking
   user: {
     id: number;
     email: string;
@@ -172,5 +173,5 @@ export interface UpdateUserPlaceByAdminRequest {
   phoneNumber?: string;
   category?: string;
   description?: string;
-  version?: number; // For optimistic locking
+  version: number; // For optimistic locking
 }

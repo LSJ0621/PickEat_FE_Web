@@ -7,6 +7,7 @@ import { userService } from '@features/user/api';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useAppDispatch } from '@app/store/hooks';
 import { updateUser } from '@app/store/slices/authSlice';
+import { invalidateAddresses } from '@app/store/slices/userDataSlice';
 import type { Language } from '@shared/types/common';
 import type { AddressSearchResult, SelectedAddress } from '@features/user/types';
 import { useState, useCallback } from 'react';
@@ -97,7 +98,8 @@ export const useAddressModal = (options?: UseAddressModalOptions) => {
         );
       }
 
-      // 주소 추가 후 리스트 새로고침 (콜백이 있으면 사용)
+      // Redux 캐시 무효화 후 리스트 새로고침
+      dispatch(invalidateAddresses());
       if (onAddressAdded) {
         await onAddressAdded();
       }

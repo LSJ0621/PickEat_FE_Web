@@ -22,13 +22,14 @@ interface UseVerificationTimerReturn {
 export const useVerificationTimer = (): UseVerificationTimerReturn => {
   const [remaining, setRemaining] = useState(0);
 
+  const isRunning = remaining > 0;
   useEffect(() => {
-    if (remaining <= 0) return;
+    if (!isRunning) return;
     const timer = setInterval(() => {
       setRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [remaining]);
+  }, [isRunning]);
 
   const start = (seconds: number) => {
     setRemaining(seconds);

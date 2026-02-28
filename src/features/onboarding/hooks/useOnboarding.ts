@@ -8,8 +8,11 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { STORAGE_KEYS } from '@shared/utils/constants';
+import { useAppDispatch } from '@app/store/hooks';
+import { invalidateAddresses, invalidatePreferences } from '@app/store/slices/userDataSlice';
 
 export function useOnboarding() {
+  const dispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -44,9 +47,11 @@ export function useOnboarding() {
 
   const complete = useCallback(() => {
     localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
+    dispatch(invalidateAddresses());
+    dispatch(invalidatePreferences());
     setIsOpen(false);
     setCurrentStep(0);
-  }, []);
+  }, [dispatch]);
 
   const skip = useCallback(() => {
     localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');

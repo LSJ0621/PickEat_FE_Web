@@ -49,6 +49,16 @@ export const OAuthKakaoRedirect = () => {
 
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
+      const returnedState = urlParams.get('state');
+      const savedState = sessionStorage.getItem('oauth_state');
+
+      if (!returnedState || returnedState !== savedState) {
+        sessionStorage.removeItem('oauth_state');
+        setError(t('oauth.error.invalidState') || '유효하지 않은 요청입니다. 다시 로그인해 주세요.');
+        setLoading(false);
+        return;
+      }
+      sessionStorage.removeItem('oauth_state');
 
       if (!code) {
         setError(t('oauth.error.noCode'));

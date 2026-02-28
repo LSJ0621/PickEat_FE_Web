@@ -6,15 +6,18 @@
 import { AdminPageBackground } from '@features/admin/components/common/AdminPageBackground';
 import { AdminTab } from '@features/admin/components/settings';
 import { useAppSelector } from '@app/store/hooks';
+import { decodeJwt } from '@shared/utils/jwt';
+import { STORAGE_KEYS } from '@shared/utils/constants';
 
 export function AdminSettingsPage() {
   const user = useAppSelector((state) => state.auth?.user);
   const userRole = user?.role;
   const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
-  // 현재 사용자 ID 추출 (User 타입에는 id가 없으므로 undefined)
-  // TODO: Backend에서 /auth/me API가 user id를 반환하도록 수정하거나, JWT에 userId를 포함하도록 수정 필요
-  const currentUserId = undefined;
+  // 현재 사용자 ID를 JWT 토큰의 sub 필드에서 추출
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const decoded = decodeJwt(token);
+  const currentUserId = decoded?.sub;
 
   // SUPER_ADMIN이 아니면 접근 불가 메시지 표시
   if (!isSuperAdmin) {

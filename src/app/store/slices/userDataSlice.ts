@@ -66,15 +66,11 @@ export const fetchAddresses = createAsyncThunk(
     }
 
     try {
-      const [addressesResponse, defaultResponse] = await Promise.all([
-        userService.getAddresses(),
-        userService.getDefaultAddress(),
-      ]);
+      const addressesResponse = await userService.getAddresses();
+      const list = addressesResponse.addresses;
+      const defaultAddress = list.find((addr) => addr.isDefault) ?? null;
 
-      return {
-        list: addressesResponse.addresses,
-        defaultAddress: defaultResponse.address,
-      };
+      return { list, defaultAddress };
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error, '주소를 불러오지 못했습니다'));
     }

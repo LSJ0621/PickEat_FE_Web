@@ -332,7 +332,8 @@
       "aliasPlaceholder": "Enter alias (e.g., Home, Office) - Optional",
       "clearSelection": "Clear Selection",
       "addButton": "Add Address",
-      "default": "Default"
+      "default": "Default",
+      "deleteConfirmTitle": "Delete Address"
     }
   },
   "userPlace": {
@@ -355,6 +356,18 @@
     "phoneNumberPlaceholder": "Enter phone number (optional)",
     "category": "Category",
     "selectCategory": "Select Category",
+    "categories": {
+      "korean": "Korean",
+      "chinese": "Chinese",
+      "japanese": "Japanese",
+      "western": "Western",
+      "bunsik": "Korean Snacks",
+      "cafe": "Cafe",
+      "bakery": "Bakery",
+      "dessert": "Dessert",
+      "bar": "Bar",
+      "other": "Other"
+    },
     "description": "Description",
     "descriptionPlaceholder": "Enter description about the place (optional)",
     "status": {
@@ -393,7 +406,17 @@
       "photosHint": "Up to 5 photos",
       "addPhoto": "Add Photo",
       "openingHours": "Opening Hours",
-      "openingHoursPlaceholder": "e.g., Daily 11:00-21:00, Closed on Mondays"
+      "openingHoursPlaceholder": "e.g., Daily 11:00-21:00, Closed on Mondays",
+      "uploadDragOrClick": "Drag or click to upload images",
+      "uploadMaxReached": "Maximum number reached",
+      "uploadHint": "Up to {{maxTotal}}, max {{maxSize}}MB each ({{currentTotal}}/{{maxTotal}})",
+      "uploadSizeError": "File size must be {{maxSize}}MB or less.",
+      "uploadTypeError": "Unsupported image format. (JPG, PNG, GIF, WEBP only)",
+      "uploadMaxError": "You can upload up to {{maxTotal}} photos.",
+      "existingPhotoAlt": "Existing photo {{index}}",
+      "existingPhotoBadge": "Existing",
+      "newPhotoAlt": "New photo {{index}}",
+      "newPhotoBadge": "New"
     }
   },
   "menu": {
@@ -408,7 +431,12 @@
       "select": "Select Menu",
       "reason": "Recommendation Reason",
       "aiLabel": "AI Recommended Menu",
-      "clickHint": "Click on a menu to search for restaurants"
+      "clickHint": "Click on a menu to search for restaurants",
+      "validating": "Validating your request...",
+      "searching": "Validation complete. Searching the web...",
+      "recommending": "Web search done. Recommending menus...",
+      "retrying": "No response received. Retrying...",
+      "retryHint": "Please wait a moment"
     },
     "loginRequired": "Login is required.",
     "promptRequired": "Please enter a menu recommendation request.",
@@ -710,6 +738,11 @@
     "noRecommendations": "No recommendations yet. Try AI recommendations.",
     "tapCardForDetails": "Tap a restaurant card to view details.",
     "aiSearching": "AI is searching for restaurants...",
+    "aiSearchingDetailed": "AI is searching the web and exploring restaurants",
+    "aiRetrying": "No response received. Retrying...",
+    "selectStore": "Select Restaurant",
+    "searchRecommendations": "Search Recommendations",
+    "communityRecommendations": "Community Recommendations",
     "recommendationStores": "Recommended Stores",
     "totalStoresVisible": "Total {{count}} stores are visible.",
     "andMoreStores": "And {{count}} more stores",
@@ -795,8 +828,7 @@
     "status": {
       "unconfirmed": "Unconfirmed",
       "confirmed": "Confirmed",
-      "fixed": "Fixed",
-      "closed": "Closed"
+      "fixed": "Fixed"
     },
     "form": {
       "imageLabel": "Images (Optional)",

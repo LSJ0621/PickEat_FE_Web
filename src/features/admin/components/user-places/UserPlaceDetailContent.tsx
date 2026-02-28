@@ -4,6 +4,7 @@
  */
 
 import type { AdminUserPlaceListItem } from '@features/admin/types';
+import { USER_PLACE_CATEGORIES } from '@features/user-place/types';
 import { useTranslation } from 'react-i18next';
 import { formatDateTimeKorean } from '@shared/utils/format';
 import { UserPlaceImageUploader } from '@features/user-place/components/UserPlaceImageUploader';
@@ -50,6 +51,7 @@ interface BasicInfoPanelProps {
 }
 
 function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicInfoPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 rounded-lg border border-border-default bg-bg-primary p-4">
       <div>
@@ -71,9 +73,14 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
       <div>
         <div className="text-sm text-text-tertiary">카테고리</div>
         {isEditing ? (
-          <input type="text" value={editForm.category} onChange={(e) => onEditFormChange({ ...editForm, category: e.target.value })} className={INPUT_CLASS} />
+          <select value={editForm.category} onChange={(e) => onEditFormChange({ ...editForm, category: e.target.value })} className={INPUT_CLASS}>
+            <option value="">{t('userPlace.selectCategory')}</option>
+            {USER_PLACE_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{t(`userPlace.categories.${cat}`)}</option>
+            ))}
+          </select>
         ) : (
-          <div className="text-text-primary">{place.category}</div>
+          <div className="text-text-primary">{place.category ? t(`userPlace.categories.${place.category}`, { defaultValue: place.category }) : '-'}</div>
         )}
       </div>
       <div>

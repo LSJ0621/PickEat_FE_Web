@@ -14,6 +14,7 @@ import { MapPin, Phone, Tag, Clock, Image } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDateTimeLocale } from '@shared/utils/format';
 import { UserPlaceStatusBadge } from './UserPlaceStatusBadge';
 
 interface UserPlaceDetailModalProps {
@@ -31,7 +32,7 @@ export function UserPlaceDetailModal({
   onEdit,
   onDelete,
 }: UserPlaceDetailModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAnimating, shouldRender } = useModalAnimation(open && !!place);
   useModalScrollLock(open && !!place);
 
@@ -118,7 +119,7 @@ export function UserPlaceDetailModal({
                 <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                   {t('userPlace.category')}
                 </p>
-                <p className="text-sm text-text-primary">{place.category}</p>
+                <p className="text-sm text-text-primary">{t(`userPlace.categories.${place.category}`, { defaultValue: place.category })}</p>
               </div>
             </div>
           )}
@@ -196,11 +197,11 @@ export function UserPlaceDetailModal({
           <div className="grid grid-cols-2 gap-4 border-t border-border-default pt-4 text-xs">
             <div>
               <p className="mb-1 text-text-tertiary">{t('userPlace.createdAt')}</p>
-              <p className="text-text-secondary">{new Date(place.createdAt).toLocaleString()}</p>
+              <p className="text-text-secondary">{formatDateTimeLocale(place.createdAt, i18n.language)}</p>
             </div>
             <div>
               <p className="mb-1 text-text-tertiary">{t('userPlace.updatedAt')}</p>
-              <p className="text-text-secondary">{new Date(place.updatedAt).toLocaleString()}</p>
+              <p className="text-text-secondary">{formatDateTimeLocale(place.updatedAt, i18n.language)}</p>
             </div>
           </div>
         </div>

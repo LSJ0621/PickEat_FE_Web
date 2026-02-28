@@ -61,7 +61,6 @@ export const BugReportFilters = ({
               <option value="UNCONFIRMED">{t('bugReport.status.unconfirmed')}</option>
               <option value="CONFIRMED">{t('bugReport.status.confirmed')}</option>
               <option value="FIXED">{t('bugReport.status.fixed')}</option>
-              <option value="CLOSED">{t('bugReport.status.closed')}</option>
               <option value="ALL">{t('common.all')}</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">

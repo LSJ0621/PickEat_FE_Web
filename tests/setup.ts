@@ -12,8 +12,8 @@ beforeAll(async () => {
 afterAll(() => {
   server.close();
   vi.resetModules();
-  if (global.gc) {
-    global.gc();
+  if ((globalThis as any).gc) {
+    (globalThis as any).gc();
   }
 });
 afterEach(() => {

@@ -102,9 +102,7 @@ export const adminService = {
   updateUserPlace: async (id: number, data: UpdateUserPlaceByAdminRequest): Promise<AdminUserPlaceListItem> => {
     const formData = new FormData();
 
-    if (data.version !== undefined) {
-      formData.append('version', data.version.toString());
-    }
+    formData.append('version', data.version.toString());
     if (data.name) {
       formData.append('name', data.name);
     }

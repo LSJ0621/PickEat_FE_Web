@@ -120,7 +120,7 @@ export function PlaceRatingHistory() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              className="rounded-xl border border-border-default bg-bg-surface p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-semibold text-text-primary">{item.placeName}</p>
@@ -131,12 +131,12 @@ export function PlaceRatingHistory() {
                 {item.rating !== null ? (
                   <div className="flex items-center gap-2">
                     <ReadOnlyStars rating={item.rating} />
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
                       {t('rating.statusRated')}
                     </span>
                   </div>
                 ) : item.skipped ? (
-                  <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                  <span className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
                     {t('rating.statusSkipped')}
                   </span>
                 ) : (

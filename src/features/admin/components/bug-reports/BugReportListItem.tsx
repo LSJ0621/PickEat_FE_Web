@@ -34,11 +34,6 @@ export const BugReportListItem = memo(
             {t('bugReport.status.fixed')}
           </span>
         ),
-        CLOSED: (
-          <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-600">
-            {t('bugReport.status.closed')}
-          </span>
-        ),
       };
       return badges[status];
     };

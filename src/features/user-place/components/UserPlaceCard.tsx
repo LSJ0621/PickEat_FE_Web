@@ -42,7 +42,7 @@ export function UserPlaceCard({ place, onClick }: UserPlaceCardProps) {
       {place.category && (
         <div className="mb-2 flex items-center gap-1.5">
           <Tag className="h-3.5 w-3.5 shrink-0 text-text-tertiary" />
-          <p className="text-xs text-text-tertiary">{place.category}</p>
+          <p className="text-xs text-text-tertiary">{t(`userPlace.categories.${place.category}`, { defaultValue: place.category })}</p>
         </div>
       )}
 

@@ -8,7 +8,7 @@ export interface BugReport {
   title: string;
   description: string;
   category: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  status: 'UNCONFIRMED' | 'CONFIRMED' | 'FIXED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   images: string[];
   userEmail: string;
@@ -37,7 +37,7 @@ export const mockBugReports: BugReport[] = [
     title: '로그인 버튼이 작동하지 않습니다',
     description: '로그인 페이지에서 로그인 버튼을 클릭해도 아무 반응이 없습니다.',
     category: 'BUG',
-    status: 'PENDING',
+    status: 'UNCONFIRMED',
     priority: 'HIGH',
     images: ['https://example.com/bug1.jpg'],
     userEmail: 'user1@example.com',
@@ -49,7 +49,7 @@ export const mockBugReports: BugReport[] = [
     title: '메뉴 추천이 느립니다',
     description: '메뉴 추천 요청 후 응답이 오기까지 10초 이상 걸립니다.',
     category: 'PERFORMANCE',
-    status: 'IN_PROGRESS',
+    status: 'CONFIRMED',
     priority: 'MEDIUM',
     images: [],
     userEmail: 'user2@example.com',
@@ -61,7 +61,7 @@ export const mockBugReports: BugReport[] = [
     title: '새로운 기능 제안: 즐겨찾기',
     description: '자주 가는 식당을 즐겨찾기에 추가하는 기능이 있으면 좋겠습니다.',
     category: 'FEATURE_REQUEST',
-    status: 'RESOLVED',
+    status: 'FIXED',
     priority: 'LOW',
     images: [],
     userEmail: 'user3@example.com',
@@ -149,7 +149,7 @@ export const bugReportHandlers = [
       );
     }
 
-    const validStatuses = ['PENDING', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+    const validStatuses = ['UNCONFIRMED', 'CONFIRMED', 'FIXED'];
     if (!validStatuses.includes(body.status)) {
       return HttpResponse.json(
         { message: '유효하지 않은 상태입니다.' },

@@ -169,11 +169,11 @@ describe('Bug Report Service', () => {
       );
 
       const result = await bugReportService.getBugReportList({
-        status: 'PENDING',
+        status: 'UNCONFIRMED',
       });
 
       expect(result.items).toBeDefined();
-      expect(result.items.every((r) => r.status === 'PENDING')).toBe(true);
+      expect(result.items.every((r) => r.status === 'UNCONFIRMED')).toBe(true);
     });
 
     it('should filter bug reports by date', async () => {
@@ -201,7 +201,7 @@ describe('Bug Report Service', () => {
       );
 
       const result = await bugReportService.getBugReportList({
-        status: 'PENDING',
+        status: 'UNCONFIRMED',
       });
 
       expect(result.items).toEqual([]);
@@ -270,7 +270,7 @@ describe('Bug Report Service', () => {
   });
 
   describe('updateBugReportStatus', () => {
-    it('should update bug report status to PENDING', async () => {
+    it('should update bug report status to CONFIRMED', async () => {
       server.use(
         http.patch(`${BASE_URL}/admin/bug-reports/:id/status`, async ({ params, request }) => {
           const { id } = params;
@@ -292,14 +292,14 @@ describe('Bug Report Service', () => {
         })
       );
 
-      const result = await bugReportService.updateBugReportStatus(1, 'PENDING');
+      const result = await bugReportService.updateBugReportStatus(1, 'CONFIRMED');
 
       expect(result.id).toBe(1);
-      expect(result.status).toBe('PENDING');
+      expect(result.status).toBe('CONFIRMED');
       expect(result.updatedAt).toBeDefined();
     });
 
-    it('should update bug report status to IN_PROGRESS', async () => {
+    it('should update bug report status to FIXED', async () => {
       server.use(
         http.patch(`${BASE_URL}/admin/bug-reports/:id/status`, async ({ params, request }) => {
           const { id } = params;
@@ -321,10 +321,10 @@ describe('Bug Report Service', () => {
         })
       );
 
-      const result = await bugReportService.updateBugReportStatus(1, 'IN_PROGRESS');
+      const result = await bugReportService.updateBugReportStatus(1, 'FIXED');
 
       expect(result.id).toBe(1);
-      expect(result.status).toBe('IN_PROGRESS');
+      expect(result.status).toBe('FIXED');
     });
 
     it('should update status with string id', async () => {
@@ -349,7 +349,7 @@ describe('Bug Report Service', () => {
         })
       );
 
-      const result = await bugReportService.updateBugReportStatus('2', 'IN_PROGRESS');
+      const result = await bugReportService.updateBugReportStatus('2', 'CONFIRMED');
 
       expect(result).toBeDefined();
       expect(result.status).toBeDefined();
@@ -366,13 +366,13 @@ describe('Bug Report Service', () => {
           }
           return HttpResponse.json({
             ...mockBugReports[0],
-            status: 'RESOLVED',
+            status: 'FIXED',
           });
         })
       );
 
       await expect(
-        bugReportService.updateBugReportStatus(999, 'RESOLVED')
+        bugReportService.updateBugReportStatus(999, 'FIXED')
       ).rejects.toThrow();
     });
 
@@ -381,7 +381,7 @@ describe('Bug Report Service', () => {
         http.patch(`${BASE_URL}/admin/bug-reports/:id/status`, async ({ request }) => {
           const body = (await request.json()) as { status: string };
 
-          const validStatuses = ['PENDING', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+          const validStatuses = ['UNCONFIRMED', 'CONFIRMED', 'FIXED'];
           if (!validStatuses.includes(body.status)) {
             return HttpResponse.json(
               { message: '유효하지 않은 상태입니다.' },
@@ -413,7 +413,7 @@ describe('Bug Report Service', () => {
       );
 
       await expect(
-        bugReportService.updateBugReportStatus(1, 'PENDING')
+        bugReportService.updateBugReportStatus(1, 'UNCONFIRMED')
       ).rejects.toThrow();
     });
   });

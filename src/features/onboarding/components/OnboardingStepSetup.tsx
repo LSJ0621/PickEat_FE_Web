@@ -9,9 +9,14 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle } from 'lucide-react';
 import { InitialSetupAddressSection } from '@features/user/components/setup/InitialSetupAddressSection';
 import { InitialSetupPreferencesSection } from '@features/user/components/setup/InitialSetupPreferencesSection';
-import { useAppSelector } from '@app/store/hooks';
+import { useAppSelector, useAppDispatch } from '@app/store/hooks';
 import { checkUserSetupStatus } from '@shared/utils/userSetup';
 import type { SelectedAddress } from '@features/user/types';
+import { userService } from '@features/user/api';
+import { updateUser } from '@app/store/slices/authSlice';
+import { invalidateAddresses, invalidatePreferences } from '@app/store/slices/userDataSlice';
+import { extractErrorMessage } from '@shared/utils/error';
+import { useToast } from '@shared/hooks';
 
 interface OnboardingStepSetupProps {
   onNext: () => void;
@@ -20,6 +25,8 @@ interface OnboardingStepSetupProps {
 
 export function OnboardingStepSetup({ onNext, onPrev }: OnboardingStepSetupProps) {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
   const user = useAppSelector((state) => state.auth?.user);
 
   const setupStatus = user
@@ -33,6 +40,8 @@ export function OnboardingStepSetup({ onNext, onPrev }: OnboardingStepSetupProps
     : { needsAddress: true, needsPreferences: true, needsName: false, hasAnyMissing: true };
 
   const alreadySetup = !setupStatus.needsAddress && !setupStatus.needsPreferences;
+
+  const [isSaving, setIsSaving] = useState(false);
 
   // Local state for address setup
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
@@ -57,6 +66,40 @@ export function OnboardingStepSetup({ onNext, onPrev }: OnboardingStepSetupProps
   const handleDislikesChange = useCallback((newDislikes: string[]) => {
     setDislikes(newDislikes);
   }, []);
+
+  const handleNext = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      if (selectedAddress) {
+        const createdAddress = await userService.createAddress({
+          selectedAddress,
+          alias: addressAlias.trim() || undefined,
+        });
+        // 온보딩은 첫 로그인 유저만 거치므로 항상 첫 주소 → isDefault=true
+        // useAddressModal은 addressesCount===0 가드를 추가하지만 여기선 불필요
+        if (createdAddress.isDefault) {
+          dispatch(updateUser({
+            address: createdAddress.roadAddress,
+            latitude: createdAddress.latitude,
+            longitude: createdAddress.longitude,
+          }));
+        }
+        dispatch(invalidateAddresses());
+      }
+
+      if (likes.length > 0 || dislikes.length > 0) {
+        const prefsResponse = await userService.setPreferences({ likes, dislikes });
+        dispatch(updateUser({ preferences: prefsResponse.preferences }));
+        dispatch(invalidatePreferences());
+      }
+
+      onNext();
+    } catch (error) {
+      toast(extractErrorMessage(error, t('onboarding.step4.saveError')), 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [selectedAddress, addressAlias, likes, dislikes, dispatch, onNext, toast, t]);
 
   if (alreadySetup) {
     return (
@@ -151,10 +194,11 @@ export function OnboardingStepSetup({ onNext, onPrev }: OnboardingStepSetupProps
         </button>
         <button
           type="button"
-          onClick={onNext}
-          className="flex-1 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 py-3 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition-all hover:shadow-orange-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+          onClick={handleNext}
+          disabled={isSaving}
+          className="flex-1 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 py-3 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition-all hover:shadow-orange-500/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {t('onboarding.next')}
+          {isSaving ? t('common.saving') : t('onboarding.next')}
         </button>
       </div>
     </div>

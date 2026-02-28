@@ -136,6 +136,11 @@ export const USER_PLACE = {
   ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
 } as const;
 
+// 주소 관련 상수
+export const ADDRESS = {
+  MAX_ADDRESS_COUNT: 4,
+} as const;
+
 // 시간대 슬롯 (홈 인사 메시지)
 export const TIME_SLOTS = {
   MORNING: { start: 5, end: 11 },

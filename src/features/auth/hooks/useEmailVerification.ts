@@ -8,7 +8,7 @@ import { useVerificationTimer } from '@features/auth/hooks/useVerificationTimer'
 import { ERROR_MESSAGES } from '@shared/utils/constants';
 import { extractErrorMessage } from '@shared/utils/error';
 import { formatSeconds } from '@shared/utils/format';
-import { getApiSuccessMessage, getApiErrorMessage } from '@shared/utils/translateMessage';
+import { getApiSuccessMessage, getApiErrorMessage, translateMessage } from '@shared/utils/translateMessage';
 import { isEmpty, isValidEmail } from '@shared/utils/validation';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -108,7 +108,10 @@ export const useEmailVerification = (
       }
 
       if (!result.available) {
-        setEmailError(result.message);
+        const errorMessage = result.errorCode
+          ? translateMessage(result.errorCode, result.message || t('emailVerification.checkEmailFailed'))
+          : result.message || t('emailVerification.checkEmailFailed');
+        setEmailError(errorMessage);
       }
     } catch (error: unknown) {
       const errorMessage = extractErrorMessage(error, t('emailVerification.checkEmailFailed'));

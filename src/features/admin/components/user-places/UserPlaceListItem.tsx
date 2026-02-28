@@ -49,7 +49,7 @@ export const UserPlaceListItem = memo(({ place, onClick }: UserPlaceListItemProp
           <div className="space-y-1">
             <h3 className="font-semibold text-text-primary">{place.name}</h3>
             <p className="text-sm text-text-tertiary">{place.address}</p>
-            <p className="text-sm text-text-placeholder">{place.category}</p>
+            <p className="text-sm text-text-placeholder">{t(`userPlace.categories.${place.category}`, { defaultValue: place.category })}</p>
           </div>
           <div className="flex items-center gap-4 text-xs text-text-placeholder">
             <span>{t('admin.userPlaces.list.registeredBy')}: {place.user.email}</span>

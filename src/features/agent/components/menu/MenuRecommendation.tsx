@@ -126,7 +126,9 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
       ? t('menu.recommendation.validating')
       : currentStatus === 'searching'
         ? t('menu.recommendation.searching')
-        : t('menu.recommendation.loading');
+        : currentStatus === 'recommending'
+          ? t('menu.recommendation.recommending')
+          : t('menu.recommendation.loading');
 
   const loadingHint = isRetrying
     ? t('menu.recommendation.retryHint')

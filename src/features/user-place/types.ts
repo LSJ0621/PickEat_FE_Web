@@ -83,16 +83,8 @@ export interface PaginatedUserPlaceResponse {
 }
 
 export const USER_PLACE_CATEGORIES = [
-  '한식',
-  '중식',
-  '일식',
-  '양식',
-  '분식',
-  '카페',
-  '베이커리',
-  '디저트',
-  '술집',
-  '기타',
+  'korean', 'chinese', 'japanese', 'western', 'bunsik',
+  'cafe', 'bakery', 'dessert', 'bar', 'other',
 ] as const;
 
 export type UserPlaceCategory = typeof USER_PLACE_CATEGORIES[number];

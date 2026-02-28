@@ -109,7 +109,8 @@ export interface PasswordResetResponse {
 
 export interface CheckEmailResponse {
   available: boolean;
-  message: string;
+  message?: string;
+  errorCode?: string;
   canReRegister?: boolean;
 }
 

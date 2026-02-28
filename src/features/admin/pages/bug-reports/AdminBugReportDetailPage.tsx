@@ -95,7 +95,6 @@ export function AdminBugReportDetailPage() {
       UNCONFIRMED: 'text-amber-700 bg-amber-500/20',
       CONFIRMED: 'text-orange-700 bg-orange-500/20',
       FIXED: 'text-blue-700 bg-blue-500/20',
-      CLOSED: 'text-green-700 bg-green-500/20',
     };
     return colors[status];
   };
@@ -105,7 +104,6 @@ export function AdminBugReportDetailPage() {
       UNCONFIRMED: t('bugReport.status.unconfirmed'),
       CONFIRMED: t('bugReport.status.confirmed'),
       FIXED: t('bugReport.status.fixed'),
-      CLOSED: t('bugReport.status.closed'),
     };
     return labels[status];
   };
@@ -200,7 +198,7 @@ export function AdminBugReportDetailPage() {
             <div className="rounded-lg border border-border-default bg-bg-surface p-6 shadow-sm">
               <h3 className="mb-4 text-sm font-semibold text-text-primary">상태 변경</h3>
               <div className="flex flex-wrap gap-3">
-                {(['UNCONFIRMED', 'CONFIRMED', 'FIXED', 'CLOSED'] as BugReportStatus[]).map((status) => (
+                {(['UNCONFIRMED', 'CONFIRMED', 'FIXED'] as BugReportStatus[]).map((status) => (
                   <button
                     key={status}
                     onClick={() => handleStatusChange(status)}

@@ -5,6 +5,7 @@
 
 import { USER_PLACE } from '@shared/utils/constants';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UserPlaceImageUploaderProps {
   existingPhotos: string[]; // 서버에서 가져온 사진 URL
@@ -23,6 +24,7 @@ export function UserPlaceImageUploader({
   onNewRemove,
   maxTotal = USER_PLACE.MAX_IMAGES,
 }: UserPlaceImageUploaderProps) {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewUrls, setPreviewUrls] = useState<Map<File, string>>(new Map());
@@ -51,14 +53,14 @@ export function UserPlaceImageUploader({
   const validateFile = useCallback((file: File): string | null => {
     // 파일 크기 검증
     if (file.size > USER_PLACE.MAX_IMAGE_SIZE) {
-      return `파일 크기는 ${USER_PLACE.MAX_IMAGE_SIZE / (1024 * 1024)}MB 이하여야 합니다.`;
+      return t('userPlace.form.uploadSizeError', { maxSize: USER_PLACE.MAX_IMAGE_SIZE / (1024 * 1024) });
     }
     // 파일 형식 검증
     if (!(USER_PLACE.ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
-      return '지원하지 않는 이미지 형식입니다. (JPG, PNG, GIF, WEBP만 가능)';
+      return t('userPlace.form.uploadTypeError');
     }
     return null;
-  }, []);
+  }, [t]);
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
@@ -67,7 +69,7 @@ export function UserPlaceImageUploader({
       setError(null);
 
       if (files.length > remainingSlots) {
-        setError(`최대 ${maxTotal}개의 사진만 업로드할 수 있습니다.`);
+        setError(t('userPlace.form.uploadMaxError', { maxTotal }));
         return;
       }
 
@@ -89,7 +91,7 @@ export function UserPlaceImageUploader({
         onNewAdd(validFiles);
       }
     },
-    [remainingSlots, maxTotal, onNewAdd, validateFile]
+    [remainingSlots, maxTotal, onNewAdd, validateFile, t]
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -176,11 +178,11 @@ export function UserPlaceImageUploader({
           </svg>
           <p className="mb-2 text-sm font-medium text-text-secondary">
             {remainingSlots > 0
-              ? '이미지를 드래그하거나 클릭하여 업로드'
-              : '최대 개수에 도달했습니다'}
+              ? t('userPlace.form.uploadDragOrClick')
+              : t('userPlace.form.uploadMaxReached')}
           </p>
           <p className="text-xs text-text-placeholder">
-            최대 {maxTotal}개, 각 {USER_PLACE.MAX_IMAGE_SIZE / (1024 * 1024)}MB 이하 (현재: {currentTotal}/{maxTotal})
+            {t('userPlace.form.uploadHint', { maxTotal, maxSize: USER_PLACE.MAX_IMAGE_SIZE / (1024 * 1024), currentTotal })}
           </p>
         </div>
 
@@ -196,13 +198,13 @@ export function UserPlaceImageUploader({
                 >
                   <img
                     src={url}
-                    alt={`기존 사진 ${index + 1}`}
+                    alt={t('userPlace.form.existingPhotoAlt', { index: index + 1 })}
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
                   {/* 기존 사진 표시 배지 */}
                   <div className="absolute left-1 top-1 rounded bg-blue-500/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                    기존
+                    {t('userPlace.form.existingPhotoBadge')}
                   </div>
                   <button
                     onClick={(e) => {
@@ -232,13 +234,13 @@ export function UserPlaceImageUploader({
                 >
                   <img
                     src={getPreviewUrl(image)}
-                    alt={`새 사진 ${index + 1}`}
+                    alt={t('userPlace.form.newPhotoAlt', { index: index + 1 })}
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
                   {/* 새 사진 표시 배지 */}
                   <div className="absolute left-1 top-1 rounded bg-green-500/80 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                    신규
+                    {t('userPlace.form.newPhotoBadge')}
                   </div>
                   <button
                     onClick={(e) => {

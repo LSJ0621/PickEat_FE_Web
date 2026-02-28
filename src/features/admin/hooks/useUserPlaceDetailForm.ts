@@ -90,23 +90,28 @@ export function useUserPlaceDetailForm({
       return;
     }
 
-    const updateData: UpdateUserPlaceByAdminRequest = {};
+    const updateData: UpdateUserPlaceByAdminRequest = { version: place.version };
     const placePhotos = place.photos || [];
+    let hasChanges = false;
 
     // Only include changed fields
-    if (trimmedName !== place.name) updateData.name = trimmedName;
-    if (trimmedAddress !== place.address) updateData.address = trimmedAddress;
+    if (trimmedName !== place.name) { updateData.name = trimmedName; hasChanges = true; }
+    if (trimmedAddress !== place.address) { updateData.address = trimmedAddress; hasChanges = true; }
     if (editForm.phoneNumber.trim() !== (place.phoneNumber || '')) {
       updateData.phoneNumber = editForm.phoneNumber.trim() || undefined;
+      hasChanges = true;
     }
     if (editForm.openingHours.trim() !== (place.openingHours || '')) {
       updateData.openingHours = editForm.openingHours.trim() || undefined;
+      hasChanges = true;
     }
     if (editForm.category.trim() !== (place.category || '')) {
       updateData.category = editForm.category.trim() || undefined;
+      hasChanges = true;
     }
     if (editForm.description.trim() !== (place.description || '')) {
       updateData.description = editForm.description.trim() || undefined;
+      hasChanges = true;
     }
 
     // Include existingPhotos when photos changed or new images added
@@ -115,13 +120,14 @@ export function useUserPlaceDetailForm({
 
     if (photosChanged || hasNewImages) {
       updateData.existingPhotos = editForm.existingPhotos;
+      hasChanges = true;
     }
     if (hasNewImages) {
       updateData.images = editForm.newImages;
     }
 
-    // Check if any changes were made
-    if (Object.keys(updateData).length === 0) {
+    // Check if any content changes were made (version is always present)
+    if (!hasChanges) {
       setIsEditing(false);
       return;
     }

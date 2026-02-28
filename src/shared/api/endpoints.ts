@@ -50,6 +50,7 @@ export const ENDPOINTS = {
     ADDRESS_SEARCH: `${API_BASE}/user/address/search`,
     ADDRESS_SET: `${API_BASE}/user/address`,
     ADDRESSES: `${API_BASE}/user/addresses`,
+    ADDRESSES_BATCH_DELETE: `${API_BASE}/user/addresses/batch-delete`,
     ADDRESS_DEFAULT: `${API_BASE}/user/address/default`,
     ADDRESS_BY_ID: (id: number) => `${API_BASE}/user/addresses/${id}`,
     ADDRESS_SET_DEFAULT: (id: number) => `${API_BASE}/user/addresses/${id}/default`,

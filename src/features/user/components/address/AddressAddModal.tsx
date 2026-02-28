@@ -68,9 +68,9 @@ export const AddressAddModal = ({
       className={[
         'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
         'items-end sm:items-center',
-        `z-[${Z_INDEX.MODAL_BACKDROP}]`,
         isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
       ].join(' ')}
+      style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div

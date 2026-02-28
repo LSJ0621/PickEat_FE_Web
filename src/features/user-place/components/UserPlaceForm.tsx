@@ -196,7 +196,7 @@ export function UserPlaceForm({
           <option value="">{t('userPlace.selectCategory')}</option>
           {USER_PLACE_CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
-              {cat}
+              {t(`userPlace.categories.${cat}`)}
             </option>
           ))}
         </select>

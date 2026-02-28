@@ -66,6 +66,29 @@ export const formatDateKorean = (date: string | Date): string => {
   });
 };
 
+/**
+ * 로케일 인식 날짜·시간 포맷팅
+ *
+ * @param date - 날짜 문자열 또는 Date 객체
+ * @param lang - 현재 언어 코드 ('ko' | 'en' 등)
+ * @returns 로케일에 맞게 포맷팅된 날짜·시간 문자열
+ *
+ * @example
+ * formatDateTimeLocale('2024-01-15T15:30:00', 'ko') // "2024년 1월 15일 오후 03:30"
+ * formatDateTimeLocale('2024-01-15T15:30:00', 'en') // "January 15, 2024 at 03:30 PM"
+ */
+export const formatDateTimeLocale = (date: string | Date, lang: string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return typeof date === 'string' ? date : '';
+  return d.toLocaleString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
 // 한국어 로케일 날짜·시간 포맷팅 (예: "2024년 1월 15일 오후 3:30")
 export const formatDateTimeKorean = (date: string | Date): string => {
   const d = new Date(date);

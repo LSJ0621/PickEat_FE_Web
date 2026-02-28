@@ -5,6 +5,7 @@
 import { STORAGE_KEYS } from './constants';
 
 interface JwtPayload {
+  sub: number; // User ID
   email: string;
   role: string;
   exp: number; // Expiration time

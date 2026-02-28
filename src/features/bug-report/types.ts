@@ -6,7 +6,7 @@
 export type BugReportCategory = 'BUG' | 'INQUIRY' | 'OTHER';
 // 표시용 라벨: '버그 제보', '문의 사항', '기타'
 
-export type BugReportStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'FIXED' | 'CLOSED';
+export type BugReportStatus = 'UNCONFIRMED' | 'CONFIRMED' | 'FIXED';
 
 export interface BugReport {
   id: number;
@@ -99,7 +99,6 @@ export interface BugReportStatistics {
     UNCONFIRMED: number;
     CONFIRMED: number;
     FIXED: number;
-    CLOSED: number;
   };
   byCategory: {
     BUG: number;

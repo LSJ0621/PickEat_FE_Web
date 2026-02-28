@@ -153,11 +153,9 @@ export const userService = {
 
   // 주소 삭제 (배열로 여러 개 삭제)
   deleteAddresses: async (ids: number[]): Promise<DeleteAddressResponse> => {
-    const response = await apiClient.delete<DeleteAddressResponse>(
-      ENDPOINTS.USER.ADDRESSES,
-      { 
-        data: { ids } satisfies BatchDeleteAddressRequest
-      }
+    const response = await apiClient.post<DeleteAddressResponse>(
+      ENDPOINTS.USER.ADDRESSES_BATCH_DELETE,
+      { ids } satisfies BatchDeleteAddressRequest
     );
     return response.data;
   },

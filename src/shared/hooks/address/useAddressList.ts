@@ -26,6 +26,7 @@ export const useAddressList = () => {
   const [selectedDeleteIds, setSelectedDeleteIds] = useState<number[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [confirmDefaultAddress, setConfirmDefaultAddress] = useState<UserAddress | null>(null);
+  const [confirmDeleteIds, setConfirmDeleteIds] = useState<number[] | null>(null);
 
   // 주소 리스트 로드 (Redux thunk 사용)
   const loadAddresses = useCallback(async () => {
@@ -73,17 +74,12 @@ export const useAddressList = () => {
   // 기본주소 변경 확인 후 처리
   const handleConfirmSetDefault = useCallback(async () => {
     if (!confirmDefaultAddress) return;
-    
-    try {
-      await handleSetDefaultAddress(confirmDefaultAddress.id);
-      setConfirmDefaultAddress(null);
-    } catch {
-      // handleSetDefaultAddress에서 이미 에러 처리
-    }
+    await handleSetDefaultAddress(confirmDefaultAddress.id);
+    setConfirmDefaultAddress(null);
   }, [confirmDefaultAddress, handleSetDefaultAddress]);
 
-  // 주소 삭제 (배열로 여러 개 삭제)
-  const handleDeleteAddresses = useCallback(async (ids: number[]) => {
+  // 주소 삭제 (배열로 여러 개 삭제) - 확인 다이얼로그 표시용
+  const handleDeleteAddresses = useCallback((ids: number[]) => {
     if (ids.length === 0) {
       handleError(t('errors.address.selectToDelete'), 'useAddressList');
       return;
@@ -100,21 +96,30 @@ export const useAddressList = () => {
       return;
     }
 
-    if (!confirm(t('errors.address.confirmDelete', { count: ids.length }))) {
-      return;
-    }
+    setConfirmDeleteIds(ids);
+  }, [addresses, handleError, t]);
+
+  // 실제 삭제 수행 (ConfirmDialog 확인 후)
+  const handleConfirmDelete = useCallback(async () => {
+    if (!confirmDeleteIds) return;
 
     try {
-      await userService.deleteAddresses(ids);
+      await userService.deleteAddresses(confirmDeleteIds);
       // Redux 캐시 무효화 후 재로드
       dispatch(invalidateAddresses());
       await loadAddresses();
       setSelectedDeleteIds([]);
-      handleSuccess('toast.address.deleted', { count: ids.length });
+      setConfirmDeleteIds(null);
+      handleSuccess('toast.address.deleted', { count: confirmDeleteIds.length });
     } catch (error: unknown) {
       handleError(error, 'useAddressList');
     }
-  }, [addresses, dispatch, loadAddresses, handleError, handleSuccess, t]);
+  }, [confirmDeleteIds, dispatch, loadAddresses, handleError, handleSuccess]);
+
+  // 삭제 취소
+  const handleCancelDelete = useCallback(() => {
+    setConfirmDeleteIds(null);
+  }, []);
 
   // 주소 삭제 선택 토글
   const handleToggleDeleteSelection = useCallback((id: number) => {
@@ -136,10 +141,24 @@ export const useAddressList = () => {
     }
   }, [selectedDeleteIds, addresses, handleError, t]);
 
-  // 주소 리스트 모달 초기화
-  const resetAddressListModal = useCallback(() => {
+  // 편집 상태 초기화
+  const resetEditState = useCallback(() => {
     setSelectedDeleteIds([]);
     setIsEditMode(false);
+    setConfirmDefaultAddress(null);
+  }, []);
+
+  // 편집 모드 토글
+  const toggleEditMode = useCallback(() => {
+    if (isEditMode) {
+      resetEditState();
+    } else {
+      setIsEditMode(true);
+    }
+  }, [isEditMode, resetEditState]);
+
+  // 기본주소 변경 취소
+  const handleCancelSetDefault = useCallback(() => {
     setConfirmDefaultAddress(null);
   }, []);
 
@@ -151,6 +170,7 @@ export const useAddressList = () => {
     selectedDeleteIds,
     isEditMode,
     confirmDefaultAddress,
+    confirmDeleteIds,
     // 상태 설정 함수
     setIsEditMode,
     setConfirmDefaultAddress,
@@ -159,9 +179,13 @@ export const useAddressList = () => {
     handleSetDefaultAddress,
     handleAddressClick,
     handleConfirmSetDefault,
+    handleCancelSetDefault,
     handleDeleteAddresses,
+    handleConfirmDelete,
+    handleCancelDelete,
     handleToggleDeleteSelection,
-    resetAddressListModal,
+    resetEditState,
+    toggleEditMode,
   };
 };
 
