@@ -61,16 +61,13 @@ export default defineConfig(() => {
               return 'redux-vendor';
             }
 
-            // UI 라이브러리
+            // UI 라이브러리 - 모든 @radix-ui/* 패키지를 단일 청크로 묶어
+            // 내부 패키지(@radix-ui/react-primitive 등)가 다른 청크에 분산되어
+            // 발생하는 TDZ(Temporal Dead Zone) 런타임 에러를 방지한다.
             if (
-              id.includes('node_modules/@radix-ui/react-dialog') ||
-              id.includes('node_modules/@radix-ui/react-checkbox') ||
-              id.includes('node_modules/@radix-ui/react-label') ||
-              id.includes('node_modules/@radix-ui/react-radio-group') ||
-              id.includes('node_modules/@radix-ui/react-select') ||
-              id.includes('node_modules/@radix-ui/react-separator') ||
-              id.includes('node_modules/@radix-ui/react-slot') ||
-              id.includes('node_modules/@radix-ui/react-tabs')
+              id.includes('node_modules/@radix-ui/') ||
+              id.includes('node_modules/class-variance-authority') ||
+              id.includes('node_modules/lucide-react')
             ) {
               return 'ui-vendor';
             }
@@ -78,7 +75,6 @@ export default defineConfig(() => {
             // 유틸리티
             if (
               id.includes('node_modules/axios') ||
-              id.includes('node_modules/class-variance-authority') ||
               id.includes('node_modules/clsx') ||
               id.includes('node_modules/tailwind-merge') ||
               id.includes('node_modules/@googlemaps/js-api-loader')
