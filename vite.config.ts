@@ -34,17 +34,12 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Chart 라이브러리 분리
+            // Chart 라이브러리 (React 비의존, lazy-load 대상)
             if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
               return 'chart-vendor';
             }
 
-            // 애니메이션 라이브러리 분리
-            if (id.includes('node_modules/framer-motion')) {
-              return 'animation-vendor';
-            }
-
-            // Admin 번들 분리 - admin 관련 페이지/컴포넌트를 별도 chunk로
+            // Admin 번들 (lazy-load 라우트)
             if (
               id.includes('/features/admin/') ||
               id.includes('/app/layouts/AdminLayout')
@@ -52,32 +47,7 @@ export default defineConfig(() => {
               return 'admin';
             }
 
-            // React + UI 라이브러리 (같은 청크로 묶어 로드 순서 보장)
-            if (
-              id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react-router-dom/') ||
-              id.includes('node_modules/@radix-ui/') ||
-              id.includes('node_modules/class-variance-authority') ||
-              id.includes('node_modules/lucide-react')
-            ) {
-              return 'ui-vendor';
-            }
-
-            // Redux 생태계
-            if (id.includes('node_modules/@reduxjs/toolkit') || id.includes('node_modules/react-redux')) {
-              return 'redux-vendor';
-            }
-
-            // 유틸리티
-            if (
-              id.includes('node_modules/axios') ||
-              id.includes('node_modules/clsx') ||
-              id.includes('node_modules/tailwind-merge') ||
-              id.includes('node_modules/@googlemaps/js-api-loader')
-            ) {
-              return 'utils-vendor';
-            }
+            // 나머지 node_modules는 Rollup 자동 분할에 위임
           },
         },
       },
