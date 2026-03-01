@@ -5,8 +5,6 @@ export * from './checkbox';
 export * from './dialog';
 export * from './input';
 export * from './label';
-export * from './radio-group';
 export * from './select';
-export * from './separator';
 export * from './skeleton';
 export * from './tabs';

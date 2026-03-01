@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { shallowEqual } from 'react-redux';
@@ -13,11 +13,11 @@ import { useConfirmModal } from '@features/agent/hooks/useConfirmModal';
 import { usePlaceSelection } from '@features/agent/hooks/usePlaceSelection';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import {
-  clearSelectedMenu,
   resetAiRecommendations,
   setSelectedPlace,
 } from '@app/store/slices/agentSlice';
 import { useToast } from '@shared/hooks/useToast';
+import type { PlaceRecommendationItem } from '@features/agent/types';
 import { X } from 'lucide-react';
 
 // Lazy load modals
@@ -52,7 +52,7 @@ export const AgentPage = () => {
   const hasRedirectedRef = useRef(false);
 
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
-  const isAiLoading = useAppSelector((state) => state.agent.isAiLoading);
+  const isSearchAiLoading = useAppSelector((state) => state.agent.isSearchAiLoading);
   const selectedPlace = useAppSelector((state) => state.agent.selectedPlace);
 
   const { handleMenuClick, handleCancel, handleAiRecommendation } = useAgentActions({
@@ -85,13 +85,24 @@ export const AgentPage = () => {
 
   useScrollToSection({
     elementRef: aiSectionRef,
-    shouldScroll: isAiLoading && selectedMenu !== null,
+    shouldScroll: isSearchAiLoading && selectedMenu !== null,
     offset: 80,
   });
 
   const hasAiQueryContext = Boolean(
     address?.trim() || (latitude !== null && longitude !== null)
   );
+
+  const onSelectPlace = useCallback(
+    (recommendation: PlaceRecommendationItem) => {
+      dispatch(setSelectedPlace(recommendation));
+    },
+    [dispatch]
+  );
+
+  const onResetAiRecommendations = useCallback(() => {
+    dispatch(resetAiRecommendations());
+  }, [dispatch]);
 
   return (
     <PageContainer maxWidth="max-w-6xl">
@@ -145,9 +156,8 @@ export const AgentPage = () => {
           <MenuRecommendation onMenuSelect={handleMenuClick} selectedMenu={selectedMenu} />
           <ResultsSection
             selectedMenu={selectedMenu}
-            onClearMenu={() => dispatch(clearSelectedMenu())}
-            onSelectPlace={(recommendation) => dispatch(setSelectedPlace(recommendation))}
-            onResetAiRecommendations={() => dispatch(resetAiRecommendations())}
+            onSelectPlace={onSelectPlace}
+            onResetAiRecommendations={onResetAiRecommendations}
             aiSectionRef={aiSectionRef}
             onOpenPlaceSelection={placeSelection.hasPlaces ? placeSelection.openModal : undefined}
           />

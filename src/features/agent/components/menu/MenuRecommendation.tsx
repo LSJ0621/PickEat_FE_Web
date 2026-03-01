@@ -17,7 +17,7 @@ import {
   setMenuSelectionCompleted,
 } from '@app/store/slices/agentSlice';
 import type { MenuRecommendationResponse } from '@features/agent/types';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MenuSelectionModal } from './MenuSelectionModal';
 import { MenuRecommendationList } from './MenuRecommendationList';
@@ -33,7 +33,7 @@ interface MenuRecommendationProps {
   selectedMenu?: string | null;
 }
 
-export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommendationProps) => {
+export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelect, selectedMenu }: MenuRecommendationProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -236,4 +236,4 @@ export const MenuRecommendation = ({ onMenuSelect, selectedMenu }: MenuRecommend
       />
     </div>
   );
-};
+});

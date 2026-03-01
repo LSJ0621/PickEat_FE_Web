@@ -12,6 +12,7 @@ import { PageHeader } from '@shared/components/PageHeader';
 import { ProfileSection } from '@features/user/components/profile/ProfileSection';
 import { ProfileEditModal } from '@features/user/components/profile/ProfileEditModal';
 import { authService } from '@features/auth/api';
+import { shallowEqual } from 'react-redux';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import { updateUser } from '@app/store/slices/authSlice';
 import { useToast } from '@shared/hooks/useToast';
@@ -21,7 +22,16 @@ export function MyProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth?.user);
+  // Select only the fields used in this component to avoid re-renders on unrelated user changes
+  const { name, email, birthDate, gender } = useAppSelector(
+    (state) => ({
+      name: state.auth?.user?.name,
+      email: state.auth?.user?.email,
+      birthDate: state.auth?.user?.birthDate,
+      gender: state.auth?.user?.gender,
+    }),
+    shallowEqual
+  );
   const { success } = useToast();
   const { handleError } = useErrorHandler();
 
@@ -68,7 +78,7 @@ export function MyProfilePage() {
             {t('user.name')}
           </p>
           <p className="mt-2 text-lg font-semibold text-text-primary">
-            {user?.name || t('user.noName')}
+            {name || t('user.noName')}
           </p>
         </div>
 
@@ -78,21 +88,21 @@ export function MyProfilePage() {
             {t('user.email')}
           </p>
           <p className="mt-2 text-lg font-semibold text-text-primary">
-            {user?.email || t('user.noEmail')}
+            {email || t('user.noEmail')}
           </p>
         </div>
 
         {/* Profile section (birthDate + gender) */}
         <ProfileSection
-          birthDate={user?.birthDate}
-          gender={user?.gender}
+          birthDate={birthDate}
+          gender={gender}
           onEditClick={() => setShowProfileModal(true)}
         />
 
         <ProfileEditModal
           open={showProfileModal}
-          birthDate={user?.birthDate}
-          gender={user?.gender}
+          birthDate={birthDate}
+          gender={gender}
           onClose={() => setShowProfileModal(false)}
           onSave={handleSaveProfile}
         />

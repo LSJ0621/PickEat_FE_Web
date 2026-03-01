@@ -5,21 +5,21 @@
 
 import { AiPlaceRecommendations } from '@features/agent/components/restaurant/AiPlaceRecommendations';
 import { useAppSelector } from '@app/store/hooks';
+import { selectResultsSectionState } from '@app/store/slices/agentSlice';
 import type { PlaceRecommendationItem } from '@features/agent/types';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList } from 'lucide-react';
 
 interface ResultsSectionProps {
   selectedMenu: string | null;
-  onClearMenu: () => void;
   onSelectPlace: (recommendation: PlaceRecommendationItem) => void;
   onResetAiRecommendations: () => void;
   aiSectionRef: React.RefObject<HTMLDivElement | null>;
   onOpenPlaceSelection?: () => void;
 }
 
-export function ResultsSection({
+export const ResultsSection = memo(function ResultsSection({
   selectedMenu,
   onSelectPlace,
   onResetAiRecommendations,
@@ -28,36 +28,20 @@ export function ResultsSection({
 }: ResultsSectionProps) {
   const { t } = useTranslation();
 
-  const menuRecommendations = useAppSelector((state) => state.agent.menuRecommendations);
-  const isMenuRecommendationLoading = useAppSelector(
-    (state) => state.agent.isMenuRecommendationLoading
-  );
+  const {
+    searchAiRecommendationGroups,
+    communityAiRecommendationGroups,
+    isSearchAiLoading,
+    isCommunityAiLoading,
+    searchAiLoadingMenu,
+    communityAiLoadingMenu,
+    searchAiRetrying,
+    communityAiRetrying,
+    hasSearchAiRecommendations,
+    hasCommunityAiRecommendations,
+    hasRequestedMenuRecommendation,
+  } = useAppSelector(selectResultsSectionState);
 
-  const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
-  const aiLoadingMenu = useAppSelector((state) => state.agent.aiLoadingMenu);
-  const hasAiRecommendations = aiRecommendationGroups.some(
-    (group) => group.recommendations.length > 0
-  );
-
-  const searchAiRecommendationGroups = useAppSelector(
-    (state) => state.agent.searchAiRecommendationGroups
-  );
-  const communityAiRecommendationGroups = useAppSelector(
-    (state) => state.agent.communityAiRecommendationGroups
-  );
-  const isSearchAiLoading = useAppSelector((state) => state.agent.isSearchAiLoading);
-  const isCommunityAiLoading = useAppSelector((state) => state.agent.isCommunityAiLoading);
-  const searchAiLoadingMenu = useAppSelector((state) => state.agent.searchAiLoadingMenu);
-  const communityAiLoadingMenu = useAppSelector((state) => state.agent.communityAiLoadingMenu);
-  const searchAiRetrying = useAppSelector((state) => state.agent.searchAiRetrying);
-  const communityAiRetrying = useAppSelector((state) => state.agent.communityAiRetrying);
-
-  const hasSearchAiRecommendations = searchAiRecommendationGroups.some(
-    (group) => group.recommendations.length > 0
-  );
-  const hasCommunityAiRecommendations = communityAiRecommendationGroups.some(
-    (group) => group.recommendations.length > 0
-  );
   const hasAnySeparateAiRecommendations =
     hasSearchAiRecommendations || hasCommunityAiRecommendations;
 
@@ -66,14 +50,9 @@ export function ResultsSection({
 
   const hasResults =
     selectedMenu &&
-    (hasAiRecommendations ||
-      hasAnySeparateAiRecommendations ||
-      aiLoadingMenu ||
+    (hasAnySeparateAiRecommendations ||
       isSearchAiLoading ||
       isCommunityAiLoading);
-
-  const hasRequestedMenuRecommendation =
-    menuRecommendations.length > 0 || isMenuRecommendationLoading;
 
   useEffect(() => {
     if (selectedMenu !== previousSelectedMenuRef.current) {
@@ -92,8 +71,7 @@ export function ResultsSection({
   // Empty state
   if (
     !selectedMenu &&
-    !hasAiRecommendations &&
-    !aiLoadingMenu &&
+    !hasAnySeparateAiRecommendations &&
     hasRequestedMenuRecommendation
   ) {
     return (
@@ -121,8 +99,6 @@ export function ResultsSection({
         <div ref={aiSectionRef}>
           <AiPlaceRecommendations
             activeMenuName={selectedMenu}
-            recommendations={aiRecommendationGroups}
-            loadingMenuName={aiLoadingMenu}
             onSelect={onSelectPlace}
             onReset={onResetAiRecommendations}
             onOpenPlaceSelection={onOpenPlaceSelection}
@@ -148,4 +124,4 @@ export function ResultsSection({
       )}
     </div>
   );
-}
+});

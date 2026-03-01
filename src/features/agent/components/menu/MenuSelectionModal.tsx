@@ -37,7 +37,7 @@ export const MenuSelectionModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [slot, setSlot] = useState<MenuSlot>('lunch');
   const { handleError, handleSuccess } = useErrorHandler();
-  const { isAnimating, shouldRender } = useModalAnimation(open);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open);
   useModalScrollLock(open);
   const focusTrapRef = useFocusTrap(open);
 
@@ -96,7 +96,7 @@ export const MenuSelectionModal = ({
   return createPortal(
     <div
       className={`fixed inset-0 flex items-end md:items-center md:justify-center bg-black/40 backdrop-blur-sm p-4 ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       onClick={(e) => {
@@ -107,7 +107,7 @@ export const MenuSelectionModal = ({
         ref={focusTrapRef}
         data-testid="menu-selection-modal"
         className={`relative w-full max-w-md rounded-t-2xl md:rounded-2xl border border-border-default bg-bg-surface p-6 shadow-2xl ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
         }`}
         onClick={(e) => e.stopPropagation()}
       >

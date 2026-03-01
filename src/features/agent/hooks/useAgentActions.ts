@@ -2,11 +2,9 @@ import { menuService } from '@features/agent/api';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import {
-  setAiLoading,
   setSelectedMenu,
   setSelectedPlace,
   setShowConfirmCard,
-  upsertAiRecommendations,
   upsertSearchAiRecommendations,
   upsertCommunityAiRecommendations,
   setSearchAiLoading,
@@ -36,7 +34,7 @@ export function useAgentActions({
   const isAuthenticated = useAppSelector((state) => state.auth?.isAuthenticated);
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
   const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
-  const aiRecommendationGroups = useAppSelector((state) => state.agent.aiRecommendationGroups);
+  const searchAiRecommendationGroups = useAppSelector((state) => state.agent.searchAiRecommendationGroups);
 
   const handleMenuClick = useCallback(
     (
@@ -79,7 +77,7 @@ export function useAgentActions({
             menuName: place.menuName,
           }));
 
-        dispatch(upsertAiRecommendations({ menuName, recommendations: normalized }));
+        dispatch(upsertSearchAiRecommendations({ menuName, recommendations: normalized }));
         dispatch(setSelectedPlace(null));
 
         if (!silent) {
@@ -108,7 +106,7 @@ export function useAgentActions({
       return;
     }
 
-    const alreadyRecommended = aiRecommendationGroups.find(
+    const alreadyRecommended = searchAiRecommendationGroups.find(
       (group) => group.menuName === selectedMenu && group.recommendations.length > 0
     );
     if (alreadyRecommended) {
@@ -214,14 +212,11 @@ export function useAgentActions({
         dispatch(setCommunityAiLoading({ isLoading: false, menuName: null }));
         dispatch(setCommunityAiRetrying(false));
       });
-
-    // Maintain legacy behavior for backward compatibility
-    dispatch(setAiLoading({ isLoading: true, menuName: selectedMenu }));
   }, [
     isAuthenticated,
     selectedMenu,
     menuHistoryId,
-    aiRecommendationGroups,
+    searchAiRecommendationGroups,
     latitude,
     longitude,
     dispatch,

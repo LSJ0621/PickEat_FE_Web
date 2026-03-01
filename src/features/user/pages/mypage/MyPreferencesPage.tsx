@@ -17,13 +17,14 @@ import { useAppSelector } from '@app/store/hooks';
 export function MyPreferencesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAppSelector((state) => state.auth?.user);
+  // Narrow subscription to preferences only - avoids re-render on unrelated user field changes
+  const userPreferences = useAppSelector((state) => state.auth?.user?.preferences);
 
   const preferences = usePreferences({
-    initialLikes: user?.preferences?.likes,
-    initialDislikes: user?.preferences?.dislikes,
-    initialAnalysis: user?.preferences?.analysis ?? null,
-    initialAnalysisParagraphs: user?.preferences?.analysisParagraphs ?? null,
+    initialLikes: userPreferences?.likes,
+    initialDislikes: userPreferences?.dislikes,
+    initialAnalysis: userPreferences?.analysis ?? null,
+    initialAnalysisParagraphs: userPreferences?.analysisParagraphs ?? null,
   });
 
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);

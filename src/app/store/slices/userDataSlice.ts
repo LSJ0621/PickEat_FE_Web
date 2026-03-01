@@ -7,7 +7,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserAddress, Preferences } from '@features/user/types';
 import { userService } from '@features/user/api';
 import { CACHE_STALE_MS } from '@shared/utils/constants';
-import { logoutAsync } from '@app/store/slices/authSlice';
+import { logoutAsync, initializeAuth } from '@app/store/slices/authSlice';
 import { extractErrorMessage } from '@shared/utils/error';
 
 interface UserDataState {
@@ -164,6 +164,15 @@ const userDataSlice = createSlice({
         state.preferences.isLoading = false;
         state.preferences.isDirty = true;
         state.preferences.error = action.payload as string;
+      })
+      // Cache preferences from initializeAuth to prevent double-fetch on MyPage entry
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        const preferences = action.payload?.user?.preferences;
+        if (preferences) {
+          state.preferences.data = preferences;
+          state.preferences.lastFetchedAt = Date.now();
+          state.preferences.isDirty = false;
+        }
       })
       // Reset all state on logout
       .addCase(logoutAsync.fulfilled, () => {

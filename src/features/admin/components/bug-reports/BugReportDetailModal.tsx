@@ -7,6 +7,7 @@ import { BugReportImageGallery } from './BugReportImageGallery';
 import { ModalCloseButton } from '@shared/components/ModalCloseButton';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useModalAnimation } from '@shared/hooks/useModalAnimation';
+import { useModalScrollLock } from '@shared/hooks/useModalScrollLock';
 import { useEscapeKey } from '@shared/hooks/useEscapeKey';
 import { formatDateTimeKorean } from '@shared/utils/format';
 import type { GetBugReportDetailResponse } from '@features/bug-report/types';
@@ -97,7 +98,8 @@ export const BugReportDetailModal = ({
     }
   };
 
-  const { isAnimating, shouldRender } = useModalAnimation(isOpen);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(isOpen);
+  useModalScrollLock(isOpen);
 
   if (!shouldRender) {
     return null;
@@ -106,7 +108,7 @@ export const BugReportDetailModal = ({
   return createPortal(
     <div
       className={`fixed inset-0 flex items-start justify-center bg-black/50 p-4 pt-8 backdrop-blur overflow-y-auto ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
@@ -118,7 +120,7 @@ export const BugReportDetailModal = ({
       <div
         ref={modalContentRef}
         className={`relative w-full max-w-2xl max-h-[calc(100vh-2rem)] rounded-[32px] border border-border-default bg-bg-surface p-6 shadow-2xl overflow-y-auto custom-scroll ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
         }`}
         onClick={(e) => e.stopPropagation()}
       >

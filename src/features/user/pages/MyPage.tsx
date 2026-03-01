@@ -26,6 +26,7 @@ import { Button } from '@shared/components/Button';
 import { LanguageSelector } from '@shared/components/LanguageSelector';
 import { ModalCloseButton } from '@shared/components/ModalCloseButton';
 import { userService } from '@features/user/api';
+import { shallowEqual } from 'react-redux';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import { logoutAsync } from '@app/store/slices/authSlice';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
@@ -48,19 +49,27 @@ export const MyPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth?.user);
-  const userRole = user?.role;
+  // Select only the fields used in this component to avoid re-renders on unrelated user changes
+  const { name, email, birthDate, gender, role: userRole, analysisParagraphs } = useAppSelector(
+    (state) => ({
+      name: state.auth?.user?.name,
+      email: state.auth?.user?.email,
+      birthDate: state.auth?.user?.birthDate,
+      gender: state.auth?.user?.gender,
+      role: state.auth?.user?.role,
+      analysisParagraphs: state.auth?.user?.preferences?.analysisParagraphs,
+    }),
+    shallowEqual
+  );
   const { handleError } = useErrorHandler();
 
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
-  const analysisParagraphs = user?.preferences?.analysisParagraphs;
-
-  const getGenderLabel = (gender?: string) => {
-    if (!gender) return '';
-    if (gender === 'male') return t('user.gender.male');
-    if (gender === 'female') return t('user.gender.female');
+  const getGenderLabel = (genderValue?: string) => {
+    if (!genderValue) return '';
+    if (genderValue === 'male') return t('user.gender.male');
+    if (genderValue === 'female') return t('user.gender.female');
     return t('user.gender.other');
   };
 
@@ -177,22 +186,22 @@ export const MyPage = () => {
           <div className="flex items-center gap-4">
             {/* Avatar */}
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-rose-500 text-xl font-bold text-white shrink-0">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              {name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
 
             {/* User info */}
             <div className="flex-1 min-w-0">
               <p className="text-xl font-bold text-text-primary truncate">
-                {user?.name || t('user.noName')}
+                {name || t('user.noName')}
               </p>
               <p className="text-sm text-text-secondary truncate">
-                {user?.email || t('user.noEmail')}
+                {email || t('user.noEmail')}
               </p>
-              {(user?.birthDate || user?.gender) && (
+              {(birthDate || gender) && (
                 <p className="text-sm text-text-tertiary">
-                  {user?.birthDate && formatBirthDate(user.birthDate, i18n.language)}
-                  {user?.birthDate && user?.gender && ' · '}
-                  {user?.gender && getGenderLabel(user.gender)}
+                  {birthDate && formatBirthDate(birthDate, i18n.language)}
+                  {birthDate && gender && ' · '}
+                  {gender && getGenderLabel(gender)}
                 </p>
               )}
             </div>

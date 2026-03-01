@@ -69,7 +69,7 @@ export function OnboardingModal({
   onSkip,
 }: OnboardingModalProps) {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(isOpen);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(isOpen);
   useModalScrollLock(isOpen);
   const focusTrapRef = useFocusTrap(isOpen);
 
@@ -107,7 +107,7 @@ export function OnboardingModal({
   return createPortal(
     <div
       className={`fixed inset-0 flex items-end md:items-center md:justify-center bg-black/50 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
@@ -120,7 +120,7 @@ export function OnboardingModal({
         aria-modal="true"
         aria-labelledby="onboarding-title"
         className={`relative w-full md:max-w-lg rounded-t-3xl md:rounded-3xl bg-bg-surface shadow-2xl md:border md:border-border-default overflow-hidden ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
         }`}
       >
         {/* Mobile drag handle */}

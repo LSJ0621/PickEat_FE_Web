@@ -32,7 +32,7 @@ export function RatingPromptModal({
   isSubmitting,
 }: RatingPromptModalProps) {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(open);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open);
   useModalScrollLock(open);
   const focusTrapRef = useFocusTrap(open);
 
@@ -45,7 +45,7 @@ export function RatingPromptModal({
   return createPortal(
     <div
       className={`fixed inset-0 flex items-end md:items-center md:justify-center bg-black/40 backdrop-blur-sm p-4 ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
@@ -58,7 +58,7 @@ export function RatingPromptModal({
         aria-modal="true"
         aria-labelledby="rating-prompt-title"
         className={`relative w-full max-w-md rounded-t-2xl md:rounded-2xl bg-bg-surface p-6 shadow-xl md:border md:border-border-default ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
         }`}
       >
         {/* Close button */}

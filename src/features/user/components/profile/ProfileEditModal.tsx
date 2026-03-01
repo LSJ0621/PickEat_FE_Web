@@ -31,7 +31,7 @@ export const ProfileEditModal = ({
   onSave,
 }: ProfileEditModalProps) => {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(open);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open);
   useModalScrollLock(open);
 
   const [selectedBirthDate, setSelectedBirthDate] = useState<string | null>(birthDate ?? null);
@@ -72,7 +72,7 @@ export const ProfileEditModal = ({
       className={[
         'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
         'items-end sm:items-center',
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0',
       ].join(' ')}
       style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -82,7 +82,7 @@ export const ProfileEditModal = ({
           'relative w-full max-w-md mx-auto bg-bg-surface border border-border-default shadow-2xl',
           'rounded-t-2xl sm:rounded-2xl',
           'p-6 sm:p-8',
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : '',
         ].join(' ')}
       >
         <ModalCloseButton onClose={onClose} />

@@ -2,7 +2,7 @@ import { userService } from '@features/user/api';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import { updateUser } from '@app/store/slices/authSlice';
-import { fetchPreferences, invalidatePreferences } from '@app/store/slices/userDataSlice';
+import { fetchPreferences, invalidatePreferences, setPreferences as setPreferencesAction } from '@app/store/slices/userDataSlice';
 import type { AnalysisParagraphs } from '@features/user/types';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
@@ -140,22 +140,23 @@ export const usePreferences = (options?: UsePreferencesOptions) => {
   const handleSavePreferences = useCallback(async (): Promise<boolean> => {
     setIsSavingPreferences(true);
     try {
-      await userService.setPreferences({
+      const saveResponse = await userService.setPreferences({
         likes: likes,
         dislikes: dislikes,
       });
 
-      // Redux auth 상태도 업데이트 (화면 반영을 위해 필수)
+      // Immediately update both Redux slices with the save response for instant UI feedback
       dispatch(
         updateUser({
-          preferences: {
-            likes,
-            dislikes,
-          },
+          preferences: saveResponse.preferences,
         })
       );
+      dispatch(setPreferencesAction(saveResponse.preferences));
 
-      // Redux 캐시 무효화 후 재로드 (analysis 포함)
+      // Re-fetch from server to get AI-generated analysis/analysisParagraphs fields.
+      // These are generated asynchronously server-side and may not be included in the
+      // save response, so a separate fetch is required to retrieve the latest values.
+      // Mark cache dirty first so fetchPreferences bypasses the stale-time check.
       dispatch(invalidatePreferences());
       await loadPreferences();
 

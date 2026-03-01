@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import { Z_INDEX } from '@shared/utils/constants';
 import { useEscapeKey } from '@shared/hooks/useEscapeKey';
 import { useModalAnimation } from '@shared/hooks/useModalAnimation';
+import { useModalScrollLock } from '@shared/hooks/useModalScrollLock';
 import { useUserPlaceDetailForm } from '@features/admin/hooks/useUserPlaceDetailForm';
 import { UserPlaceDetailContent } from '@features/admin/components/user-places/UserPlaceDetailContent';
 
@@ -37,7 +38,8 @@ export function UserPlaceDetailModal({
   isUpdating = false,
 }: UserPlaceDetailModalProps) {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(isOpen);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(isOpen);
+  useModalScrollLock(isOpen);
   const modalContentRef = useRef<HTMLDivElement>(null);
 
   const [selectedAction, setSelectedAction] = useState<'approve' | 'reject' | null>(null);
@@ -102,24 +104,17 @@ export function UserPlaceDetailModal({
   const modalContent = (
     <>
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
-          isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        className={`fixed inset-0 flex items-center justify-center p-4 ${
+          isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
         }`}
         style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       >
-        {/* Overlay */}
-        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-
         {/* Modal */}
         <div
           ref={modalContentRef}
           className={`relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-border-default bg-bg-surface p-6 shadow-xl custom-scroll ${
-            isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+            isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
           }`}
           onClick={(e) => e.stopPropagation()}
         >

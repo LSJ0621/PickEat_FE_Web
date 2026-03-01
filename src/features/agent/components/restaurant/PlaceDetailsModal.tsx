@@ -32,7 +32,7 @@ export const PlaceDetailsModal = ({
   const photoTimerRef = useRef<number | null>(null);
   const photoTransitionTimerRef = useRef<number | null>(null);
   const isOpen = !!placeId;
-  const { isAnimating, shouldRender } = useModalAnimation(isOpen);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(isOpen);
   useModalScrollLock(isOpen);
   const modalContentRef = useFocusTrap(isOpen);
 
@@ -112,7 +112,7 @@ export const PlaceDetailsModal = ({
   return createPortal(
     <div
       className={`fixed inset-0 flex items-end md:items-center md:justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6 overflow-y-auto ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       style={{ zIndex: Z_INDEX.PRIORITY_MODAL }}
       onClick={(e) => {
@@ -122,7 +122,7 @@ export const PlaceDetailsModal = ({
       <div
         ref={modalContentRef}
         className={`relative w-full max-w-2xl max-h-[92vh] rounded-t-2xl md:rounded-2xl border border-border-default bg-bg-surface p-6 text-text-primary shadow-2xl overflow-y-auto custom-scroll ${
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit'
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : ''
         }`}
         onClick={(e) => e.stopPropagation()}
       >

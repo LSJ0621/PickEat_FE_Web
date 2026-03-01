@@ -33,7 +33,7 @@ export function UserPlaceDetailModal({
   onDelete,
 }: UserPlaceDetailModalProps) {
   const { t, i18n } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(open && !!place);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open && !!place);
   useModalScrollLock(open && !!place);
 
   const handleKeyDown = useCallback(
@@ -62,7 +62,7 @@ export function UserPlaceDetailModal({
       style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       className={[
         'fixed inset-0 flex items-end bg-black/40 backdrop-blur-sm sm:items-center sm:p-4',
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0',
       ].join(' ')}
       onClick={onClose}
     >
@@ -72,7 +72,7 @@ export function UserPlaceDetailModal({
           'relative w-full max-h-[92vh] overflow-y-auto',
           'rounded-t-2xl border border-border-default bg-bg-surface p-6 shadow-2xl',
           'sm:mx-auto sm:max-w-2xl sm:rounded-2xl sm:p-8',
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : '',
         ].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >

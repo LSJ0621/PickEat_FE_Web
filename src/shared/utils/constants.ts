@@ -32,7 +32,7 @@ export const PAGINATION = {
 // 유효성 검사 규칙
 export const VALIDATION = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PASSWORD_MIN_LENGTH: 6,
+  PASSWORD_MIN_LENGTH: 8,
   PHONE_REGEX: /^[0-9]{10,11}$/,
 } as const;
 

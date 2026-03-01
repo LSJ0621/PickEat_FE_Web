@@ -43,7 +43,7 @@ export const PreferencesEditModal = ({
   onSave,
 }: PreferencesEditModalProps) => {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(open);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open);
   useModalScrollLock(open);
   const focusTrapRef = useFocusTrap(open);
 
@@ -64,7 +64,7 @@ export const PreferencesEditModal = ({
       className={[
         'fixed inset-0 flex p-4 bg-black/40 backdrop-blur-sm',
         'items-end sm:items-center',
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0',
       ].join(' ')}
       style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -75,7 +75,7 @@ export const PreferencesEditModal = ({
           'relative w-full max-w-2xl mx-auto bg-bg-surface border border-border-default shadow-2xl',
           'rounded-t-2xl sm:rounded-2xl',
           'p-6 sm:p-8 max-h-[90vh] overflow-y-auto',
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : '',
         ].join(' ')}
       >
         <ModalCloseButton onClose={onClose} />

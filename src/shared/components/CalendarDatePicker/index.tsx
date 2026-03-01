@@ -40,7 +40,7 @@ export function CalendarDatePicker({
   minDate,
   maxDate,
 }: CalendarDatePickerProps) {
-  const { isAnimating, shouldRender } = useModalAnimation(isOpen);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(isOpen);
   useModalScrollLock(isOpen);
 
   // Track current viewing month/year (can be different from selected date)
@@ -131,7 +131,7 @@ export function CalendarDatePicker({
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm ${
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit'
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0'
       }`}
       onClick={handleBackdropClick}
     >
@@ -140,12 +140,16 @@ export function CalendarDatePicker({
         className={`w-full max-w-lg rounded-t-[28px] border-t border-border-default bg-bg-surface pb-safe shadow-2xl ${
           isAnimating
             ? 'animate-slide-up-enter opacity-100'
-            : 'animate-slide-down-exit opacity-0'
+            : isClosing
+            ? 'animate-slide-down-exit opacity-0'
+            : 'opacity-0'
         }`}
         style={{
           animation: isAnimating
             ? 'slideUpFromBottom 0.3s ease-out forwards'
-            : 'slideDownToBottom 0.3s ease-in forwards',
+            : isClosing
+            ? 'slideDownToBottom 0.3s ease-in forwards'
+            : undefined,
         }}
       >
         {/* Close button */}

@@ -3,11 +3,12 @@
  * 모달의 열림/닫힘 애니메이션을 관리합니다.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UseModalAnimationReturn {
   isAnimating: boolean;
   shouldRender: boolean;
+  isClosing: boolean;
 }
 
 /**
@@ -18,21 +19,28 @@ interface UseModalAnimationReturn {
 export const useModalAnimation = (isOpen: boolean): UseModalAnimationReturn => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const shouldRenderRef = useRef(false);
+  shouldRenderRef.current = shouldRender;
 
   useEffect(() => {
     let animationFrameId: number | null = null;
     let timeoutId: number | null = null;
 
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsClosing(false);
       setShouldRender(true);
       animationFrameId = requestAnimationFrame(() => {
         setIsAnimating(true);
       });
-    } else {
+    } else if (shouldRenderRef.current) {
+      // shouldRender가 true일 때만 exit 처리 (이미 렌더중인 경우만)
       setIsAnimating(false);
+      setIsClosing(true);
       timeoutId = window.setTimeout(() => {
         setShouldRender(false);
+        setIsClosing(false);
       }, 300);
     }
 
@@ -50,5 +58,6 @@ export const useModalAnimation = (isOpen: boolean): UseModalAnimationReturn => {
   return {
     isAnimating,
     shouldRender,
+    isClosing,
   };
 };

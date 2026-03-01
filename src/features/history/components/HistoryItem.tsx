@@ -74,7 +74,7 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
     return () => window.removeEventListener('keydown', onEsc);
   }, [menuActions]);
 
-  const aiRecommendationGroups: MenuPlaceRecommendationGroup[] = useMemo(() => {
+  const searchRecommendationGroups: MenuPlaceRecommendationGroup[] = useMemo(() => {
     if (!menuActions.selectedMenu || aiRecommendations.aiRecommendations.length === 0) return [];
     return [{ menuName: menuActions.selectedMenu, recommendations: aiRecommendations.aiRecommendations }];
   }, [aiRecommendations.aiRecommendations, menuActions.selectedMenu]);
@@ -177,8 +177,11 @@ export const HistoryItem = ({ item }: HistoryItemProps) => {
       {!menuActions.showConfirmCard && menuActions.selectedMenu && (
         <div className="mt-4 space-y-4">
           {(aiRecommendations.aiRecommendations.length > 0 || aiRecommendations.isAiLoading) && (
-            <AiPlaceRecommendations activeMenuName={menuActions.selectedMenu} recommendations={aiRecommendationGroups}
-              loadingMenuName={aiRecommendations.aiLoadingMenu} searchEntryPointHtml={aiRecommendations.searchEntryPointHtml}
+            <AiPlaceRecommendations activeMenuName={menuActions.selectedMenu}
+              searchRecommendations={searchRecommendationGroups}
+              isSearchLoading={aiRecommendations.isAiLoading}
+              searchLoadingMenuName={aiRecommendations.aiLoadingMenu}
+              searchEntryPointHtml={aiRecommendations.searchEntryPointHtml}
               onSelect={(recommendation) => setSelectedPlace(recommendation)}
               onReset={() => { aiRecommendations.resetAiRecommendations(); setSelectedPlace(null); }} />
           )}

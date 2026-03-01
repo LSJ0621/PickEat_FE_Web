@@ -98,30 +98,29 @@ export const initializeAuth = createAsyncThunk(
       return null;
     }
 
-    try {
-      const user = await authService.getMe();
+    // getMe()와 getPreferences()를 동시에 호출해 초기 인증 시간 단축
+    const [meResult, prefsResult] = await Promise.allSettled([
+      authService.getMe(),
+      userService.getPreferences(),
+    ]);
 
-      // 서버에서 preferences를 별도 API로 관리하므로, 초기화 시 한 번 더 불러와서 병합
-      try {
-        const prefsResponse = await userService.getPreferences();
-        const mergedUser: User = {
-          ...user,
-          role: decodedToken.role,
-          preferences: prefsResponse.preferences ?? user.preferences ?? null,
-        };
-        return { user: normalizeUser(mergedUser) };
-      } catch {
-        // 취향 정보 불러오기에 실패해도 로그인 자체는 유지
-        const mergedUser: User = {
-          ...user,
-          role: decodedToken.role,
-        };
-        return { user: normalizeUser(mergedUser) };
-      }
-    } catch (error: unknown) {
+    if (meResult.status === 'rejected') {
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
-      return rejectWithValue(extractErrorMessage(error, '알 수 없는 오류가 발생했습니다.'));
+      return rejectWithValue(extractErrorMessage(meResult.reason, '알 수 없는 오류가 발생했습니다.'));
     }
+
+    const user = meResult.value;
+    const preferences =
+      prefsResult.status === 'fulfilled'
+        ? (prefsResult.value.preferences ?? user.preferences ?? null)
+        : (user.preferences ?? null);
+
+    const mergedUser: User = {
+      ...user,
+      role: decodedToken.role,
+      preferences,
+    };
+    return { user: normalizeUser(mergedUser) };
   }
 );
 

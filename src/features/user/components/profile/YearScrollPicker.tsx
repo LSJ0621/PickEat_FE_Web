@@ -25,7 +25,7 @@ export const YearScrollPicker = ({
 }: YearScrollPickerProps) => {
   const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<number | undefined>(undefined);
+  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Generate years array (descending) - memoized to avoid recreating on every render
   const years = useMemo(
@@ -34,16 +34,15 @@ export const YearScrollPicker = ({
   );
 
   const handleScroll = useCallback(() => {
-    if (scrollTimeoutRef.current) {
-      window.cancelAnimationFrame(scrollTimeoutRef.current);
+    if (scrollEndTimerRef.current) {
+      clearTimeout(scrollEndTimerRef.current);
     }
 
-    scrollTimeoutRef.current = window.requestAnimationFrame(() => {
+    scrollEndTimerRef.current = setTimeout(() => {
       const container = scrollContainerRef.current;
       if (!container) return;
 
-      const scrollTop = container.scrollTop;
-      const itemIndex = Math.round(scrollTop / ITEM_HEIGHT);
+      const itemIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
 
       // Handle "미설정" option (index 0)
       if (itemIndex === 0) {
@@ -54,7 +53,7 @@ export const YearScrollPicker = ({
           onChange(selectedYear);
         }
       }
-    });
+    }, 150);
   }, [onChange, value, years]);
 
   // Set initial scroll position
@@ -78,6 +77,15 @@ export const YearScrollPicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
+  // Cleanup pending timer on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative">
       {/* Gradient overlay - top */}
@@ -93,11 +101,13 @@ export const YearScrollPicker = ({
           scrollSnapType: 'y mandatory',
           paddingTop: `${ITEM_HEIGHT}px`,
           paddingBottom: `${ITEM_HEIGHT}px`,
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)',
         }}
       >
         {/* "미설정" option */}
         <div
-          className="flex items-center justify-center text-sm text-text-tertiary transition"
+          className="flex items-center justify-center text-sm text-text-tertiary transition-colors duration-150"
           style={{
             height: `${ITEM_HEIGHT}px`,
             scrollSnapAlign: 'center',
@@ -112,7 +122,7 @@ export const YearScrollPicker = ({
           return (
             <div
               key={year}
-              className={`flex items-center justify-center transition ${
+              className={`flex items-center justify-center transition-colors duration-150 ${
                 isSelected ? 'text-lg font-semibold text-text-primary' : 'text-sm text-text-tertiary'
               }`}
               style={{

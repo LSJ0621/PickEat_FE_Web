@@ -3,13 +3,11 @@ import type { MenuPlaceRecommendationGroup } from '@app/store/slices/agentSlice'
 import type { PlaceRecommendationItemV2 } from '@features/agent/types';
 import { PlaceRecommendationList } from './PlaceRecommendationList';
 import DOMPurify from 'dompurify';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface AiPlaceRecommendationsProps {
   activeMenuName: string | null;
-  recommendations: MenuPlaceRecommendationGroup[];
-  loadingMenuName: string | null;
   onSelect: (recommendation: PlaceRecommendationItemV2) => void;
   onReset: () => void;
   onOpenPlaceSelection?: () => void;
@@ -24,10 +22,8 @@ interface AiPlaceRecommendationsProps {
   communityRetrying?: boolean;
 }
 
-export const AiPlaceRecommendations = ({
+export const AiPlaceRecommendations = memo(function AiPlaceRecommendations({
   activeMenuName,
-  recommendations,
-  loadingMenuName,
   onSelect,
   onReset,
   onOpenPlaceSelection,
@@ -40,25 +36,19 @@ export const AiPlaceRecommendations = ({
   communityLoadingMenuName = null,
   searchRetrying = false,
   communityRetrying = false,
-}: AiPlaceRecommendationsProps) => {
+}: AiPlaceRecommendationsProps) {
   const { t } = useTranslation();
 
-  const finalSearchRecommendations = searchRecommendations.length > 0 ? searchRecommendations : recommendations;
-  const finalCommunityRecommendations = communityRecommendations;
   const finalSearchLoading = isSearchLoading || !!searchLoadingMenuName;
   const finalCommunityLoading = isCommunityLoading || !!communityLoadingMenuName;
-  const finalSearchLoadingMenu = searchLoadingMenuName || loadingMenuName;
+  const finalSearchLoadingMenu = searchLoadingMenuName;
   const finalCommunityLoadingMenu = communityLoadingMenuName;
 
-  const searchVisibleGroups = finalSearchRecommendations.filter((group) => group.recommendations.length > 0);
-  const communityVisibleGroups = finalCommunityRecommendations.filter((group) => group.recommendations.length > 0);
+  const searchVisibleGroups = searchRecommendations.filter((group) => group.recommendations.length > 0);
+  const communityVisibleGroups = communityRecommendations.filter((group) => group.recommendations.length > 0);
   const hasSearchRecommendations = searchVisibleGroups.length > 0;
   const hasCommunityRecommendations = communityVisibleGroups.length > 0;
   const hasAnyRecommendations = hasSearchRecommendations || hasCommunityRecommendations;
-
-  const visibleGroups = recommendations.filter((group) => group.recommendations.length > 0);
-  const hasRecommendations = visibleGroups.length > 0;
-  const pendingMenuName = loadingMenuName;
 
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
 
@@ -69,8 +59,6 @@ export const AiPlaceRecommendations = ({
         const newSet = new Set(prev);
         newSet.add(`search-${activeMenuName}`);
         newSet.add(`community-${activeMenuName}`);
-        newSet.add(`legacy-${activeMenuName}`);
-        newSet.add(activeMenuName);
         return newSet;
       });
     }
@@ -95,7 +83,7 @@ export const AiPlaceRecommendations = ({
           <p className="text-xs uppercase tracking-[0.4em] text-brand-primary/70">AI Places</p>
           <h2 className="mt-1 text-xl font-semibold text-text-primary">{t('restaurant.aiRecommendedStores')}</h2>
         </div>
-        {(hasRecommendations || hasAnyRecommendations) && (
+        {hasAnyRecommendations && (
           <div className="flex items-center gap-2">
             {onOpenPlaceSelection && (
               <Button variant="primary" size="sm" onClick={onOpenPlaceSelection}>
@@ -109,7 +97,7 @@ export const AiPlaceRecommendations = ({
         )}
       </div>
 
-      {!hasRecommendations && !hasAnyRecommendations && !pendingMenuName && !finalSearchLoading && !finalCommunityLoading ? (
+      {!hasAnyRecommendations && !finalSearchLoading && !finalCommunityLoading ? (
         <div className="mt-6 rounded-2xl border border-border-default bg-bg-secondary p-6 text-center text-text-secondary">
           {t('restaurant.noRecommendations')}
         </div>
@@ -175,25 +163,6 @@ export const AiPlaceRecommendations = ({
             </section>
           )}
 
-          {/* Legacy support */}
-          {!hasSearchRecommendations &&
-            !hasCommunityRecommendations &&
-            !finalSearchLoading &&
-            !finalCommunityLoading &&
-            hasRecommendations && (
-              <PlaceRecommendationList
-                groups={visibleGroups}
-                sectionPrefix="legacy"
-                showRating={true}
-                expandedMenus={expandedMenus}
-                activeMenuName={activeMenuName}
-                onToggleMenu={toggleMenu}
-                onSelect={onSelect}
-                isLoading={!!pendingMenuName}
-                loadingMenuName={pendingMenuName}
-                isRetrying={false}
-              />
-            )}
         </div>
       )}
 
@@ -205,4 +174,4 @@ export const AiPlaceRecommendations = ({
       )}
     </div>
   );
-};
+});

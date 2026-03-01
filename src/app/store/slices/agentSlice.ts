@@ -5,7 +5,7 @@
 
 import type { MenuRecommendationItemData, PlaceRecommendationItem } from '@features/agent/types';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 export interface MenuPlaceRecommendationGroup {
   menuName: string;
@@ -39,12 +39,6 @@ interface AgentState {
   communityAiLoadingMenu: string | null;
   communityAiRetrying: boolean;
 
-  // 레거시 AI 추천 결과 (하위 호환성 유지)
-  // @deprecated - searchAiRecommendationGroups 사용 권장
-  aiRecommendationGroups: MenuPlaceRecommendationGroup[];
-  isAiLoading: boolean;
-  aiLoadingMenu: string | null;
-
   // 선택된 장소
   selectedPlace: PlaceRecommendationItem | null;
 
@@ -74,9 +68,6 @@ const initialState: AgentState = {
   isCommunityAiLoading: false,
   communityAiLoadingMenu: null,
   communityAiRetrying: false,
-  aiRecommendationGroups: [],
-  isAiLoading: false,
-  aiLoadingMenu: null,
   selectedPlace: null,
   showConfirmCard: false,
   hasMenuSelectionCompleted: false,
@@ -211,41 +202,7 @@ const agentSlice = createSlice({
       state.communityAiRetrying = action.payload;
     },
 
-    // 레거시 AI 추천 관련 (하위 호환성 유지)
-    // @deprecated - upsertSearchAiRecommendations 사용 권장
-    upsertAiRecommendations: (
-      state,
-      action: PayloadAction<{ menuName: string; recommendations: PlaceRecommendationItem[] }>
-    ) => {
-      const { menuName, recommendations } = action.payload;
-      const existingIndex = state.aiRecommendationGroups.findIndex(
-        (group) => group.menuName === menuName
-      );
-
-      if (existingIndex >= 0) {
-        state.aiRecommendationGroups[existingIndex] = { menuName, recommendations };
-      } else {
-        state.aiRecommendationGroups.push({ menuName, recommendations });
-      }
-      // searchAiRecommendationGroups 동기화 코드 제거
-      // 검색 추천(searchAiRecommendationGroups)과 저장된 추천(aiRecommendationGroups)은 별도로 관리되어야 함
-      // 검색 추천은 upsertSearchAiRecommendations를 통해서만 업데이트되어야 함
-    },
-
-    // @deprecated - setSearchAiLoading 사용 권장
-    setAiLoading: (state, action: PayloadAction<{ isLoading: boolean; menuName: string | null }>) => {
-      state.isAiLoading = action.payload.isLoading;
-      state.aiLoadingMenu = action.payload.menuName;
-      // 하위 호환성: searchAiLoading에도 동기화
-      state.isSearchAiLoading = action.payload.isLoading;
-      state.searchAiLoadingMenu = action.payload.menuName;
-    },
-
-    // @deprecated - clearSearchAiRecommendations + clearCommunityAiRecommendations 사용 권장
     resetAiRecommendations: (state) => {
-      state.aiRecommendationGroups = [];
-      state.aiLoadingMenu = null;
-      state.isAiLoading = false;
       state.searchAiRecommendationGroups = [];
       state.searchAiLoadingMenu = null;
       state.isSearchAiLoading = false;
@@ -291,8 +248,6 @@ export const {
   setCommunityAiLoading,
   clearCommunityAiRecommendations,
   setCommunityAiRetrying,
-  upsertAiRecommendations,
-  setAiLoading,
   resetAiRecommendations,
   setSelectedPlace,
   setShowConfirmCard,
@@ -315,4 +270,44 @@ export const selectSearchAiLoadingMenu = (state: { agent: AgentState }) =>
   state.agent.searchAiLoadingMenu;
 export const selectCommunityAiLoadingMenu = (state: { agent: AgentState }) =>
   state.agent.communityAiLoadingMenu;
+
+// Consolidated memoized selector for ResultsSection
+export const selectResultsSectionState = createSelector(
+  (state: { agent: AgentState }) => state.agent.menuRecommendations,
+  (state: { agent: AgentState }) => state.agent.isMenuRecommendationLoading,
+  (state: { agent: AgentState }) => state.agent.searchAiRecommendationGroups,
+  (state: { agent: AgentState }) => state.agent.communityAiRecommendationGroups,
+  (state: { agent: AgentState }) => state.agent.isSearchAiLoading,
+  (state: { agent: AgentState }) => state.agent.isCommunityAiLoading,
+  (state: { agent: AgentState }) => state.agent.searchAiLoadingMenu,
+  (state: { agent: AgentState }) => state.agent.communityAiLoadingMenu,
+  (state: { agent: AgentState }) => state.agent.searchAiRetrying,
+  (state: { agent: AgentState }) => state.agent.communityAiRetrying,
+  (
+    menuRecommendations,
+    isMenuRecommendationLoading,
+    searchAiRecommendationGroups,
+    communityAiRecommendationGroups,
+    isSearchAiLoading,
+    isCommunityAiLoading,
+    searchAiLoadingMenu,
+    communityAiLoadingMenu,
+    searchAiRetrying,
+    communityAiRetrying
+  ) => ({
+    menuRecommendations,
+    isMenuRecommendationLoading,
+    searchAiRecommendationGroups,
+    communityAiRecommendationGroups,
+    isSearchAiLoading,
+    isCommunityAiLoading,
+    searchAiLoadingMenu,
+    communityAiLoadingMenu,
+    searchAiRetrying,
+    communityAiRetrying,
+    hasSearchAiRecommendations: searchAiRecommendationGroups.some((g) => g.recommendations.length > 0),
+    hasCommunityAiRecommendations: communityAiRecommendationGroups.some((g) => g.recommendations.length > 0),
+    hasRequestedMenuRecommendation: menuRecommendations.length > 0 || isMenuRecommendationLoading,
+  })
+);
 

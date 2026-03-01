@@ -29,7 +29,7 @@ export function UserPlaceDeleteConfirm({
   onConfirm,
 }: UserPlaceDeleteConfirmProps) {
   const { t } = useTranslation();
-  const { isAnimating, shouldRender } = useModalAnimation(open && !!place);
+  const { isAnimating, shouldRender, isClosing } = useModalAnimation(open && !!place);
   useModalScrollLock(open && !!place);
 
   useEscapeKey(() => { if (!isDeleting) onClose(); }, open);
@@ -43,7 +43,7 @@ export function UserPlaceDeleteConfirm({
       style={{ zIndex: Z_INDEX.MODAL_BACKDROP }}
       className={[
         'fixed inset-0 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm',
-        isAnimating ? 'modal-backdrop-enter' : 'modal-backdrop-exit',
+        isAnimating ? 'modal-backdrop-enter' : isClosing ? 'modal-backdrop-exit' : 'opacity-0',
       ].join(' ')}
       onClick={() => { if (!isDeleting) onClose(); }}
     >
@@ -51,7 +51,7 @@ export function UserPlaceDeleteConfirm({
         style={{ zIndex: Z_INDEX.MODAL_CONTENT }}
         className={[
           'relative w-full max-w-md rounded-2xl border border-border-default bg-bg-surface p-8 shadow-2xl',
-          isAnimating ? 'modal-content-enter' : 'modal-content-exit',
+          isAnimating ? 'modal-content-enter' : isClosing ? 'modal-content-exit' : '',
         ].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >

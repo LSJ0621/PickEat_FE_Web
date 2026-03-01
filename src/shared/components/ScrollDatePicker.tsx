@@ -3,7 +3,7 @@
  * Uses CSS scroll-snap for smooth year/month/day selection
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ScrollDatePickerProps {
@@ -32,27 +32,25 @@ const CONTAINER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 /**
  * Generic scroll column component for year/month/day selection
  */
-const ScrollColumn = ({ items, selectedValue, onSelect, disabled = false }: ScrollColumnProps) => {
+const ScrollColumn = memo(({ items, selectedValue, onSelect, disabled = false }: ScrollColumnProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<number | undefined>(undefined);
+  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleScroll = useCallback(() => {
-    if (scrollTimeoutRef.current) {
-      window.cancelAnimationFrame(scrollTimeoutRef.current);
+    if (scrollEndTimerRef.current) {
+      clearTimeout(scrollEndTimerRef.current);
     }
 
-    scrollTimeoutRef.current = window.requestAnimationFrame(() => {
+    scrollEndTimerRef.current = setTimeout(() => {
       const container = scrollContainerRef.current;
       if (!container) return;
 
-      const scrollTop = container.scrollTop;
-      const itemIndex = Math.round(scrollTop / ITEM_HEIGHT);
-
+      const itemIndex = Math.round(container.scrollTop / ITEM_HEIGHT);
       const item = items[itemIndex];
       if (item && item.value !== selectedValue) {
         onSelect(item.value);
       }
-    });
+    }, 150);
   }, [items, onSelect, selectedValue]);
 
   // Set initial scroll position
@@ -75,11 +73,11 @@ const ScrollColumn = ({ items, selectedValue, onSelect, disabled = false }: Scro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
-  // Cleanup pending RAF on unmount
+  // Cleanup pending timer on unmount
   useEffect(() => {
     return () => {
-      if (scrollTimeoutRef.current) {
-        window.cancelAnimationFrame(scrollTimeoutRef.current);
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
       }
     };
   }, []);
@@ -99,6 +97,8 @@ const ScrollColumn = ({ items, selectedValue, onSelect, disabled = false }: Scro
           scrollSnapType: 'y mandatory',
           paddingTop: `${ITEM_HEIGHT}px`,
           paddingBottom: `${ITEM_HEIGHT}px`,
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)',
         }}
       >
         {items.map((item) => {
@@ -106,7 +106,7 @@ const ScrollColumn = ({ items, selectedValue, onSelect, disabled = false }: Scro
           return (
             <div
               key={item.value}
-              className={`flex items-center justify-center transition ${
+              className={`flex items-center justify-center transition-colors duration-150 ${
                 isSelected ? 'text-lg font-semibold text-brand-primary' : 'text-sm text-text-tertiary'
               }`}
               style={{
@@ -130,7 +130,7 @@ const ScrollColumn = ({ items, selectedValue, onSelect, disabled = false }: Scro
       />
     </div>
   );
-};
+});
 
 /**
  * Helper to calculate days in month, accounting for leap years
