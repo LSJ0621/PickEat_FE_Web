@@ -42,6 +42,8 @@ export const AgentPage = () => {
     (state) => ({
       address: state.auth?.user?.address,
       preferences: state.auth?.user?.preferences,
+      birthDate: state.auth?.user?.birthDate,
+      gender: state.auth?.user?.gender,
     }),
     shallowEqual
   );
@@ -73,7 +75,9 @@ export const AgentPage = () => {
       !userSetupInfo.preferences ||
       (userSetupInfo.preferences.likes.length === 0 &&
         userSetupInfo.preferences.dislikes.length === 0);
-    const needsSetup = needsAddress || needsPreferences;
+    const needsBirthDate = !userSetupInfo.birthDate;
+    const needsGender = !userSetupInfo.gender;
+    const needsSetup = needsAddress || needsPreferences || needsBirthDate || needsGender;
 
     if (needsSetup) {
       hasRedirectedRef.current = true;
@@ -81,7 +85,7 @@ export const AgentPage = () => {
       navigate('/mypage', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable and doesn't need to be in deps; hasRedirectedRef prevents duplicate runs
-  }, [isAuthenticated, userSetupInfo.address, userSetupInfo.preferences, navigate, t]);
+  }, [isAuthenticated, userSetupInfo.address, userSetupInfo.preferences, userSetupInfo.birthDate, userSetupInfo.gender, navigate, t]);
 
   useScrollToSection({
     elementRef: aiSectionRef,

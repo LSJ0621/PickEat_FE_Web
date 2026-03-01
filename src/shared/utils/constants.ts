@@ -81,6 +81,12 @@ export const ERROR_MESSAGES = {
   get EMAIL_VERIFICATION_REQUIRED() {
     return i18n.t('validation.email.verificationRequired');
   },
+  get BIRTH_DATE_REQUIRED() {
+    return i18n.t('validation.birthDate.required');
+  },
+  get GENDER_REQUIRED() {
+    return i18n.t('validation.gender.required');
+  },
 } as const;
 
 // 성공 메시지 (i18n 키 기반)

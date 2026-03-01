@@ -9,8 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { PageContainer } from '@shared/components/PageContainer';
 import { PageHeader } from '@shared/components/PageHeader';
-import { PreferencesSection } from '@features/user/components/preferences/PreferencesSection';
-import { PreferencesEditModal } from '@features/user/components/preferences/PreferencesEditModal';
+import {
+  PreferencesSection,
+  PreferencesEditModal,
+  PreferencesGuideSection,
+} from '@features/user/components/preferences';
 import { usePreferences } from '@features/user/hooks/usePreferences';
 import { useAppSelector } from '@app/store/hooks';
 
@@ -62,6 +65,7 @@ export function MyPreferencesPage() {
           isLoading={preferences.isLoadingPreferences}
           onEditClick={handleOpenPreferencesModal}
         />
+        <PreferencesGuideSection />
 
         <PreferencesEditModal
           open={showPreferencesModal}

@@ -41,6 +41,8 @@ export const mockLoginResponse: LoginResponse = {
   latitude: mockUser.latitude ?? null,
   longitude: mockUser.longitude ?? null,
   preferences: mockUser.preferences ?? null,
+  birthDate: null,
+  gender: null,
 };
 
 export const authHandlers = [

@@ -9,12 +9,19 @@ import { authService } from '@features/auth/api';
 import { Button } from '@shared/components/Button';
 import { PageContainer } from '@shared/components/PageContainer';
 import { EmailVerificationSection, PasswordInputSection } from '@features/auth/components';
+import { ScrollDatePicker } from '@shared/components/ScrollDatePicker';
 import { Input } from '@shared/ui/input';
 import { Label } from '@shared/ui/label';
 import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useEmailVerification } from '@features/auth/hooks/useEmailVerification';
 import { isEmpty, isValidEmail, isValidPassword, isPasswordMatch } from '@shared/utils/validation';
 import { ERROR_MESSAGES } from '@shared/utils/constants';
+
+const GENDER_OPTIONS: { value: 'male' | 'female' | 'other'; labelKey: string }[] = [
+  { value: 'male', labelKey: 'user.profile.genderMale' },
+  { value: 'female', labelKey: 'user.profile.genderFemale' },
+  { value: 'other', labelKey: 'user.profile.genderOther' },
+];
 
 // Step indicator
 interface StepIndicatorProps {
@@ -47,6 +54,8 @@ export const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [birthDate, setBirthDate] = useState<string | null>(null);
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
@@ -54,6 +63,8 @@ export const RegisterPage = () => {
     confirmPassword?: string;
     name?: string;
     verificationCode?: string;
+    birthDate?: string;
+    gender?: string;
   }>({});
   const [showReRegisterModal, setShowReRegisterModal] = useState(false);
   const [reRegisterEmail, setReRegisterEmail] = useState('');
@@ -67,8 +78,9 @@ export const RegisterPage = () => {
     },
   });
 
-  // Derive current step for progress (1=name, 2=email+verify, 3=password)
+  // Derive current step for progress (1=name, 2=email+verify, 3=password, 4=birthDate/gender)
   const currentStep = (() => {
+    if (emailVerification.isEmailVerified && password && confirmPassword) return 4;
     if (emailVerification.isEmailVerified) return 3;
     if (emailVerification.emailAvailable === true) return 2;
     return 1;
@@ -99,6 +111,12 @@ export const RegisterPage = () => {
     } else if (!isPasswordMatch(password, confirmPassword)) {
       newErrors.confirmPassword = ERROR_MESSAGES.PASSWORD_MISMATCH;
     }
+    if (!birthDate) {
+      newErrors.birthDate = ERROR_MESSAGES.BIRTH_DATE_REQUIRED;
+    }
+    if (!gender) {
+      newErrors.gender = ERROR_MESSAGES.GENDER_REQUIRED;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -111,6 +129,8 @@ export const RegisterPage = () => {
         email: emailVerification.email,
         password,
         name: name.trim(),
+        birthDate: birthDate!,
+        gender: gender!,
       });
       handleSuccess(t('messages.registerSuccess'));
       navigate('/login');
@@ -136,7 +156,7 @@ export const RegisterPage = () => {
 
         {/* Register Card */}
         <div className="rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg sm:p-8">
-          <StepIndicator currentStep={currentStep} totalSteps={3} />
+          <StepIndicator currentStep={currentStep} totalSteps={4} />
 
           <div className="space-y-4">
             {/* 이름 입력 */}
@@ -190,11 +210,63 @@ export const RegisterPage = () => {
               }}
             />
 
+            {/* 생년월일 / 성별 섹션 (Step 4) */}
+            <div className="space-y-4 pt-2">
+              {/* 생년월일 */}
+              <div>
+                <label className="mb-3 block text-sm font-medium text-text-primary">
+                  {t('user.profile.birthDate')}
+                </label>
+                <ScrollDatePicker
+                  value={birthDate}
+                  onChange={(value) => {
+                    setBirthDate(value);
+                    setErrors({ ...errors, birthDate: undefined });
+                  }}
+                />
+                {errors.birthDate && <p className="mt-1 text-sm text-red-400">{errors.birthDate}</p>}
+              </div>
+
+              {/* 성별 */}
+              <fieldset>
+                <legend className="mb-3 block text-sm font-medium text-text-primary">
+                  {t('user.profile.gender')}
+                </legend>
+                <div className="space-y-2" role="radiogroup">
+                  {GENDER_OPTIONS.map(({ value, labelKey }) => (
+                    <label
+                      key={value}
+                      className={[
+                        'flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition',
+                        gender === value
+                          ? 'border-brand-primary/50 bg-brand-primary/10'
+                          : 'border-border-default bg-bg-secondary hover:bg-bg-hover',
+                      ].join(' ')}
+                    >
+                      <input
+                        type="radio"
+                        name="register-gender"
+                        value={value}
+                        checked={gender === value}
+                        onChange={() => {
+                          setGender(value);
+                          setErrors({ ...errors, gender: undefined });
+                        }}
+                        className="h-4 w-4 accent-brand-primary"
+                      />
+                      <span className="text-sm text-text-primary">{t(labelKey)}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.gender && <p className="mt-1 text-sm text-red-400">{errors.gender}</p>}
+              </fieldset>
+            </div>
+
             {/* 회원가입 버튼 */}
             <Button
               onClick={handleRegister}
               isLoading={registerLoading}
-              disabled={registerLoading || !emailVerification.isEmailVerified}
+              disabled={registerLoading || !emailVerification.isEmailVerified || !birthDate || !gender}
               size="lg"
               className="mt-2 w-full"
             >

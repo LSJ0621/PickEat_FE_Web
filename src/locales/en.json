@@ -345,7 +345,17 @@
       "loading": "Loading...",
       "noPreferences": "No preferences registered.",
       "noPreferencesSetup": "Set your preferences and AI will analyze them for you",
-      "aiReport": "AI Report"
+      "aiReport": "AI Report",
+      "guide": {
+        "title": "AI analyzes your taste",
+        "subtitle": "Enter what you like and dislike, and AI will recommend the perfect menu for you",
+        "step1Title": "Enter Preferences",
+        "step1Desc": "Freely enter your favorite foods, ingredients, and cooking styles",
+        "step2Title": "AI Analysis",
+        "step2Desc": "AI analyzes your taste patterns and generates a personalized profile report",
+        "step3Title": "Smart Recommendations",
+        "step3Desc": "Get perfectly matched menu recommendations based on your analyzed preferences"
+      }
     },
     "profile": {
       "title": "Profile Information",
@@ -542,7 +552,7 @@
     "goToLogin": "Go to Login Page",
     "confirmAiRecommendation": " — Would you like to get AI recommendations?",
     "needsAddressForAi": "Address or location data is required to use AI recommendations.",
-    "needsSetupRedirect": "Please register your preferences and address first.",
+    "needsSetupRedirect": "Please register your preferences, address, birth date, and gender first.",
     "smartCompanion": "Smart Eatery Companion",
     "results": {
       "selectMenu": "Please select a menu",
@@ -642,6 +652,12 @@
     },
     "address": {
       "required": "Please select an address."
+    },
+    "birthDate": {
+      "required": "Please select your birth date."
+    },
+    "gender": {
+      "required": "Please select your gender."
     },
     "bugReport": {
       "categoryRequired": "Please select a category.",
@@ -1144,7 +1160,8 @@
       "subtitle": "Set up for better recommendations",
       "skipNote": "You can also set this up later in My Page",
       "alreadySetupTitle": "Setup Complete",
-      "alreadySetupDesc": "Your address and preferences are already registered."
+      "alreadySetupDesc": "Your address, preferences, birth date, and gender are already registered.",
+      "saveError": "Failed to save."
     },
     "step5": {
       "title": "All Set!",

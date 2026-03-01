@@ -6,6 +6,8 @@ export interface UserSetupStatus {
   needsName: boolean;
   needsAddress: boolean;
   needsPreferences: boolean;
+  needsBirthDate: boolean;
+  needsGender: boolean;
   hasAnyMissing: boolean;
 }
 
@@ -21,24 +23,31 @@ export const checkUserSetupStatus = (user: {
     likes: string[];
     dislikes: string[];
   } | null;
+  birthDate?: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
 }): UserSetupStatus => {
   const needsName = !user.name || user.name.trim() === '';
-  
+
   const needsAddress = !user.address || user.address.trim() === '';
-  
+
   // 취향정보는 Jsonb 타입이므로 배열이 비어있는지로 판단
-  const hasPreferences = 
-    user.preferences !== null && 
+  const hasPreferences =
+    user.preferences !== null &&
     user.preferences !== undefined &&
     (user.preferences.likes?.length > 0 || user.preferences.dislikes?.length > 0);
   const needsPreferences = !hasPreferences;
-  
-  const hasAnyMissing = needsName || needsAddress || needsPreferences;
-  
+
+  const needsBirthDate = !user.birthDate;
+  const needsGender = !user.gender;
+
+  const hasAnyMissing = needsName || needsAddress || needsPreferences || needsBirthDate || needsGender;
+
   return {
     needsName,
     needsAddress,
     needsPreferences,
+    needsBirthDate,
+    needsGender,
     hasAnyMissing,
   };
 };

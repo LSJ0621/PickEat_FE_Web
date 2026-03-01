@@ -36,6 +36,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string; // 필수 필드 (백엔드 RegisterDto와 동기화)
+  birthDate: string;
+  gender: 'male' | 'female' | 'other';
 }
 
 export type EmailVerificationPurpose = 'SIGNUP' | 'RESET_PASSWORD' | 'RE_REGISTER';
@@ -54,6 +56,8 @@ export interface KakaoLoginResponse {
     analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
   preferredLanguage?: Language | null;
+  birthDate?: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
 }
 
 export interface LoginResponse {
@@ -70,6 +74,8 @@ export interface LoginResponse {
     analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
   preferredLanguage?: Language | null;
+  birthDate: string | null;
+  gender: 'male' | 'female' | 'other' | null;
 }
 
 export interface UpdateUserRequest {

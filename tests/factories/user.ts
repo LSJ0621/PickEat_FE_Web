@@ -20,6 +20,8 @@ export function createMockUser(overrides?: Partial<User>): User {
     preferredLanguage: 'ko',
     role: 'USER',
     createdAt: '2024-01-01T00:00:00.000Z',
+    birthDate: null,
+    gender: null,
     ...overrides,
   };
 }
@@ -37,6 +39,8 @@ export function createMockLoginResponse(overrides?: Partial<LoginResponse>): Log
     latitude: user.latitude ?? null,
     longitude: user.longitude ?? null,
     preferences: user.preferences ?? null,
+    birthDate: null,
+    gender: null,
     ...overrides,
   };
 }
