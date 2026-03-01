@@ -8,7 +8,6 @@ import i18n from '@/i18n/config';
 // 로컬 스토리지 키
 export const STORAGE_KEYS = {
   TOKEN: 'token',
-  REFRESH_TOKEN: 'refreshToken',
   USER: 'user',
   THEME: 'theme',
   RATING_PROMPT_DISMISSED: 'ratingPromptDismissed',

@@ -30,6 +30,5 @@ export interface SharedUser {
 
 export interface AuthResponse {
   token: string;
-  refreshToken: string;
   user: SharedUser;
 }

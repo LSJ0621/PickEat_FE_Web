@@ -3,7 +3,6 @@ import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useAppDispatch, useAppSelector } from '@app/store/hooks';
 import {
   setSelectedMenu,
-  setSelectedPlace,
   setShowConfirmCard,
   upsertSearchAiRecommendations,
   upsertCommunityAiRecommendations,
@@ -14,8 +13,7 @@ import {
 } from '@app/store/slices/agentSlice';
 import type { PlaceRecommendationResponse } from '@features/agent/types';
 import { extractErrorMessage } from '@shared/utils/error';
-import { isAxiosError } from 'axios';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface UseAgentActionsProps {
@@ -35,6 +33,10 @@ export function useAgentActions({
   const selectedMenu = useAppSelector((state) => state.agent.selectedMenu);
   const menuHistoryId = useAppSelector((state) => state.agent.menuHistoryId);
   const searchAiRecommendationGroups = useAppSelector((state) => state.agent.searchAiRecommendationGroups);
+
+  const searchAbortRef = useRef<AbortController | null>(null);
+  const communityAbortRef = useRef<AbortController | null>(null);
+  const abortedByVisibilityRef = useRef(false);
 
   const handleMenuClick = useCallback(
     (
@@ -58,43 +60,6 @@ export function useAgentActions({
   const handleCancel = useCallback(() => {
     dispatch(setShowConfirmCard(false));
   }, [dispatch]);
-
-  const loadStoredAiRecommendations = useCallback(
-    async (
-      historyId: number,
-      menuName: string,
-      { silent }: { silent?: boolean } = {}
-    ) => {
-      try {
-        const response = await menuService.getPlaceRecommendationsByHistoryId(historyId);
-        const normalized = (response.places || [])
-          .filter((place) => place.menuName === menuName)
-          .filter((place) => place.placeId != null)
-          .map((place) => ({
-            placeId: place.placeId!.replace(/^places\//i, ''),
-            name: place.name ?? '이름 없는 가게',
-            reason: place.reason ?? '',
-            menuName: place.menuName,
-          }));
-
-        dispatch(upsertSearchAiRecommendations({ menuName, recommendations: normalized }));
-        dispatch(setSelectedPlace(null));
-
-        if (!silent) {
-          if (normalized.length === 0) {
-            handleError(t('errors.agent.savedResultNotFound'), 'Agent');
-          } else {
-            handleSuccess('toast.ai.showingSavedRecommendation');
-          }
-        }
-      } catch (historyError) {
-        if (!silent) {
-          handleError(historyError, 'Agent');
-        }
-      }
-    },
-    [dispatch, handleError, handleSuccess, t]
-  );
 
   const handleAiRecommendation = useCallback(async () => {
     if (!isAuthenticated) {
@@ -126,6 +91,11 @@ export function useAgentActions({
     // Fire search API call independently with SSE streaming
     dispatch(setSearchAiLoading({ isLoading: true, menuName: selectedMenu }));
     dispatch(setSearchAiRetrying(false));
+
+    // Create new AbortControllers for this recommendation request
+    const searchAbort = new AbortController();
+    searchAbortRef.current = searchAbort;
+
     menuService.recommendSearchPlacesStream(
       {
         latitude: latitude!,
@@ -152,18 +122,17 @@ export function useAgentActions({
             dispatch(setSearchAiRetrying(false));
           } else if (event.type === 'error') {
             dispatch(setSearchAiRetrying(false));
-            handleError(event.message || 'Search places streaming error', 'Agent');
+            handleError(t('errors.agent.recommendationFailed'), 'Agent');
           }
         },
-      }
+      },
+      searchAbort.signal
     )
       .catch((error) => {
-        if (isAxiosError(error) && error.response?.status === 400 && menuHistoryId !== null) {
-          loadStoredAiRecommendations(menuHistoryId, selectedMenu, { silent: true });
-        } else {
-          const errorMessage = extractErrorMessage(error, 'Search places streaming failed');
-          handleError(errorMessage, 'Agent');
-        }
+        // Ignore AbortError (caused by visibility change)
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        const errorMessage = extractErrorMessage(error, t('errors.agent.recommendationFailed'));
+        handleError(errorMessage, 'Agent');
       })
       .finally(() => {
         dispatch(setSearchAiLoading({ isLoading: false, menuName: null }));
@@ -173,6 +142,10 @@ export function useAgentActions({
     // Fire community API call independently with SSE streaming (runs in parallel)
     dispatch(setCommunityAiLoading({ isLoading: true, menuName: selectedMenu }));
     dispatch(setCommunityAiRetrying(false));
+
+    const communityAbort = new AbortController();
+    communityAbortRef.current = communityAbort;
+
     menuService.recommendCommunityPlacesStream(
       {
         latitude: latitude!,
@@ -199,13 +172,15 @@ export function useAgentActions({
             dispatch(setCommunityAiRetrying(false));
           } else if (event.type === 'error') {
             dispatch(setCommunityAiRetrying(false));
-            handleError(event.message || 'Community places streaming error', 'Agent');
+            handleError(t('errors.agent.recommendationFailed'), 'Agent');
           }
         },
-      }
+      },
+      communityAbort.signal
     )
       .catch((error) => {
-        const errorMessage = extractErrorMessage(error, 'Community places streaming failed');
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        const errorMessage = extractErrorMessage(error, t('errors.agent.recommendationFailed'));
         handleError(errorMessage, 'Agent');
       })
       .finally(() => {
@@ -222,9 +197,33 @@ export function useAgentActions({
     dispatch,
     handleError,
     handleSuccess,
-    loadStoredAiRecommendations,
     t,
   ]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Set flag before abort so .finally() doesn't race with visibility handler
+        if (searchAbortRef.current || communityAbortRef.current) {
+          abortedByVisibilityRef.current = true;
+        }
+        searchAbortRef.current?.abort();
+        communityAbortRef.current?.abort();
+      } else if (document.visibilityState === 'visible') {
+        if (abortedByVisibilityRef.current) {
+          abortedByVisibilityRef.current = false;
+          dispatch(setSearchAiLoading({ isLoading: false, menuName: null }));
+          dispatch(setSearchAiRetrying(false));
+          dispatch(setCommunityAiLoading({ isLoading: false, menuName: null }));
+          dispatch(setCommunityAiRetrying(false));
+          handleError(t('errors.agent.connectionLostByAppSwitch'), 'Agent');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [dispatch, t, handleError]);
 
   return {
     handleMenuClick,

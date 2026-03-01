@@ -165,7 +165,9 @@
       "savedResultNotFound": "You already received this recommendation but saved results were not found.",
       "locationRequired": "Please register your address or location to use AI recommendations.",
       "addressRequired": "Please register your address to use AI recommendations.",
-      "noAiResults": "No AI recommendations available."
+      "noAiResults": "No AI recommendations available.",
+      "recommendationFailed": "An error occurred during recommendation. Please try again.",
+      "connectionLostByAppSwitch": "The connection was lost because you switched apps. You can check the results in your history."
     },
     "history": {
       "noSavedAiResults": "No saved AI recommendations found."

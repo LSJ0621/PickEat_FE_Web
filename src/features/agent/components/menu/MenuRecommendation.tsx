@@ -54,6 +54,8 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
   const [animatedMenus, setAnimatedMenus] = useState<Set<number>>(new Set());
   const previousLoadingRef = useRef<boolean>(false);
   const previousRecommendationsRef = useRef<string>('');
+  const menuStreamAbortRef = useRef<AbortController | null>(null);
+  const menuAbortedByVisibilityRef = useRef(false);
 
   useEffect(() => {
     const currentRecommendationsKey = recommendations.map((r) => r.menu).join('|');
@@ -76,6 +78,26 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
     previousRecommendationsRef.current = currentRecommendationsKey;
   }, [loading, recommendations]);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        if (menuStreamAbortRef.current) {
+          menuAbortedByVisibilityRef.current = true;
+        }
+        menuStreamAbortRef.current?.abort();
+      } else if (document.visibilityState === 'visible') {
+        if (menuAbortedByVisibilityRef.current) {
+          menuAbortedByVisibilityRef.current = false;
+          dispatch(setMenuRecommendationLoading(false));
+          handleError(t('errors.agent.connectionLostByAppSwitch'), 'MenuRecommendation');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [dispatch, handleError, t]);
+
   const handleRecommend = async () => {
     if (!isAuthenticated) {
       handleError(t('menu.loginRequired'), 'MenuRecommendation');
@@ -91,6 +113,9 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
     dispatch(resetAiRecommendations());
     dispatch(setMenuRecommendationLoading(true));
     resetStreamState();
+
+    const menuAbort = new AbortController();
+    menuStreamAbortRef.current = menuAbort;
 
     try {
       await menuService.recommendStream(prompt, {
@@ -109,12 +134,16 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
               })
             );
           } else if (event.type === 'error') {
-            handleError(event.message || 'Recommendation failed', 'MenuRecommendation');
+            handleError(t('errors.agent.recommendationFailed'), 'MenuRecommendation');
           }
         },
-      });
+      }, menuAbort.signal);
     } catch (error) {
-      handleError(error, 'MenuRecommendation');
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        // Silently handle - visibility change handler deals with this
+      } else {
+        handleError(error, 'MenuRecommendation');
+      }
     } finally {
       dispatch(setMenuRecommendationLoading(false));
     }

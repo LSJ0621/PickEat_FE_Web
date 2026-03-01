@@ -166,7 +166,9 @@
       "savedResultNotFound": "이미 추천받은 이력이 있지만 저장된 결과를 찾지 못했습니다.",
       "locationRequired": "AI 추천을 사용하려면 주소 또는 위치 정보를 등록해주세요.",
       "addressRequired": "AI 추천을 사용하려면 주소를 등록해주세요.",
-      "noAiResults": "AI 추천 결과가 없습니다."
+      "noAiResults": "AI 추천 결과가 없습니다.",
+      "recommendationFailed": "추천 중 오류가 발생했습니다. 다시 시도해주세요.",
+      "connectionLostByAppSwitch": "추천 중 다른 앱으로 이동하여 결과를 받을 수 없습니다. 추천 결과는 이력에서 확인해주세요."
     },
     "history": {
       "noSavedAiResults": "저장된 AI 추천 결과가 없습니다."

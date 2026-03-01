@@ -7,7 +7,6 @@ import { ENDPOINTS } from '@shared/api/endpoints';
 import { API_CONFIG, STORAGE_KEYS } from '@shared/utils/constants';
 import { logout } from '@app/store/slices/authSlice';
 import type { AppStore } from '@app/store';
-import type { AuthResponse } from '@shared/types/auth';
 import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 
@@ -19,13 +18,11 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   // Content-Type은 요청 데이터 타입(FormData / JSON)에 따라 axios가 자동 설정하도록 둔다.
-  withCredentials: true,
 });
 
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
-  withCredentials: true,
 });
 
 let refreshTokenRequest: Promise<string | null> | null = null;
@@ -41,7 +38,12 @@ const handleAuthFailure = () => {
 };
 
 const fetchNewAccessToken = async () => {
-  const response = await refreshClient.post<AuthResponse>(ENDPOINTS.AUTH.REFRESH);
+  const expiredToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const response = await refreshClient.post<{ token: string }>(
+    ENDPOINTS.AUTH.REFRESH,
+    {},
+    { headers: expiredToken ? { Authorization: `Bearer ${expiredToken}` } : {} }
+  );
   const newToken = response.data.token;
   localStorage.setItem(STORAGE_KEYS.TOKEN, newToken);
   return newToken;

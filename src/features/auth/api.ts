@@ -5,7 +5,6 @@
 
 import apiClient from '@shared/api/client';
 import { ENDPOINTS } from '@shared/api/endpoints';
-import type { AuthResponse } from '@shared/types/auth';
 import type {
     CheckEmailResponse,
     EmailVerificationPurpose,
@@ -132,8 +131,8 @@ export const authService = {
   },
 
   // 토큰 갱신
-  refreshToken: async (): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>(ENDPOINTS.AUTH.REFRESH);
+  refreshToken: async (): Promise<{ token: string }> => {
+    const response = await apiClient.post<{ token: string }>(ENDPOINTS.AUTH.REFRESH);
     return response.data;
   },
 

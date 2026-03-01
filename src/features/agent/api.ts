@@ -28,6 +28,7 @@ export interface StreamEvent<T = unknown> {
   attempt?: number;
   data?: T;
   message?: string;
+  errorCode?: string;
 }
 
 interface StreamCallbacks<T> {
@@ -53,7 +54,8 @@ function getStreamHeaders(method: 'GET' | 'POST'): HeadersInit {
  */
 async function parseSSEStream<T>(
   response: Response,
-  callbacks: StreamCallbacks<T>
+  callbacks: StreamCallbacks<T>,
+  signal?: AbortSignal
 ): Promise<void> {
   const reader = response.body?.getReader();
   if (!reader) {
@@ -65,6 +67,7 @@ async function parseSSEStream<T>(
 
   try {
     while (true) {
+      if (signal?.aborted) break;
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -87,6 +90,12 @@ async function parseSSEStream<T>(
         }
       }
     }
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      // Silently handle abort (app switch)
+      return;
+    }
+    throw e;
   } finally {
     reader.releaseLock();
   }
@@ -222,19 +231,21 @@ export const menuService = {
    */
   recommendStream: async (
     prompt: string,
-    callbacks: StreamCallbacks<MenuRecommendationResponse>
+    callbacks: StreamCallbacks<MenuRecommendationResponse>,
+    signal?: AbortSignal
   ): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.MENU.RECOMMEND_STREAM}`, {
       method: 'POST',
       headers: getStreamHeaders('POST'),
       body: JSON.stringify({ prompt }),
+      signal,
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await parseSSEStream(response, callbacks);
+    await parseSSEStream(response, callbacks, signal);
   },
 
   /**
@@ -248,7 +259,8 @@ export const menuService = {
       menuRecommendationId: number;
       language?: string;
     },
-    callbacks: StreamCallbacks<PlaceRecommendationResponse>
+    callbacks: StreamCallbacks<PlaceRecommendationResponse>,
+    signal?: AbortSignal
   ): Promise<void> => {
     const queryParams = new URLSearchParams({
       latitude: params.latitude.toString(),
@@ -263,6 +275,7 @@ export const menuService = {
       {
         method: 'GET',
         headers: getStreamHeaders('GET'),
+        signal,
       }
     );
 
@@ -270,7 +283,7 @@ export const menuService = {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await parseSSEStream(response, callbacks);
+    await parseSSEStream(response, callbacks, signal);
   },
 
   /**
@@ -284,7 +297,8 @@ export const menuService = {
       menuRecommendationId: number;
       language?: string;
     },
-    callbacks: StreamCallbacks<PlaceRecommendationResponse>
+    callbacks: StreamCallbacks<PlaceRecommendationResponse>,
+    signal?: AbortSignal
   ): Promise<void> => {
     const queryParams = new URLSearchParams({
       latitude: params.latitude.toString(),
@@ -299,6 +313,7 @@ export const menuService = {
       {
         method: 'GET',
         headers: getStreamHeaders('GET'),
+        signal,
       }
     );
 
@@ -306,6 +321,6 @@ export const menuService = {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await parseSSEStream(response, callbacks);
+    await parseSSEStream(response, callbacks, signal);
   },
 };
