@@ -10,7 +10,6 @@ import { UserPreferencesCard } from '@features/admin/components/users/UserPrefer
 import { UserRecentActivityCard } from '@features/admin/components/users/UserRecentActivityCard';
 import { UserStatsCard } from '@features/admin/components/users/UserStatsCard';
 import { useToast } from '@shared/hooks/useToast';
-import { useErrorHandler } from '@shared/hooks/useErrorHandler';
 import { useAppSelector } from '@app/store/hooks';
 import type { AdminUserDetail } from '@features/admin/types';
 import { extractErrorMessage } from '@shared/utils/error';
@@ -22,7 +21,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 export const AdminUserDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { handleError } = useErrorHandler();
   const toast = useToast();
   const userRole = useAppSelector((state) => state.auth?.user?.role);
 
@@ -33,10 +31,9 @@ export const AdminUserDetailPage = () => {
   // 권한 체크
   useEffect(() => {
     if (!isAdminRole(userRole)) {
-      handleError(new Error('접근 권한이 없습니다.'), 'AdminUserDetailPage');
       navigate('/');
     }
-  }, [userRole, navigate, handleError]);
+  }, [userRole, navigate]);
 
   // 사용자 상세 조회
   const fetchUserDetail = useCallback(async () => {
@@ -48,13 +45,11 @@ export const AdminUserDetailPage = () => {
       setUser(response);
     } catch (error: unknown) {
       const message = extractErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
-      handleError(new Error(message), 'AdminUserDetailPage');
       toast.error(message);
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, userRole, handleError]);
+  }, [id, userRole, toast]);
 
   useEffect(() => {
     if (isAdminRole(userRole)) {
@@ -80,7 +75,6 @@ export const AdminUserDetailPage = () => {
     } catch (error: unknown) {
       const message = extractErrorMessage(error, '사용자 비활성화에 실패했습니다.');
       toast.error(message);
-      handleError(new Error(message), 'AdminUserDetailPage');
     } finally {
       setProcessing(false);
     }
@@ -102,7 +96,6 @@ export const AdminUserDetailPage = () => {
     } catch (error: unknown) {
       const message = extractErrorMessage(error, '사용자 활성화에 실패했습니다.');
       toast.error(message);
-      handleError(new Error(message), 'AdminUserDetailPage');
     } finally {
       setProcessing(false);
     }

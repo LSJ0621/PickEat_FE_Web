@@ -53,6 +53,7 @@ export interface KakaoLoginResponse {
     analysis?: string | null;
     analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
+  preferredLanguage?: Language | null;
 }
 
 export interface LoginResponse {
@@ -68,6 +69,7 @@ export interface LoginResponse {
     analysis?: string | null;
     analysisParagraphs?: AnalysisParagraphs | null;
   } | null;
+  preferredLanguage?: Language | null;
 }
 
 export interface UpdateUserRequest {

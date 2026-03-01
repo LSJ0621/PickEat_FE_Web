@@ -133,7 +133,7 @@ export const UserDetailCard = ({
         </div>
 
         {/* 비활성화/활성화 버튼 */}
-        {!user.deletedAt && (
+        {!user.deletedAt && user.role !== 'SUPER_ADMIN' && (
           <div className="pt-4 border-t border-border-default">
             {user.isDeactivated ? (
               <button

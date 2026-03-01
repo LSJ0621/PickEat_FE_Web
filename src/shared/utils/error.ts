@@ -2,16 +2,25 @@ import axios from 'axios';
 import i18n from '@/i18n/config';
 import type { BackendErrorResponse } from '@shared/types/api';
 
-interface ApiErrorResponse {
-  response?: {
-    data?: {
-      message?: string;
-      errorCode?: string;
-      metadata?: Record<string, unknown>;
-    };
+/**
+ * HTTP 상태 코드별 사용자 친화적 메시지를 반환합니다.
+ * 모듈 로드 시점이 아닌 호출 시점에 번역을 가져와 언어 변경이 반영됩니다.
+ */
+const getHttpStatusMessage = (status: number): string | undefined => {
+  const HTTP_STATUS_MESSAGES: Record<number, string> = {
+    400: i18n.t('errors.httpStatus.400'),
+    401: i18n.t('errors.httpStatus.401'),
+    403: i18n.t('errors.httpStatus.403'),
+    404: i18n.t('errors.httpStatus.404'),
+    409: i18n.t('errors.httpStatus.409'),
+    500: i18n.t('errors.httpStatus.500'),
+    502: i18n.t('errors.httpStatus.502'),
   };
-  message?: string;
-}
+  return HTTP_STATUS_MESSAGES[status];
+};
+
+/** 한글 포함 여부 감지 */
+const isKorean = (text: string): boolean => /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/.test(text);
 
 /**
  * Translate backend errorCode to localized message
@@ -35,35 +44,32 @@ export const extractErrorMessage = (error: unknown, fallbackMessage?: string) =>
   const defaultFallback = fallbackMessage ?? i18n.t('common.error');
 
   if (typeof error === 'string') {
-    return error;
+    return isKorean(error) ? error : defaultFallback;
   }
 
-  // 우선순위: errorCode 번역 > 서버 응답 message > 기본 message
+  // 우선순위: errorCode 번역 > 서버 응답 message 필터링 > 기본 message
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data as BackendErrorResponse | undefined;
+    const httpStatus = error.response?.status;
 
     // errorCode가 있으면 번역 사용
     if (responseData?.errorCode) {
       return translateErrorCode(responseData.errorCode, responseData.metadata);
     }
 
-    // fallback: 기존 메시지 사용
-    if (responseData?.message) {
+    // 한국어 메시지면 그대로 반환
+    if (responseData?.message && isKorean(responseData.message)) {
       return responseData.message;
+    }
+
+    // 영문 메시지 또는 메시지 없는 경우 → HTTP 상태 코드 기반 메시지
+    if (httpStatus) {
+      const statusMessage = getHttpStatusMessage(httpStatus);
+      if (statusMessage) return statusMessage;
     }
 
     if (error.message) {
       return error.message;
-    }
-  }
-
-  if (error && typeof error === 'object') {
-    const apiError = error as ApiErrorResponse;
-    if (apiError.response?.data?.message) {
-      return apiError.response.data.message;
-    }
-    if (apiError.message) {
-      return apiError.message;
     }
   }
 

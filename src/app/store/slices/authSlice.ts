@@ -137,6 +137,14 @@ const authSlice = createSlice({
       state.user = normalizeUser(userWithRole);
       state.isAuthenticated = true;
       localStorage.setItem(STORAGE_KEYS.TOKEN, action.payload.token);
+
+      // 서버의 preferredLanguage와 동기화 (OAuth 로그인 시 initializeAuth를 거치지 않으므로)
+      const serverLanguage = action.payload.user.preferredLanguage;
+      if (serverLanguage === 'ko' || serverLanguage === 'en') {
+        state.language = serverLanguage;
+        i18n.changeLanguage(serverLanguage);
+        localStorage.setItem('i18nextLng', serverLanguage);
+      }
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {

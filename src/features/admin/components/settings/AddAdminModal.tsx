@@ -13,7 +13,6 @@ import {
 import { Button } from '@shared/ui/button';
 import { Input } from '@shared/ui/input';
 import { Label } from '@shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/select';
 import type { AdminRole } from '@features/admin/types-settings';
 import { UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -29,7 +28,6 @@ interface AddAdminModalProps {
 
 export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdminModalProps) {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<AdminRole>('ADMIN');
   const { error } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,12 +42,11 @@ export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdmi
       return;
     }
 
-    onConfirm(trimmedEmail, role);
+    onConfirm(trimmedEmail, 'ADMIN');
   };
 
   const handleClose = () => {
     setEmail('');
-    setRole('ADMIN');
     onClose();
   };
 
@@ -83,29 +80,7 @@ export function AddAdminModal({ isOpen, onClose, onConfirm, isLoading }: AddAdmi
                 disabled={isLoading}
               />
               <p className="text-xs text-text-tertiary">
-                관리자 권한을 부여할 사용자의 이메일을 입력해주세요.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-text-primary">
-                권한 레벨
-              </Label>
-              <Select value={role} onValueChange={(value) => setRole(value as AdminRole)} disabled={isLoading}>
-                <SelectTrigger className="bg-bg-primary border-border-default text-text-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-bg-surface border-border-default text-text-primary">
-                  <SelectItem value="ADMIN" className="text-text-primary hover:bg-bg-hover">
-                    관리자
-                  </SelectItem>
-                  <SelectItem value="SUPER_ADMIN" className="text-text-primary hover:bg-bg-hover">
-                    슈퍼 관리자
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-text-tertiary">
-                슈퍼 관리자는 다른 관리자를 추가/제거할 수 있습니다.
+                해당 사용자에게 관리자 권한이 부여됩니다.
               </p>
             </div>
           </div>

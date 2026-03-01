@@ -89,6 +89,7 @@ export interface AdminUserDetail {
   createdAt: string;
   deletedAt: string | null;
   isDeactivated: boolean;
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
   preferences: {
     likes: string[];
     dislikes: string[];

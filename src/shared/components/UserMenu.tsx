@@ -7,7 +7,7 @@ export const UserMenu = () => {
 
   return (
     <span className="flex items-center gap-2 rounded-xl border border-border-default bg-bg-secondary px-3 py-2 text-sm font-semibold text-text-primary">
-      {userName && <span className="hidden sm:inline">{userName}{t('user.honorific')}</span>}
+      {userName && <span className="inline max-w-[80px] truncate sm:max-w-none">{userName}{t('user.honorific')}</span>}
     </span>
   );
 };

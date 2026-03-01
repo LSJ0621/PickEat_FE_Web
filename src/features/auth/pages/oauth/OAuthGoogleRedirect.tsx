@@ -70,7 +70,7 @@ export const OAuthGoogleRedirect = () => {
             latitude: loginData.latitude ?? null,
             longitude: loginData.longitude ?? null,
             preferences: loginData.preferences ?? null,
-            preferredLanguage: 'ko',
+            preferredLanguage: loginData.preferredLanguage ?? 'ko',
             createdAt: new Date().toISOString(),
           },
           token: loginData.token,

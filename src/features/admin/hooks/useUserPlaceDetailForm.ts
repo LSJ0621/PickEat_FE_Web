@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AdminUserPlaceListItem, UpdateUserPlaceByAdminRequest } from '@features/admin/types';
 import type { EditFormState } from '@features/admin/components/user-places/UserPlaceDetailContent';
 import { useToast } from '@shared/hooks/useToast';
@@ -28,6 +29,7 @@ export function useUserPlaceDetailForm({
   isOpen,
   onUpdate,
 }: UseUserPlaceDetailFormProps): UseUserPlaceDetailFormReturn {
+  const { t } = useTranslation();
   const { error: showError } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState>({
@@ -72,21 +74,21 @@ export function useUserPlaceDetailForm({
     const trimmedAddress = editForm.address.trim();
 
     if (!trimmedName) {
-      showError('Name is required');
+      showError(t('validation.VALIDATION_REQUIRED', { field: t('fields.name') }));
       return;
     }
     if (!trimmedAddress) {
-      showError('Address is required');
+      showError(t('validation.VALIDATION_REQUIRED', { field: t('userPlace.address') }));
       return;
     }
 
     // Validate field lengths
     if (trimmedName.length > 100) {
-      showError('Name must be 100 characters or less');
+      showError(t('validation.VALIDATION_MAX_LENGTH', { field: t('fields.name'), max: 100 }));
       return;
     }
     if (trimmedAddress.length > 500) {
-      showError('Address must be 500 characters or less');
+      showError(t('validation.VALIDATION_MAX_LENGTH', { field: t('userPlace.address'), max: 500 }));
       return;
     }
 
@@ -133,7 +135,7 @@ export function useUserPlaceDetailForm({
     }
 
     onUpdate(place.id, updateData);
-  }, [editForm, onUpdate, place, showError]);
+  }, [editForm, onUpdate, place, showError, t]);
 
   const handleEditCancel = useCallback(() => {
     setIsEditing(false);
