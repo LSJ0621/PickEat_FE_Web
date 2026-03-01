@@ -122,7 +122,9 @@ export function useAgentActions({
             dispatch(setSearchAiRetrying(false));
           } else if (event.type === 'error') {
             dispatch(setSearchAiRetrying(false));
-            handleError(t('errors.agent.recommendationFailed'), 'Agent');
+            if (!abortedByVisibilityRef.current) {
+              handleError(t('errors.agent.recommendationFailed'), 'Agent');
+            }
           }
         },
       },
@@ -137,6 +139,7 @@ export function useAgentActions({
       .finally(() => {
         dispatch(setSearchAiLoading({ isLoading: false, menuName: null }));
         dispatch(setSearchAiRetrying(false));
+        searchAbortRef.current = null;
       });
 
     // Fire community API call independently with SSE streaming (runs in parallel)
@@ -172,7 +175,9 @@ export function useAgentActions({
             dispatch(setCommunityAiRetrying(false));
           } else if (event.type === 'error') {
             dispatch(setCommunityAiRetrying(false));
-            handleError(t('errors.agent.recommendationFailed'), 'Agent');
+            if (!abortedByVisibilityRef.current) {
+              handleError(t('errors.agent.recommendationFailed'), 'Agent');
+            }
           }
         },
       },
@@ -186,6 +191,7 @@ export function useAgentActions({
       .finally(() => {
         dispatch(setCommunityAiLoading({ isLoading: false, menuName: null }));
         dispatch(setCommunityAiRetrying(false));
+        communityAbortRef.current = null;
       });
   }, [
     isAuthenticated,

@@ -134,7 +134,9 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
               })
             );
           } else if (event.type === 'error') {
-            handleError(t('errors.agent.recommendationFailed'), 'MenuRecommendation');
+            if (!menuAbortedByVisibilityRef.current) {
+              handleError(t('errors.agent.recommendationFailed'), 'MenuRecommendation');
+            }
           }
         },
       }, menuAbort.signal);
@@ -146,6 +148,7 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
       }
     } finally {
       dispatch(setMenuRecommendationLoading(false));
+      menuStreamAbortRef.current = null;
     }
   };
 
