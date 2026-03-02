@@ -530,6 +530,8 @@
       "submit": "Get Recommendation",
       "loading": "AI is recommending a menu...",
       "loadingHint": "Please wait a moment",
+      "searchingHint": "Searching the web in real time — usually takes 30–60 seconds",
+      "recommendingHint": "Almost there! Picking the best menus for you",
       "result": "Recommended Menu",
       "select": "Select Menu",
       "reason": "Recommendation Reason",

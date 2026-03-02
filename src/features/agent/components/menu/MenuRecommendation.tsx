@@ -164,7 +164,11 @@ export const MenuRecommendation = memo(function MenuRecommendation({ onMenuSelec
 
   const loadingHint = isRetrying
     ? t('menu.recommendation.retryHint')
-    : t('menu.recommendation.loadingHint');
+    : currentStatus === 'searching'
+      ? t('menu.recommendation.searchingHint')
+      : currentStatus === 'recommending'
+        ? t('menu.recommendation.recommendingHint')
+        : t('menu.recommendation.loadingHint');
 
   return (
     <div className="rounded-2xl border border-border-default bg-bg-surface p-4 shadow-md sm:rounded-3xl sm:p-6">
