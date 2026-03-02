@@ -4,6 +4,26 @@
 
 export type UserPlaceStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
+export interface MenuItem {
+  name: string;
+  price: number;
+}
+
+export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+export interface DayHours {
+  open: string;
+  close: string;
+  breakStart?: string;
+  breakEnd?: string;
+}
+
+export interface BusinessHours {
+  isOpen247: boolean;
+  is24Hours: boolean;
+  days?: Partial<Record<DayOfWeek, DayHours>>;
+}
+
 export interface UserPlace {
   id: number;
   userId: number;
@@ -14,9 +34,9 @@ export interface UserPlace {
   phoneNumber: string | null;
   category: string | null;
   description: string | null;
-  menuTypes: string[];
+  menuItems: MenuItem[];
   photos: string[] | null;
-  openingHours: string | null;
+  businessHours: BusinessHours | null;
   rejectionCount: number;
   lastRejectedAt: string | null;
   lastSubmittedAt: string | null;
@@ -35,9 +55,9 @@ export interface CreateUserPlaceRequest {
   phoneNumber?: string;
   category?: string;
   description?: string;
-  menuTypes: string[];
+  menuItems: MenuItem[];
   images?: File[];
-  openingHours?: string;
+  businessHours?: BusinessHours;
 }
 
 export interface UpdateUserPlaceRequest extends Partial<CreateUserPlaceRequest> {

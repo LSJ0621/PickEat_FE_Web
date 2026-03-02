@@ -43,14 +43,12 @@ export const userPlaceService = {
     if (data.description) {
       formData.append('description', data.description);
     }
-    if (data.openingHours) {
-      formData.append('openingHours', data.openingHours);
+    if (data.businessHours) {
+      formData.append('businessHours', JSON.stringify(data.businessHours));
     }
 
-    // menuTypes 배열 추가
-    data.menuTypes.forEach((menuType) => {
-      formData.append('menuTypes', menuType);
-    });
+    // menuItems 직렬화
+    formData.append('menuItems', JSON.stringify(data.menuItems));
 
     // 이미지 파일 추가
     if (data.images && data.images.length > 0) {
@@ -108,10 +106,10 @@ export const userPlaceService = {
     const formData = new FormData();
     formData.append('version', data.version.toString());
 
-    if (data.name) {
+    if (data.name !== undefined) {
       formData.append('name', data.name);
     }
-    if (data.address) {
+    if (data.address !== undefined) {
       formData.append('address', data.address);
     }
     if (data.latitude !== undefined) {
@@ -120,24 +118,22 @@ export const userPlaceService = {
     if (data.longitude !== undefined) {
       formData.append('longitude', data.longitude.toString());
     }
-    if (data.phoneNumber) {
+    if (data.phoneNumber !== undefined) {
       formData.append('phoneNumber', data.phoneNumber);
     }
-    if (data.category) {
+    if (data.category !== undefined) {
       formData.append('category', data.category);
     }
-    if (data.description) {
+    if (data.description !== undefined) {
       formData.append('description', data.description);
     }
-    if (data.openingHours) {
-      formData.append('openingHours', data.openingHours);
+    if (data.businessHours) {
+      formData.append('businessHours', JSON.stringify(data.businessHours));
     }
 
-    // menuTypes 배열 추가
-    if (data.menuTypes) {
-      data.menuTypes.forEach((menuType) => {
-        formData.append('menuTypes', menuType);
-      });
+    // menuItems 직렬화
+    if (data.menuItems) {
+      formData.append('menuItems', JSON.stringify(data.menuItems));
     }
 
     // 유지할 기존 사진 URL

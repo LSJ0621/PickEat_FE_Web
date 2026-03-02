@@ -3,6 +3,8 @@ import { PlaceMiniMap } from './PlaceMiniMap';
 import { PlaceReviewsSection } from './PlaceReviewsSection';
 import type { PlaceDetail } from '@features/agent/types';
 import { useTranslation } from 'react-i18next';
+import { MenuItemsDisplay } from '@features/user-place/components/MenuItemsDisplay';
+import { BusinessHoursDisplay } from '@features/user-place/components/BusinessHoursDisplay';
 
 export interface PlaceDetailBodyProps {
   placeDetail: PlaceDetail | null;
@@ -120,25 +122,16 @@ export const PlaceDetailBody = ({
               <p className="text-sm text-text-primary">{placeDetail.phoneNumber}</p>
             </div>
           )}
-          {placeDetail.openingHours && (
+          {placeDetail.businessHours && (
             <div className="space-y-1">
               <p className="text-xs text-text-tertiary">{t('place.openingHoursLabel')}</p>
-              <p className="text-sm text-text-primary whitespace-pre-line">{placeDetail.openingHours}</p>
+              <BusinessHoursDisplay businessHours={placeDetail.businessHours ?? null} />
             </div>
           )}
-          {placeDetail.menuTypes && placeDetail.menuTypes.length > 0 && (
+          {placeDetail.menuItems && placeDetail.menuItems.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs text-text-tertiary">{t('place.menuTypesLabel')}</p>
-              <div className="flex flex-wrap gap-2">
-                {placeDetail.menuTypes.map((menu, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center rounded-lg bg-bg-secondary px-3 py-1.5 text-xs text-text-secondary"
-                  >
-                    {menu}
-                  </span>
-                ))}
-              </div>
+              <MenuItemsDisplay menuItems={placeDetail.menuItems ?? []} />
             </div>
           )}
           {placeDetail.description && (

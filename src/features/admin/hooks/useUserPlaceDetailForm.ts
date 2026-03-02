@@ -36,11 +36,12 @@ export function useUserPlaceDetailForm({
     name: '',
     address: '',
     phoneNumber: '',
-    openingHours: '',
     category: '',
     description: '',
     existingPhotos: [],
     newImages: [],
+    menuItems: [],
+    businessHours: { isOpen247: false, is24Hours: false, days: {} },
   });
 
   // Reset edit state when modal closes
@@ -57,11 +58,12 @@ export function useUserPlaceDetailForm({
         name: place.name || '',
         address: place.address || '',
         phoneNumber: place.phoneNumber || '',
-        openingHours: place.openingHours || '',
         category: place.category || '',
         description: place.description || '',
         existingPhotos: place.photos || [],
         newImages: [],
+        menuItems: place.menuItems ?? [],
+        businessHours: place.businessHours ?? { isOpen247: false, is24Hours: false, days: {} },
       });
     }
   }, [place, isEditing]);
@@ -103,8 +105,12 @@ export function useUserPlaceDetailForm({
       updateData.phoneNumber = editForm.phoneNumber.trim() || undefined;
       hasChanges = true;
     }
-    if (editForm.openingHours.trim() !== (place.openingHours || '')) {
-      updateData.openingHours = editForm.openingHours.trim() || undefined;
+    if (JSON.stringify(editForm.menuItems) !== JSON.stringify(place.menuItems ?? [])) {
+      updateData.menuItems = editForm.menuItems;
+      hasChanges = true;
+    }
+    if (JSON.stringify(editForm.businessHours) !== JSON.stringify(place.businessHours ?? null)) {
+      updateData.businessHours = editForm.businessHours;
       hasChanges = true;
     }
     if (editForm.category.trim() !== (place.category || '')) {
@@ -144,11 +150,12 @@ export function useUserPlaceDetailForm({
         name: place.name || '',
         address: place.address || '',
         phoneNumber: place.phoneNumber || '',
-        openingHours: place.openingHours || '',
         category: place.category || '',
         description: place.description || '',
         existingPhotos: place.photos || [],
         newImages: [],
+        menuItems: place.menuItems ?? [],
+        businessHours: place.businessHours ?? { isOpen247: false, is24Hours: false, days: {} },
       });
     }
   }, [place]);

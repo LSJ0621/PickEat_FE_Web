@@ -2,17 +2,24 @@
  * User Place 등록/수정 폼 컴포넌트
  */
 
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@shared/components/Button';
-import { UserPlaceImageUploader } from './UserPlaceImageUploader';
-import { UserPlaceAddressField } from './UserPlaceAddressField';
-import { UserPlaceMenuTypesField } from './UserPlaceMenuTypesField';
 import { Input } from '@shared/ui/input';
 import { Label } from '@shared/ui/label';
 import { useAddressSearch } from '@shared/hooks/address/useAddressSearch';
-import type { CreateUserPlaceRequest, UpdateUserPlaceRequest, UserPlace } from '@features/user-place/types';
+import { UserPlaceImageUploader } from './UserPlaceImageUploader';
+import { UserPlaceAddressField } from './UserPlaceAddressField';
+import { UserPlaceMenuTypesField } from './UserPlaceMenuTypesField';
+import { UserPlaceBusinessHoursField } from './UserPlaceBusinessHoursField';
+import type {
+  BusinessHours,
+  CreateUserPlaceRequest,
+  MenuItem,
+  UpdateUserPlaceRequest,
+  UserPlace,
+} from '@features/user-place/types';
 import { USER_PLACE_CATEGORIES } from '@features/user-place/types';
 import { USER_PLACE } from '@shared/utils/constants';
-import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface UserPlaceFormProps {
@@ -22,6 +29,12 @@ interface UserPlaceFormProps {
   isLoading?: boolean;
   submitLabel?: string;
 }
+
+const DEFAULT_BUSINESS_HOURS: BusinessHours = {
+  isOpen247: false,
+  is24Hours: false,
+  days: {},
+};
 
 export function UserPlaceForm({
   initialData,
@@ -47,11 +60,10 @@ export function UserPlaceForm({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
-  const [menuTypes, setMenuTypes] = useState<string[]>([]);
-  const [menuInput, setMenuInput] = useState('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
-  const [openingHours, setOpeningHours] = useState('');
+  const [businessHours, setBusinessHours] = useState<BusinessHours>(DEFAULT_BUSINESS_HOURS);
 
   useEffect(() => {
     if (initialData) {
@@ -64,13 +76,13 @@ export function UserPlaceForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setDescription(initialData.description || '');
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMenuTypes(initialData.menuTypes || []);
+      setMenuItems(initialData.menuItems || []);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setExistingPhotos(initialData.photos || []);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setNewImages([]);
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOpeningHours(initialData.openingHours || '');
+      setBusinessHours(initialData.businessHours ?? DEFAULT_BUSINESS_HOURS);
       setSelectedAddress({
         address: initialData.address,
         roadAddress: initialData.address,
@@ -80,6 +92,26 @@ export function UserPlaceForm({
       });
     }
   }, [initialData, setSelectedAddress]);
+
+  const handleAddMenuItem = useCallback((item: MenuItem) => {
+    setMenuItems((prev) => (prev.length < 10 ? [...prev, item] : prev));
+  }, []);
+
+  const handleRemoveMenuItem = useCallback((index: number) => {
+    setMenuItems((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleExistingPhotoRemove = useCallback((url: string) => {
+    setExistingPhotos((prev) => prev.filter((p) => p !== url));
+  }, []);
+
+  const handleNewImagesAdd = useCallback((files: File[]) => {
+    setNewImages((prev) => [...prev, ...files]);
+  }, []);
+
+  const handleNewImageRemove = useCallback((index: number) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -94,10 +126,10 @@ export function UserPlaceForm({
         phoneNumber: phoneNumber.trim() || undefined,
         category: category || undefined,
         description: description.trim() || undefined,
-        menuTypes,
+        menuItems,
         existingPhotos: existingPhotos.length > 0 ? existingPhotos : undefined,
         images: newImages.length > 0 ? newImages : undefined,
-        openingHours: openingHours.trim() || undefined,
+        businessHours,
       };
 
       if (initialData) {
@@ -106,34 +138,22 @@ export function UserPlaceForm({
         onSubmit(baseData);
       }
     },
-    [name, selectedAddress, phoneNumber, category, description, menuTypes, existingPhotos, newImages, openingHours, initialData, onSubmit]
+    [
+      name,
+      selectedAddress,
+      phoneNumber,
+      category,
+      description,
+      menuItems,
+      existingPhotos,
+      newImages,
+      businessHours,
+      initialData,
+      onSubmit,
+    ]
   );
 
-  const canSubmit = name.trim() && selectedAddress && menuTypes.length >= 1;
-
-  const handleAddMenu = useCallback(() => {
-    const trimmed = menuInput.trim();
-    if (trimmed && menuTypes.length < 10 && !menuTypes.includes(trimmed)) {
-      setMenuTypes([...menuTypes, trimmed]);
-      setMenuInput('');
-    }
-  }, [menuInput, menuTypes]);
-
-  const handleRemoveMenu = useCallback((index: number) => {
-    setMenuTypes(menuTypes.filter((_, i) => i !== index));
-  }, [menuTypes]);
-
-  const handleExistingPhotoRemove = useCallback((url: string) => {
-    setExistingPhotos((prev) => prev.filter((p) => p !== url));
-  }, []);
-
-  const handleNewImagesAdd = useCallback((files: File[]) => {
-    setNewImages((prev) => [...prev, ...files]);
-  }, []);
-
-  const handleNewImageRemove = useCallback((index: number) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  const canSubmit = name.trim() && selectedAddress && menuItems.length >= 1;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -217,29 +237,18 @@ export function UserPlaceForm({
         />
       </div>
 
-      {/* 메뉴 종류 */}
+      {/* 메뉴 */}
       <UserPlaceMenuTypesField
-        menuTypes={menuTypes}
-        menuInput={menuInput}
-        onMenuInputChange={setMenuInput}
-        onAddMenu={handleAddMenu}
-        onRemoveMenu={handleRemoveMenu}
+        menuItems={menuItems}
+        onAddMenuItem={handleAddMenuItem}
+        onRemoveMenuItem={handleRemoveMenuItem}
       />
 
       {/* 영업시간 */}
-      <div>
-        <Label className="mb-2 block text-sm font-semibold text-text-primary">
-          {t('userPlace.form.openingHours')}
-        </Label>
-        <textarea
-          value={openingHours}
-          onChange={(e) => setOpeningHours(e.target.value)}
-          maxLength={200}
-          rows={2}
-          className="w-full rounded-2xl border border-border-default bg-bg-secondary px-4 py-3 text-text-primary placeholder-text-placeholder focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-          placeholder={t('userPlace.form.openingHoursPlaceholder')}
-        />
-      </div>
+      <UserPlaceBusinessHoursField
+        businessHours={businessHours}
+        onChange={setBusinessHours}
+      />
 
       {/* 사진 업로드 */}
       <div>

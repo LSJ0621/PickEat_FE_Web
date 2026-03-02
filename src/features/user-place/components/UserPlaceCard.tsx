@@ -55,14 +55,14 @@ export function UserPlaceCard({ place, onClick }: UserPlaceCardProps) {
       )}
 
       {/* 메뉴 태그 */}
-      {place.menuTypes && place.menuTypes.length > 0 && (
+      {place.menuItems && place.menuItems.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1">
-          {place.menuTypes.slice(0, 3).map((menu, idx) => (
-            <Badge key={idx} variant="menu">{menu}</Badge>
+          {place.menuItems.slice(0, 3).map((m, idx) => (
+            <Badge key={idx} variant="menu">{m.name}</Badge>
           ))}
-          {place.menuTypes.length > 3 && (
+          {place.menuItems.length > 3 && (
             <span className="rounded-full bg-bg-secondary px-2.5 py-0.5 text-xs text-text-tertiary">
-              +{place.menuTypes.length - 3}
+              +{place.menuItems.length - 3}
             </span>
           )}
         </div>
@@ -76,7 +76,7 @@ export function UserPlaceCard({ place, onClick }: UserPlaceCardProps) {
       )}
 
       {/* 카테고리 없고 메뉴도 없을 때 빈 여백 방지용 안내 */}
-      {!place.category && (!place.menuTypes || place.menuTypes.length === 0) && !place.description && (
+      {!place.category && (!place.menuItems?.length) && !place.description && (
         <p className="mt-2 text-xs text-text-placeholder italic">
           {t('userPlace.noDetails')}
         </p>

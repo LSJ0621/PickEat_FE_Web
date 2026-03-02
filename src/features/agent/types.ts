@@ -2,6 +2,8 @@
  * 메뉴 관련 타입 정의
  */
 
+import type { BusinessHours, MenuItem } from '@features/user-place/types';
+
 export interface MenuRecommendationRequest {
   prompt: string;
 }
@@ -51,7 +53,7 @@ export interface PlaceRecommendationItemV2 extends PlaceRecommendationItem {
   rating?: number;
   reviewCount?: number;
   isOpen?: boolean;
-  openingHours?: string;
+  businessHours?: BusinessHours;
   address?: string;
   location?: { latitude: number; longitude: number };
   photoUrl?: string;
@@ -137,8 +139,8 @@ export interface PlaceDetail {
   reviews: PlaceReview[] | null;
   source?: 'GOOGLE' | 'USER';
   phoneNumber?: string | null;
-  openingHours?: string | null;
-  menuTypes?: string[];
+  businessHours?: BusinessHours | null;
+  menuItems?: MenuItem[];
   category?: string | null;
   description?: string | null;
 }

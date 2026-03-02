@@ -2,6 +2,8 @@
  * 관리자 대시보드 관련 타입 정의
  */
 
+import type { BusinessHours, MenuItem } from '@features/user-place/types';
+
 // Dashboard Types
 export interface DashboardSummary {
   today: {
@@ -130,7 +132,8 @@ export interface AdminUserPlaceListItem {
   address: string;
   category: string;
   phoneNumber?: string;
-  openingHours?: string;
+  menuItems?: MenuItem[];
+  businessHours?: BusinessHours | null;
   description?: string;
   photos?: string[] | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -167,10 +170,10 @@ export interface UpdateUserPlaceByAdminRequest {
   address?: string;
   latitude?: number;
   longitude?: number;
-  menuTypes?: string[];
+  menuItems?: MenuItem[];
   existingPhotos?: string[]; // URLs of photos to keep
   images?: File[]; // New files to upload
-  openingHours?: string;
+  businessHours?: BusinessHours;
   phoneNumber?: string;
   category?: string;
   description?: string;

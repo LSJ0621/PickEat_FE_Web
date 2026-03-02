@@ -5,7 +5,6 @@
 
 import { Button } from '@shared/components/Button';
 import { ModalCloseButton } from '@shared/components/ModalCloseButton';
-import { Badge } from '@shared/ui/badge';
 import { useModalAnimation } from '@shared/hooks/useModalAnimation';
 import { useModalScrollLock } from '@shared/hooks/useModalScrollLock';
 import type { UserPlace } from '@features/user-place/types';
@@ -16,6 +15,8 @@ import { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDateTimeLocale } from '@shared/utils/format';
 import { UserPlaceStatusBadge } from './UserPlaceStatusBadge';
+import { MenuItemsDisplay } from './MenuItemsDisplay';
+import { BusinessHoursDisplay } from './BusinessHoursDisplay';
 
 interface UserPlaceDetailModalProps {
   open: boolean;
@@ -134,29 +135,25 @@ export function UserPlaceDetailModal({
             </div>
           )}
 
-          {/* 메뉴 종류 */}
-          {place.menuTypes && place.menuTypes.length > 0 && (
+          {/* 메뉴 */}
+          {place.menuItems && place.menuItems.length > 0 && (
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                 {t('userPlace.form.menuTypes')}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {place.menuTypes.map((menu, idx) => (
-                  <Badge key={idx} variant="menu">{menu}</Badge>
-                ))}
-              </div>
+              <MenuItemsDisplay menuItems={place.menuItems} />
             </div>
           )}
 
           {/* 영업시간 */}
-          {place.openingHours && (
+          {place.businessHours && (
             <div className="flex items-start gap-2">
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
               <div>
-                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                   {t('userPlace.form.openingHours')}
                 </p>
-                <p className="whitespace-pre-line text-sm text-text-primary">{place.openingHours}</p>
+                <BusinessHoursDisplay businessHours={place.businessHours} />
               </div>
             </div>
           )}

@@ -1,81 +1,148 @@
 /**
- * User Place 메뉴 종류 입력 필드 컴포넌트
+ * User Place 메뉴 아이템 입력 필드 컴포넌트 (이름 + 가격)
  */
 
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@shared/components/Button';
-import { RemovableBadge } from '@shared/components/RemovableBadge';
 import { Input } from '@shared/ui/input';
 import { Label } from '@shared/ui/label';
-import { useTranslation } from 'react-i18next';
+import type { MenuItem } from '@features/user-place/types';
 
-interface UserPlaceMenuTypesFieldProps {
-  menuTypes: string[];
-  menuInput: string;
-  onMenuInputChange: (value: string) => void;
-  onAddMenu: () => void;
-  onRemoveMenu: (index: number) => void;
+interface UserPlaceMenuItemsFieldProps {
+  menuItems: MenuItem[];
+  onAddMenuItem: (item: MenuItem) => void;
+  onRemoveMenuItem: (index: number) => void;
+}
+
+const MAX_MENU_ITEMS = 10;
+const MAX_PRICE = 9_999_999;
+
+function formatPrice(price: number): string {
+  return price.toLocaleString('ko-KR');
 }
 
 export function UserPlaceMenuTypesField({
-  menuTypes,
-  menuInput,
-  onMenuInputChange,
-  onAddMenu,
-  onRemoveMenu,
-}: UserPlaceMenuTypesFieldProps) {
+  menuItems,
+  onAddMenuItem,
+  onRemoveMenuItem,
+}: UserPlaceMenuItemsFieldProps) {
   const { t } = useTranslation();
+  const [nameInput, setNameInput] = useState('');
+  const [priceInput, setPriceInput] = useState('');
+
+  const isDisabled = menuItems.length >= MAX_MENU_ITEMS;
+
+  const parsedPrice = Number(priceInput);
+  const isValidPrice =
+    priceInput !== '' && !isNaN(parsedPrice) && parsedPrice >= 0 && parsedPrice <= MAX_PRICE;
+  const canAdd = nameInput.trim().length > 0 && isValidPrice && !isDisabled;
+
+  const handleAdd = useCallback(() => {
+    if (!canAdd) return;
+    onAddMenuItem({ name: nameInput.trim(), price: parsedPrice });
+    setNameInput('');
+    setPriceInput('');
+  }, [canAdd, nameInput, parsedPrice, onAddMenuItem]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.nativeEvent.isComposing) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAdd();
+      }
+    },
+    [handleAdd]
+  );
+
+  const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setPriceInput(value);
+  }, []);
 
   return (
     <div>
       <Label className="mb-2 block text-sm font-semibold text-text-primary">
-        {t('userPlace.form.menuTypes')} <span className="text-red-400">*</span>
+        {t('userPlace.form.menu')} <span className="text-red-400">*</span>
       </Label>
-      <div className="flex gap-2">
+
+      {/* 입력 영역 */}
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Input
           type="text"
-          value={menuInput}
-          onChange={(e) => onMenuInputChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.nativeEvent.isComposing) return;
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onAddMenu();
-            }
-          }}
-          maxLength={30}
-          className="flex-1 rounded-2xl"
-          placeholder={t('userPlace.form.menuTypesPlaceholder')}
-          disabled={menuTypes.length >= 10}
+          value={nameInput}
+          onChange={(e) => setNameInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          maxLength={50}
+          className="rounded-2xl sm:flex-1"
+          placeholder={t('userPlace.form.menuNamePlaceholder')}
+          disabled={isDisabled}
+          aria-label={t('userPlace.form.menuNameAriaLabel')}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onAddMenu}
-          disabled={!menuInput.trim() || menuTypes.length >= 10}
-        >
-          {t('setup.preferences.add')}
-        </Button>
+        <div className="flex gap-2">
+          <div className="relative flex-1 sm:w-36 sm:flex-none">
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={priceInput}
+              onChange={handlePriceChange}
+              onKeyDown={handleKeyDown}
+              className="rounded-2xl pr-8"
+              placeholder={t('userPlace.form.menuPricePlaceholder')}
+              disabled={isDisabled}
+              aria-label={t('userPlace.form.menuPriceAriaLabel')}
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-text-tertiary">
+              {t('userPlace.form.currencyUnit')}
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleAdd}
+            disabled={!canAdd}
+            aria-label={t('userPlace.form.menuAddAriaLabel')}
+          >
+            {t('userPlace.form.menuAdd')}
+          </Button>
+        </div>
       </div>
+
+      {/* 힌트 / 에러 */}
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-xs text-text-tertiary">
-          {t('userPlace.form.menuTypesHint')} ({menuTypes.length}/10)
-        </p>
-        {menuTypes.length === 0 && (
-          <p className="text-xs text-red-400">{t('userPlace.form.menuTypesRequired')}</p>
+        <p className="text-xs text-text-tertiary">{t('userPlace.form.menuMaxCount', { max: MAX_MENU_ITEMS, current: menuItems.length })}</p>
+        {menuItems.length === 0 && (
+          <p className="text-xs text-red-400">{t('userPlace.form.menuMinRequired')}</p>
         )}
       </div>
-      {menuTypes.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {menuTypes.map((menu, idx) => (
-            <RemovableBadge
+
+      {/* 등록된 메뉴 리스트 */}
+      {menuItems.length > 0 && (
+        <ul className="mt-3 space-y-2" aria-label={t('userPlace.form.menuListAriaLabel')}>
+          {menuItems.map((item, idx) => (
+            <li
               key={idx}
-              variant="menu"
-              label={menu}
-              onRemove={() => onRemoveMenu(idx)}
-            />
+              className="flex items-center justify-between rounded-xl border border-border-default bg-bg-secondary px-4 py-2"
+            >
+              <span className="text-sm text-text-primary">
+                {item.name}
+                <span className="ml-2 text-text-secondary">
+                  {formatPrice(item.price)}{t('userPlace.form.currencyUnit')}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => onRemoveMenuItem(idx)}
+                className="ml-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-red-100 hover:text-red-500"
+                aria-label={t('userPlace.form.menuRemoveAriaLabel', { name: item.name })}
+              >
+                ×
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

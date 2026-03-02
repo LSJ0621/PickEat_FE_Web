@@ -34,12 +34,14 @@ export const PlaceMiniMap = ({ placeDetail, placeName }: PlaceMiniMapProps) => {
         const { maps, marker: markerLib } = await loadGoogleMaps();
 
         if (currentExecutionIdRef.current !== executionId) return;
-        if (!miniMapRef.current || !placeDetail.location) return;
+
+        const mapContainer = miniMapRef.current;
+        if (!mapContainer || !placeDetail.location) return;
 
         const { latitude, longitude } = placeDetail.location;
         const center = { lat: latitude, lng: longitude };
 
-        const map = new maps.Map(miniMapRef.current, {
+        const map = new maps.Map(mapContainer, {
           center,
           zoom: MAP_CONFIG.ZOOM.SINGLE_MARKER,
           mapId: getGoogleMapId(),
@@ -57,7 +59,7 @@ export const PlaceMiniMap = ({ placeDetail, placeName }: PlaceMiniMapProps) => {
         });
 
         setTimeout(() => {
-          if (map && miniMapRef.current) {
+          if (map && mapContainer.isConnected) {
             google.maps.event.trigger(map, 'resize');
           }
         }, 200);

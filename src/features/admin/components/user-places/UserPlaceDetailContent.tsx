@@ -5,19 +5,23 @@
 
 import type { AdminUserPlaceListItem } from '@features/admin/types';
 import { USER_PLACE_CATEGORIES } from '@features/user-place/types';
+import type { MenuItem, BusinessHours } from '@features/user-place/types';
 import { useTranslation } from 'react-i18next';
 import { formatDateTimeKorean } from '@shared/utils/format';
 import { UserPlaceImageUploader } from '@features/user-place/components/UserPlaceImageUploader';
+import { MenuItemsDisplay } from '@features/user-place/components/MenuItemsDisplay';
+import { BusinessHoursDisplay } from '@features/user-place/components/BusinessHoursDisplay';
 
 export interface EditFormState {
   name: string;
   address: string;
   phoneNumber: string;
-  openingHours: string;
   category: string;
   description: string;
   existingPhotos: string[];
   newImages: File[];
+  menuItems: MenuItem[];
+  businessHours: BusinessHours;
 }
 
 interface UserPlaceDetailContentProps {
@@ -55,7 +59,7 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
   return (
     <div className="space-y-3 rounded-lg border border-border-default bg-bg-primary p-4">
       <div>
-        <div className="text-sm text-text-tertiary">이름</div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.name')}</div>
         {isEditing ? (
           <input type="text" value={editForm.name} onChange={(e) => onEditFormChange({ ...editForm, name: e.target.value })} className={INPUT_CLASS} />
         ) : (
@@ -63,7 +67,7 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
         )}
       </div>
       <div>
-        <div className="text-sm text-text-tertiary">주소</div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.address')}</div>
         {isEditing ? (
           <input type="text" value={editForm.address} onChange={(e) => onEditFormChange({ ...editForm, address: e.target.value })} className={INPUT_CLASS} />
         ) : (
@@ -71,7 +75,7 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
         )}
       </div>
       <div>
-        <div className="text-sm text-text-tertiary">카테고리</div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.category')}</div>
         {isEditing ? (
           <select value={editForm.category} onChange={(e) => onEditFormChange({ ...editForm, category: e.target.value })} className={INPUT_CLASS}>
             <option value="">{t('userPlace.selectCategory')}</option>
@@ -84,32 +88,34 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
         )}
       </div>
       <div>
-        <div className="text-sm text-text-tertiary">전화번호</div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.phoneNumber')}</div>
         {isEditing ? (
-          <input type="text" value={editForm.phoneNumber} onChange={(e) => onEditFormChange({ ...editForm, phoneNumber: e.target.value })} className={INPUT_CLASS} placeholder="전화번호를 입력하세요" />
+          <input type="text" value={editForm.phoneNumber} onChange={(e) => onEditFormChange({ ...editForm, phoneNumber: e.target.value })} className={INPUT_CLASS} placeholder={t('admin.userPlaces.detail.phoneNumberPlaceholder')} />
         ) : (
           <div className="text-text-primary">{place.phoneNumber || '-'}</div>
         )}
       </div>
       <div>
-        <div className="text-sm text-text-tertiary">영업시간</div>
-        {isEditing ? (
-          <input type="text" value={editForm.openingHours} onChange={(e) => onEditFormChange({ ...editForm, openingHours: e.target.value })} className={INPUT_CLASS} placeholder="영업시간을 입력하세요" />
-        ) : (
-          <div className="text-text-primary">{place.openingHours || '-'}</div>
-        )}
+        <div className="mb-1 text-sm text-text-tertiary">{t('admin.userPlaces.detail.businessHours')}</div>
+        <BusinessHoursDisplay businessHours={place.businessHours ?? null} />
+        {!place.businessHours && <div className="text-text-primary">-</div>}
       </div>
       <div>
-        <div className="text-sm text-text-tertiary">설명</div>
+        <div className="mb-1 text-sm text-text-tertiary">{t('admin.userPlaces.detail.menu')}</div>
+        <MenuItemsDisplay menuItems={place.menuItems ?? []} />
+        {(!place.menuItems || place.menuItems.length === 0) && <div className="text-text-primary">-</div>}
+      </div>
+      <div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.description')}</div>
         {isEditing ? (
-          <textarea value={editForm.description} onChange={(e) => onEditFormChange({ ...editForm, description: e.target.value })} className={INPUT_CLASS} placeholder="설명을 입력하세요" rows={3} />
+          <textarea value={editForm.description} onChange={(e) => onEditFormChange({ ...editForm, description: e.target.value })} className={INPUT_CLASS} placeholder={t('admin.userPlaces.detail.descriptionPlaceholder')} rows={3} />
         ) : (
           <div className="text-text-primary">{place.description || '-'}</div>
         )}
       </div>
       {isEditing && (
         <div>
-          <div className="mb-2 text-sm text-text-tertiary">사진</div>
+          <div className="mb-2 text-sm text-text-tertiary">{t('admin.userPlaces.detail.photos')}</div>
           <UserPlaceImageUploader
             existingPhotos={editForm.existingPhotos}
             newImages={editForm.newImages}
@@ -121,7 +127,7 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
       )}
       {!isEditing && place.photos && place.photos.length > 0 && (
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-text-tertiary">사진</h3>
+          <h3 className="mb-2 text-sm font-semibold text-text-tertiary">{t('admin.userPlaces.detail.photos')}</h3>
           <div className="grid grid-cols-3 gap-2">
             {place.photos.map((photo, idx) => (
               <img key={idx} src={photo} alt={`${place.name} ${idx + 1}`} className="h-20 w-20 rounded-lg object-cover" />
@@ -130,7 +136,7 @@ function BasicInfoPanel({ place, isEditing, editForm, onEditFormChange }: BasicI
         </div>
       )}
       <div>
-        <div className="text-sm text-text-tertiary">등록자</div>
+        <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.registrant')}</div>
         <div className="text-text-primary">{place.user.email}</div>
       </div>
     </div>
@@ -167,7 +173,7 @@ export function UserPlaceDetailContent({
             onClick={() => onSetIsEditing(true)}
             className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-text-inverse transition hover:bg-brand-secondary"
           >
-            Edit
+            {t('common.edit')}
           </button>
         </div>
       )}
@@ -177,28 +183,28 @@ export function UserPlaceDetailContent({
       {/* Status Info */}
       <div className="space-y-3 rounded-lg border border-border-default bg-bg-primary p-4">
         <div>
-          <div className="text-sm text-text-tertiary">등록일</div>
+          <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.createdAt')}</div>
           <div className="text-text-primary">{formatDateTimeKorean(place.createdAt)}</div>
         </div>
         <div>
-          <div className="text-sm text-text-tertiary">수정일</div>
+          <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.updatedAt')}</div>
           <div className="text-text-primary">{formatDateTimeKorean(place.updatedAt)}</div>
         </div>
         {place.rejectionCount > 0 && (
           <div>
             <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.rejectionCount')}</div>
-            <div className="text-brand-primary">{place.rejectionCount}회</div>
+            <div className="text-brand-primary">{place.rejectionCount}{t('admin.userPlaces.detail.times')}</div>
           </div>
         )}
         {place.lastRejectedAt && (
           <div>
-            <div className="text-sm text-text-tertiary">마지막 거절 일시</div>
+            <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.lastRejectedAt')}</div>
             <div className="text-text-primary">{formatDateTimeKorean(place.lastRejectedAt)}</div>
           </div>
         )}
         {place.rejectionReason && (
           <div>
-            <div className="text-sm text-text-tertiary">거절 사유</div>
+            <div className="text-sm text-text-tertiary">{t('admin.userPlaces.detail.rejectionReasonLabel')}</div>
             <div className="text-text-primary">{place.rejectionReason}</div>
           </div>
         )}
@@ -208,10 +214,10 @@ export function UserPlaceDetailContent({
       {isEditing && (
         <div className="flex gap-3">
           <button onClick={onEditCancel} disabled={isUpdating} className="flex-1 rounded-lg border border-border-default bg-bg-surface px-4 py-3 font-medium text-text-secondary transition hover:bg-bg-hover disabled:cursor-not-allowed disabled:opacity-50">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button onClick={onEditSave} disabled={isUpdating} className="flex-1 rounded-lg bg-brand-primary px-4 py-3 font-medium text-text-inverse transition hover:bg-brand-secondary disabled:cursor-not-allowed disabled:opacity-50">
-            {isUpdating ? t('common.processing') || '처리 중...' : 'Save'}
+            {isUpdating ? t('common.processing') : t('common.save')}
           </button>
         </div>
       )}
@@ -237,7 +243,7 @@ export function UserPlaceDetailContent({
           {selectedAction === 'reject' && (
             <div className="space-y-3 rounded-lg border border-border-default bg-bg-primary p-4">
               <label className="block text-sm font-medium text-text-secondary">
-                {t('admin.userPlaces.detail.rejectionReason')} (필수)
+                {t('admin.userPlaces.detail.rejectionReason')} {t('admin.userPlaces.detail.required')}
               </label>
               <textarea
                 value={rejectReason}
@@ -252,7 +258,7 @@ export function UserPlaceDetailContent({
             </div>
           )}
           <button onClick={onSubmit} disabled={!selectedAction || approving || rejecting} className="w-full rounded-lg bg-brand-primary px-4 py-3 font-medium text-text-inverse transition hover:bg-brand-secondary disabled:cursor-not-allowed disabled:opacity-50">
-            {approving || rejecting ? t('common.processing') || '처리 중...' : t('common.confirm')}
+            {approving || rejecting ? t('common.processing') : t('common.confirm')}
           </button>
         </div>
       )}
