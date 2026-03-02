@@ -18,7 +18,7 @@ export const PlaceDetailHeader = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-start justify-between gap-4 mb-6">
+    <div className="flex items-start justify-between gap-4">
       {/* Mobile handle */}
       <div className="absolute left-1/2 top-3 -translate-x-1/2 md:hidden">
         <div className="h-1 w-12 rounded-full bg-border-default" />
