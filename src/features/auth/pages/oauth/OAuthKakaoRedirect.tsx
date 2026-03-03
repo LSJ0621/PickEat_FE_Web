@@ -9,7 +9,7 @@ import { OAuthReRegisterModal } from '@features/auth/components/OAuthReRegisterM
 import { useOAuthRedirect } from '@features/auth/hooks/useOAuthRedirect';
 import { setCredentials } from '@app/store/slices/authSlice';
 import type { KakaoLoginResponse } from '@features/auth/types';
-import { ERROR_MESSAGES } from '@shared/utils/constants';
+import { ERROR_MESSAGES, STORAGE_KEYS } from '@shared/utils/constants';
 import { isEmpty } from '@shared/utils/validation';
 import { useEffect, useState } from 'react';
 
@@ -77,6 +77,7 @@ export const OAuthKakaoRedirect = () => {
 
         // 카카오 전용: 이름이 없으면 이름 입력 화면으로
         if (data.name === null) {
+          localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
           setNeedsName(true);
           setLoading(false);
           return;
