@@ -1,74 +1,150 @@
-# PickEat
+<div align="center">
 
-AI 기반 음식 추천 웹 애플리케이션
+# PickEat Frontend
 
-![PickEat 개요](./docs/images/개요%20사진.png)
+**AI 기반 맞춤형 메뉴 추천 서비스의 프론트엔드 웹 애플리케이션**
 
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+[www.pick-eat-fe-web.vercel.app](https://www.pick-eat-fe-web.vercel.app)
 
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Redux](https://img.shields.io/badge/Redux_Toolkit-2.10-764ABC?style=flat-square&logo=redux&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?style=flat-square&logo=vitest&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.57-2EAD33?style=flat-square&logo=playwright&logoColor=white)
+
+[프로젝트 개요](#프로젝트-개요) · [주요 기능](#주요-기능) · [기술 스택](#기술-스택) · [아키텍처](#아키텍처) · [시작하기](#시작하기) · [프로젝트 구조](#프로젝트-구조)
+
+</div>
 
 ---
 
-## 아키텍처
+## 프로젝트 개요
 
-![PickEat Architecture](./docs/images/pickeat_architecture_dark.png)
+<div align="center">
+  <img src="docs/images/개요%20사진.png" width="600" />
+</div>
 
-| 레이어 | 기술 |
-|--------|------|
-| Client | Browser (React 19, Vite, SPA) |
-| Frontend Hosting | Vercel |
-| Backend Hosting | Railway (NestJS 11, TypeORM, JWT, Passport, Redis, PostgreSQL 14 + PostGIS) |
-| AI 추천 | OpenAI GPT-4.1 / GPT-4.1 mini, Gemini gemini-2.5-flash |
-| 지도 | Google Maps (Places API, Maps JS API) |
-| 소셜 로그인 | Kakao OAuth 2.0 |
-| 파일 스토리지 | AWS S3 |
-| 알림 | Discord Webhook |
+<br>
+
+매일 반복되는 "오늘 뭐 먹지?"라는 고민,
+기존 서비스에서는 사용자 취향을 반영한 메뉴 추천을 제공하지 못하는 문제가 있습니다.
+
+**PickEat**은 이 문제를 해결하기 위한 프로젝트로,
+OpenAI GPT와 Google Gemini를 결합하여
+**"취향 분석 → 메뉴 추천 → 맛집 탐색"** 까지의 흐름을 하나의 서비스로 제공합니다.
+
+- 사용자의 식사 패턴을 AI가 자동으로 분석하여 선호도를 학습하고
+- 학습된 취향과 유저의 요청사항을 분석하여 맞춤 메뉴를 실시간 스트리밍으로 추천하며
+- 추천된 메뉴를 먹을 수 있는 등록된 주소 근처의 맛집까지 검색해줍니다
+
+---
+
+## 주요 기능
+
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="docs/images/pickeat_취향설정.gif" width="280" />
+<br/>
+<b>취향 설정</b>
+<br/>
+<sub>음식 취향, 알레르기, 식사 스타일 등을 설정하여 AI 메뉴 추천의 기반 데이터를 구성합니다.</sub>
+</td>
+<td align="center" width="50%">
+<img src="docs/images/pickeat_메뉴추천.gif" width="280" />
+<br/>
+<b>AI 메뉴 추천</b>
+<br/>
+<sub><code>GPT-5.1</code> 2단계 파이프라인으로 맞춤 메뉴를 추천하고, <code>SSE</code> 스트리밍으로 실시간 응답합니다.</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<img src="docs/images/가게_추천.gif" width="280" />
+<br/>
+<b>맛집 추천</b>
+<br/>
+<sub><code>Gemini Maps Grounding</code>과 <code>Google Places API</code>를 연동하여 주변 맛집을 검색하고 추천합니다.</sub>
+</td>
+<td align="center" width="50%">
+<img src="docs/images/가게상세.gif" width="280" />
+<br/>
+<b>가게 상세</b>
+<br/>
+<sub>AI가 작성한 가게 설명, 평점, 리뷰 요약을 제공합니다.</sub>
+</td>
+</tr>
+</table>
 
 ---
 
 ## 기술 스택
 
-| 카테고리 | 기술 |
-|---------|------|
-| Core | React 19, TypeScript 5.9, Vite 7 |
-| 상태관리 | Redux Toolkit |
-| 스타일링 | Tailwind CSS 4, shadcn/ui, Radix UI |
-| 라우팅 | React Router 7 |
-| HTTP | Axios (auto token refresh) |
-| 지도 | Google Maps JS API |
-| 애니메이션 | Framer Motion |
-| 차트 | Recharts |
-| 국제화 | i18next (ko, en) |
-| 테스트 | Vitest, Playwright, MSW |
-| 린트 | ESLint 9 |
+### Frontend
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.10-764ABC?style=flat-square&logo=redux&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-1.13-5A29E4?style=flat-square&logo=axios&logoColor=white)
+
+### Styling / UI
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![shadcn/ui](https://img.shields.io/badge/shadcn/ui-Components-000000?style=flat-square&logoColor=white)
+![Radix UI](https://img.shields.io/badge/Radix_UI-Primitives-161618?style=flat-square&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-3-22B5BF?style=flat-square&logoColor=white)
+
+### External API
+![Google Maps](https://img.shields.io/badge/Google-Maps_JS_API-4285F4?style=flat-square&logo=googlemaps&logoColor=white)
+![Kakao](https://img.shields.io/badge/Kakao-OAuth-FFCD00?style=flat-square&logo=kakao&logoColor=black)
+![Google](https://img.shields.io/badge/Google-OAuth-4285F4?style=flat-square&logo=google&logoColor=white)
+
+### i18n
+![i18next](https://img.shields.io/badge/i18next-25-26A69A?style=flat-square&logo=i18next&logoColor=white)
+
+### Infra / Test
+![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=flat-square&logo=vercel&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?style=flat-square&logo=vitest&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.57-2EAD33?style=flat-square&logo=playwright&logoColor=white)
+![MSW](https://img.shields.io/badge/MSW-2-FF6A33?style=flat-square&logoColor=white)
+
+---
+
+## 아키텍처
+
+![PickEat Architecture](docs/images/pickeat_architecture_dark.png)
 
 ---
 
 ## 시작하기
 
-### Prerequisites
+### 사전 요구사항
 
-- Node.js >= 20.0.0
-- npm
+- **Node.js** >= 20
+- **npm**
 
 ### 설치
 
 ```bash
-git clone https://github.com/your-org/pickeat.git
-cd pickeat/pickeat_web
-npm install
-```
+# 저장소 클론
+git clone https://github.com/LSJ0621/PickEat_FE_Web.git
+cd PickEat_FE_Web
 
-### 환경변수 설정
-
-`.env.example`을 복사하여 `.env.local`을 생성하고 값을 채웁니다.
-
-```bash
+# 환경 변수 설정
 cp .env.example .env.local
+# .env.local 파일에 API 키(Google Maps, Kakao, Google OAuth 등)를 입력하세요
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev    # → http://localhost:8080
 ```
+
+### 환경변수
 
 | 변수 | 설명 |
 |------|------|
@@ -79,13 +155,6 @@ cp .env.example .env.local
 | `VITE_GOOGLE_REDIRECT_URI` | 구글 OAuth 리다이렉트 URI |
 | `VITE_GOOGLE_MAPS_API_KEY` | 구글 맵 API 키 |
 | `VITE_GOOGLE_MAP_ID` | 구글 맵 ID |
-
-### 개발 서버 실행
-
-```bash
-npm run dev
-# http://localhost:8080
-```
 
 ---
 
@@ -103,69 +172,3 @@ npm run dev
 | `npm run test:e2e` | E2E 테스트 실행 |
 | `npm run test:e2e:ui` | E2E 테스트 UI 모드 |
 
----
-
-## 프로젝트 구조
-
-```
-src/
-├── app/              # 앱 쉘 (라우팅, 스토어, 레이아웃, 프로바이더)
-├── features/         # 도메인별 기능 모듈
-│   ├── agent/        # AI 추천 에이전트
-│   ├── auth/         # 인증 (로그인, 회원가입, OAuth)
-│   ├── home/         # 홈 페이지
-│   ├── map/          # 지도 페이지
-│   ├── history/      # 추천/메뉴/평가 이력
-│   ├── rating/       # 장소 평가
-│   ├── user/         # 프로필, 주소, 선호도
-│   ├── user-place/   # 사용자 등록 장소
-│   ├── bug-report/   # 버그 신고
-│   ├── onboarding/   # 온보딩 플로우
-│   └── admin/        # 관리자 대시보드
-├── shared/           # 공유 코드
-│   ├── api/          # Axios 클라이언트, 엔드포인트
-│   ├── components/   # 재사용 UI 컴포넌트
-│   ├── hooks/        # 공유 커스텀 훅
-│   ├── types/        # 공유 타입
-│   ├── ui/           # shadcn/ui 컴포넌트
-│   └── utils/        # 유틸리티 함수
-├── i18n/             # 국제화 설정
-├── locales/          # 번역 파일 (ko, en)
-└── styles/           # 전역 스타일
-```
-
-### Feature 모듈 패턴
-
-각 도메인 기능은 아래 구조를 따릅니다.
-
-```
-features/{domain}/
-├── pages/        # 라우트 페이지 컴포넌트
-├── components/   # 기능별 컴포넌트
-├── hooks/        # 기능별 커스텀 훅
-├── api.ts        # API 서비스 함수
-├── types.ts      # TypeScript 타입
-└── index.ts      # Barrel export
-```
-
----
-
-## 페이지
-
-| 경로 | 페이지 | 접근 권한 |
-|------|--------|----------|
-| `/` | 홈 | 공개 |
-| `/agent` | AI 추천 | 로그인 필수 |
-| `/map` | 지도 | 로그인 필수 |
-| `/login` | 로그인 | 공개 |
-| `/register` | 회원가입 | 공개 |
-| `/mypage` | 마이페이지 | 로그인 필수 |
-| `/mypage/profile` | 프로필 편집 | 로그인 필수 |
-| `/mypage/preferences` | 선호도 설정 | 로그인 필수 |
-| `/mypage/address` | 주소 관리 | 로그인 필수 |
-| `/user-places` | 내 장소 | 로그인 필수 |
-| `/recommendations/history` | 추천 이력 | 로그인 필수 |
-| `/menu-selections/history` | 메뉴 선택 이력 | 로그인 필수 |
-| `/ratings/history` | 평가 이력 | 로그인 필수 |
-| `/bug-report` | 버그 신고 | 로그인 필수 |
-| `/admin/*` | 관리자 | 관리자 전용 |
