@@ -48,6 +48,9 @@ repomix-output.xml
 tests/code-review-reports/
 CLAUDE.md
 
+# CI/CD (not used)
+.github/
+
 # Build artifacts
 build/
 *.tsbuildinfo
