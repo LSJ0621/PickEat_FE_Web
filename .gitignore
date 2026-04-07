@@ -46,3 +46,19 @@ coverage/
 # Generated files
 repomix-output.xml
 tests/code-review-reports/
+CLAUDE.md
+
+# Build artifacts
+build/
+*.tsbuildinfo
+
+# Security
+*.pem
+*.key
+
+# Temporary files
+*.tmp
+*.bak
+
+# Archived files
+_archived/
