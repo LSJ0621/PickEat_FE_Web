@@ -170,7 +170,7 @@ export const userHandlers = [
   }),
 
   // Set default address
-  http.put(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES}/:id/default`, ({ params }) => {
+  http.patch(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES}/:id/default`, ({ params }) => {
     const { id } = params;
     const address = mockAddresses.find((addr) => addr.id === Number(id));
 
@@ -230,7 +230,7 @@ export const userHandlers = [
   }),
 
   // Batch delete addresses
-  http.delete(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES}`, async ({ request }) => {
+  http.post(`${BASE_URL}${ENDPOINTS.USER.ADDRESSES_BATCH_DELETE}`, async ({ request }) => {
     const body = (await request.json()) as { ids: number[] };
 
     if (!body.ids || body.ids.length === 0) {
