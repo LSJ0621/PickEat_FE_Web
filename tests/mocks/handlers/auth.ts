@@ -10,7 +10,6 @@ import type {
   PasswordResetResponse,
   ReRegisterResponse,
   ReRegisterSocialResponse,
-  UpdateUserResponse,
   User,
 } from '@features/auth/types';
 
@@ -279,23 +278,6 @@ export const authHandlers = [
     }
 
     return HttpResponse.json(mockLoginResponse);
-  }),
-
-  // Update User
-  http.patch(`${BASE_URL}${ENDPOINTS.USER.UPDATE}`, async ({ request }) => {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-      return HttpResponse.json(
-        { message: '인증이 필요합니다.' },
-        { status: 401 }
-      );
-    }
-
-    const body = (await request.json()) as { name?: string };
-    const response: UpdateUserResponse = {
-      name: body.name || null,
-    };
-    return HttpResponse.json(response);
   }),
 
   // Re-register Social

@@ -51,10 +51,27 @@ export const mockPreferences = {
 };
 
 export const userHandlers = [
-  // Update user
+  // Update user (PUT)
   http.put(`${BASE_URL}${ENDPOINTS.USER.UPDATE}`, async ({ request }) => {
     const body = (await request.json()) as { name?: string };
 
+    const response: UpdateUserResponse = {
+      name: body.name ?? null,
+    };
+    return HttpResponse.json(response);
+  }),
+
+  // Update user (PATCH) — authService.updateUser가 사용하는 메서드
+  http.patch(`${BASE_URL}${ENDPOINTS.USER.UPDATE}`, async ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+      return HttpResponse.json(
+        { message: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const body = (await request.json()) as { name?: string };
     const response: UpdateUserResponse = {
       name: body.name ?? null,
     };
