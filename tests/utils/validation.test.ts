@@ -9,7 +9,9 @@ import {
   isPasswordMatch,
   isValidPhone,
   isEmpty,
+  validateBugReport,
 } from '@shared/utils/validation';
+import type { CreateBugReportRequest } from '@features/bug-report/types';
 
 describe('isValidEmail', () => {
   it('유효한 이메일 → true', () => {
@@ -130,5 +132,91 @@ describe('isEmpty', () => {
 
   it('앞뒤 공백 포함 문자열 → false', () => {
     expect(isEmpty('  a  ')).toBe(false);
+  });
+});
+
+describe('validateBugReport', () => {
+  const validReport: CreateBugReportRequest = {
+    category: 'bug',
+    title: '로그인 오류',
+    description: '로그인 버튼을 눌러도 반응이 없습니다.',
+  };
+
+  it('유효한 데이터 → isValid true, errors 비어있음', () => {
+    const { isValid, errors } = validateBugReport(validReport);
+    expect(isValid).toBe(true);
+    expect(Object.keys(errors)).toHaveLength(0);
+  });
+
+  it('카테고리 없음 → errors.category 존재', () => {
+    const { isValid, errors } = validateBugReport({
+      ...validReport,
+      category: '' as CreateBugReportRequest['category'],
+    });
+    expect(isValid).toBe(false);
+    expect(errors.category).toBeDefined();
+  });
+
+  it('제목 빈 문자열 → errors.title 존재', () => {
+    const { isValid, errors } = validateBugReport({ ...validReport, title: '' });
+    expect(isValid).toBe(false);
+    expect(errors.title).toBeDefined();
+  });
+
+  it('제목 30자 초과 → errors.title 존재', () => {
+    const { isValid, errors } = validateBugReport({
+      ...validReport,
+      title: 'a'.repeat(31),
+    });
+    expect(isValid).toBe(false);
+    expect(errors.title).toBeDefined();
+  });
+
+  it('설명 빈 문자열 → errors.description 존재', () => {
+    const { isValid, errors } = validateBugReport({ ...validReport, description: '' });
+    expect(isValid).toBe(false);
+    expect(errors.description).toBeDefined();
+  });
+
+  it('설명 500자 초과 → errors.description 존재', () => {
+    const { isValid, errors } = validateBugReport({
+      ...validReport,
+      description: 'a'.repeat(501),
+    });
+    expect(isValid).toBe(false);
+    expect(errors.description).toBeDefined();
+  });
+
+  it('이미지 5장 초과 → errors.images 존재', () => {
+    const images = Array.from({ length: 6 }, () => new File(['x'], 'img.png', { type: 'image/png' }));
+    const { isValid, errors } = validateBugReport(validReport, images);
+    expect(isValid).toBe(false);
+    expect(errors.images).toBeDefined();
+  });
+
+  it('이미지 크기 5MB 초과 → errors.images 존재', () => {
+    const bigFile = new File([new ArrayBuffer(6 * 1024 * 1024)], 'big.png', { type: 'image/png' });
+    const { isValid, errors } = validateBugReport(validReport, [bigFile]);
+    expect(isValid).toBe(false);
+    expect(errors.images).toBeDefined();
+  });
+
+  it('허용되지 않는 이미지 형식 → errors.images 존재', () => {
+    const svgFile = new File(['<svg></svg>'], 'icon.svg', { type: 'image/svg+xml' });
+    const { isValid, errors } = validateBugReport(validReport, [svgFile]);
+    expect(isValid).toBe(false);
+    expect(errors.images).toBeDefined();
+  });
+
+  it('이미지 없음 → 이미지 관련 에러 없음', () => {
+    const { errors } = validateBugReport(validReport);
+    expect(errors.images).toBeUndefined();
+  });
+
+  it('유효한 이미지 → errors.images 없음', () => {
+    const validImage = new File(['data'], 'photo.jpg', { type: 'image/jpeg' });
+    const { isValid, errors } = validateBugReport(validReport, [validImage]);
+    expect(isValid).toBe(true);
+    expect(errors.images).toBeUndefined();
   });
 });

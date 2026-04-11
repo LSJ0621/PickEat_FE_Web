@@ -52,4 +52,16 @@ test.describe('메뉴 추천', () => {
       authenticatedPage.getByText(EXPECTED_MOCK_RESPONSES.AI_PLACES.firstRestaurantName)
     ).toBeVisible();
   });
+
+  test('빈 프롬프트 제출 시 에러 토스트 표시', async ({ authenticatedPage }) => {
+    const agentPage = new AgentPage(authenticatedPage);
+
+    await agentPage.goto();
+
+    // 프롬프트 입력 없이 바로 제출
+    await agentPage.submitQuestion();
+
+    // 에러 토스트 표시 확인
+    await agentPage.expectToast('메뉴 추천 요청을 입력해주세요');
+  });
 });

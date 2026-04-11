@@ -277,6 +277,57 @@ describe('useAgentActions', () => {
     expect(groups[0].recommendations[0].placeId).toBe('ChIJ1234567890'); // places/ 제거됨
   });
 
+  it('handleAiRecommendation �� 추천 진행 중 재클릭 시 결과 도착 후 중복 요청 방지', async () => {
+    // 첫 번째 호출: 결과를 반환하는 스트림
+    let firstCallDone = false;
+    mockSearchStream.mockImplementation(
+      (_params: unknown, callbacks: { onEvent: (e: unknown) => void }, _signal: AbortSignal) => {
+        callbacks.onEvent({
+          type: 'result',
+          data: {
+            recommendations: [
+              { placeId: 'ChIJ-first', name: '첫째 식당', reason: '맛있음', menuName: '김치찌개' },
+            ],
+          },
+        });
+        firstCallDone = true;
+        return Promise.resolve();
+      }
+    );
+    mockCommunityStream.mockResolvedValue(undefined);
+
+    const store = createTestStore(
+      { isAuthenticated: true },
+      { selectedMenu: '김치찌개', menuHistoryId: 1 }
+    );
+    const { result } = renderHook(
+      () => useAgentActions({ latitude: LAT, longitude: LNG }),
+      { wrapper: createWrapper(store) }
+    );
+
+    // 첫 번째 호출: 스트림 완료 → Redux에 결과 저장
+    await act(async () => {
+      await result.current.handleAiRecommendation();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(firstCallDone).toBe(true);
+    expect(mockSearchStream).toHaveBeenCalledTimes(1);
+
+    // 두 번째 호출: 이미 결과가 있으므로 API 호출 없이 캐시 사용
+    mockSearchStream.mockClear();
+    mockCommunityStream.mockClear();
+
+    await act(async () => {
+      await result.current.handleAiRecommendation();
+    });
+
+    expect(mockSearchStream).not.toHaveBeenCalled();
+    expect(mockCommunityStream).not.toHaveBeenCalled();
+  });
+
   it('handleAiRecommendation — 이미 추천 결과가 있으면 캐시된 데이터 반환', async () => {
     const store = createTestStore(
       { isAuthenticated: true },

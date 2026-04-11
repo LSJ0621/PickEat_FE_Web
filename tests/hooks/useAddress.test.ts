@@ -1,6 +1,6 @@
 /**
  * 주소 Hook 테스트
- * useAddressSearch(3개): 검색, 선택, 초기화
+ * useAddressSearch(4개): 검색, 선택, 초기화, 연속 검색
  * useAddressList(4개): 목록 로드, 기본 주소 변경, 삭제, 최대 선택 제약
  */
 
@@ -152,6 +152,58 @@ describe('useAddressSearch', () => {
       expect(result.current.addressQuery).toBe('');
       expect(result.current.searchResults).toHaveLength(0);
       expect(result.current.hasSearchedAddress).toBe(false);
+    });
+  });
+
+  describe('빠른 연속 검색', () => {
+    it('두 번 순차 검색 시 두 번째 검색 결과가 최종 상태에 반영됨', async () => {
+      let callCount = 0;
+      server.use(
+        http.get(`${BASE_URL}/user/address/search`, ({ request }) => {
+          callCount++;
+          const url = new URL(request.url);
+          const query = url.searchParams.get('query') || '';
+
+          return HttpResponse.json({
+            meta: { total_count: 1, pageable_count: 1, is_end: true },
+            addresses: [
+              createMockAddressSearchResult({
+                address: `${query} 결과 주소`,
+                roadAddress: `${query} 결과 도로명`,
+              }),
+            ],
+          });
+        })
+      );
+
+      const { result } = renderHook(() => useAddressSearch(), {
+        wrapper: toastWrapper,
+      });
+
+      // 첫 번째 검색
+      act(() => {
+        result.current.setAddressQuery('서울시 강남구');
+      });
+      await act(async () => {
+        await result.current.handleSearch();
+      });
+      expect(result.current.searchResults[0].address).toBe('서울시 강남구 결과 주소');
+
+      // 두 번째 검색 (빠르게 연속)
+      act(() => {
+        result.current.setAddressQuery('부산시 해운대구');
+      });
+      await act(async () => {
+        await result.current.handleSearch();
+      });
+
+      // 두 요청 모두 실행됨
+      expect(callCount).toBe(2);
+      // 두 번째 검색 결과가 최종 상태에 반영됨
+      expect(result.current.searchResults).toHaveLength(1);
+      expect(result.current.searchResults[0].address).toBe('부산시 해운대구 결과 주소');
+      expect(result.current.hasSearchedAddress).toBe(true);
+      expect(result.current.isSearching).toBe(false);
     });
   });
 });

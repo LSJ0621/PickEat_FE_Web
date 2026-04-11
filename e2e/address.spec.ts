@@ -51,4 +51,23 @@ test.describe('주소 관리', () => {
     // 주소 관리 모달이 다시 보여야 하며, 새로 추가된 별칭이 목록에 있어야 함
     await expect(authenticatedPage.getByText(newAlias)).toBeVisible();
   });
+
+  test('검색 결과 없는 주소 검색 → 빈 결과 메시지 표시', async ({ authenticatedPage }) => {
+    const myPage = new MyPagePage(authenticatedPage);
+
+    // 마이페이지 → 주소 관리 → 주소 추가 모달 열기
+    await myPage.goto();
+    await myPage.expectPageLoaded();
+    await myPage.openAddressManagement();
+    await myPage.expectAddressManagementModalVisible();
+    await myPage.openAddressAddModal();
+
+    // 존재하지 않는 주소 검색
+    await myPage.searchAddress('zzzznotexist12345');
+
+    // 검색 결과 컨테이너가 표시되지 않고, 빈 결과 메시지가 표시됨
+    const searchResults = authenticatedPage.locator('[data-testid="address-search-results"]');
+    await expect(searchResults).not.toBeVisible();
+    await expect(authenticatedPage.getByText('주소를 찾을 수 없습니다')).toBeVisible();
+  });
 });
