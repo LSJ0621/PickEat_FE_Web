@@ -76,6 +76,8 @@ const ToastItem = ({ toast, onClose }: ToastProps) => {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={`flex min-w-[300px] max-w-md items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm transition-all duration-300 ${
         typeStyles[toast.type]
       } ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}

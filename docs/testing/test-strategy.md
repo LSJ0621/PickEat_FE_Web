@@ -31,11 +31,15 @@
 ### 테스트 비중
 
 ```
-Frontend:
-  Hook Unit 테스트 (MSW)            ████████████      50%
-  E2E 테스트 (Playwright)           ██████████        40%
-  Utils Unit 테스트                 ███               10%
+Vitest (Unit 테스트):
+  Hook Unit 테스트 (MSW)            █████████████     65%   (17개 파일)
+  Utils Unit 테스트                 ████████          35%   (9개 파일)
+
+E2E 테스트 (Playwright):            별도 실행          (e2e/ 디렉토리)
 ```
+
+> **참고**: E2E 테스트는 Playwright로 별도 실행되며 Vitest 비중에 포함하지 않는다.
+> Utils 비중이 높은 이유: format, validation, error, jwt, cn 등 순수 함수 유틸리티가 많아 테스트 파일 수가 늘어남.
 
 ---
 
@@ -45,17 +49,27 @@ Frontend:
 
 **역할**: 프론트엔드 비즈니스 로직(데이터 가져오기, 상태 관리, 사용자 액션 처리)을 검증한다.
 
-**대상 Hook** (핵심만):
+**대상 Hook** (17개):
 
 | Hook | 이유 |
 |------|------|
 | useEmailVerification | 이메일 인증 상태 전이가 복잡 |
+| useVerificationTimer | 타이머 시작/만료/정지/초기화 |
+| useOAuthRedirect | RE_REGISTER 에러 분기 처리 |
 | useAddressSearch | 검색/선택/클리어 시나리오 |
-| useAgentActions | AI 추천 액션 처리 |
-| useAuth | 로그인/로그아웃/토큰 관리 |
-| useMenuSelection | 메뉴 선택/저장 |
-| useDebounce | 타이밍 로직 |
-| useLocalStorage | 저장/불러오기/삭제 |
+| useAddressList | 목록 로드/기본 주소 변경/삭제/최대 선택 제약 |
+| useAddressModal | 주소 검색/선택/추가/최대 제한/초기화 |
+| useAgentActions | AI 추천 액션 처리 (SSE 병렬, 캐시, 취소) |
+| useStreamingRequest | SSE 이벤트 수신/최소 표시 시간/타입별 처리 |
+| usePlaceDetails | 장소 상세 로딩/상태 전환/에러/placeId 변경 |
+| usePlaceSelection | 장소 선택 모달/API/Google 가게 차단 |
+| useDebounce | 타이밍 로직 (지연/연속 입력/엣지 케이스) |
+| useErrorHandler | 에러 타입 분류/toast 호출/성공 메시지 |
+| useInitialDataLoad | StrictMode 이중 실행 방지/경로 변경 재로드 |
+| useRatingPrompt | localStorage 플래그/pending rating/영구 숨김 |
+| usePreferences | 취향 CRUD/Redux 동기화/저장·로드 API |
+| useDateFilter | 날짜 필터 상태/오늘 선택/초기화/콜백 |
+| useOnboarding | 온보딩 스텝 이동/완료·스킵/localStorage/CustomEvent |
 
 **검증 방식**: MSW로 API를 mocking하고, Hook의 상태 변화를 검증한다.
 
@@ -163,6 +177,35 @@ expect(mockRepository.save).toHaveBeenCalled();
 expect(mockService.recommend).toHaveBeenCalledWith(prompt);
 ```
 
+**내부 훅 의존성 원칙**:
+
+Hook이 다른 Hook을 내부에서 호출하는 경우(예: `useConfirmModal`이 `useModalScrollLock`, `useEscapeKey` 호출), 그 의존성 훅의 호출 여부나 인자는 검증하지 않는다.
+
+```typescript
+// useConfirmModal.ts
+export function useConfirmModal() {
+  useModalScrollLock(); // 내부 의존성
+  useEscapeKey(handleClose);
+
+  const [showCard, setShowCard] = useState(false);
+  return { showConfirmCard: showCard, setShowCard };
+}
+
+// ✅ 좋음: 훅이 반환하는 상태/함수만 검증
+expect(result.current.showConfirmCard).toBe(false);
+act(() => result.current.setShowCard(true));
+expect(result.current.showConfirmCard).toBe(true);
+
+// ❌ 나쁨: 내부 의존성 호출 검증
+expect(mockUseModalScrollLock).toHaveBeenCalled();
+expect(mockUseEscapeKey).toHaveBeenCalledWith(handleClose);
+```
+
+**이유**:
+- 내부 의존성의 정상 동작은 **의존성 자체의 Unit 테스트**에서 검증되어야 한다 (또는 전략 부록에 "테스트하지 않는 트리비얼 훅"으로 명시).
+- 호출 검증은 리팩토링 시 테스트가 깨지게 만들어 유지보수 비용을 높인다.
+- 관찰 가능한 행동(반환 상태, 사이드 이펙트로 인한 외부 가시적 변화)만 테스트 대상이다.
+
 ### 4.2 테스트 이름은 시나리오를 설명한다
 
 ```typescript
@@ -220,6 +263,31 @@ expect(input).toHaveValue('test@test.com');
 - **Frontend Hook 테스트**: MSW로 API만 mock
 - **Frontend E2E**: 백엔드 mock 서버 사용 (E2E_MOCK=true)
 
+### Mock 허용 범위 명확화
+
+"외부 API" 정의: **비용이 발생하거나 외부 서비스에 응답을 받아오는 연동**.
+
+**Mock 허용 대상**:
+1. **외부 API Client** (HTTP/SDK 경계, 과금/외부 응답)
+   - OpenAI, Gemini, Google Places, OAuth(Google/Kakao), AWS S3, Discord Webhook
+   - mock 필수 (실제 API 호출 금지)
+2. **외부 API 래퍼 내부 Service**
+   - `OpenAiMenuService`, `GeminiPlacesService` 등 이름에 외부 제공자가 들어가고 내부적으로 외부 API를 호출하는 Service
+   - 외부 Client와 동등 취급, mock 허용
+3. **동일 도메인 내 분리 Service** (책임 분리 구조)
+   - 예: `auth.service`가 `AuthTokenService`/`AuthSocialService`/`AuthPasswordService`를 호출
+   - 도메인 루트 Service의 Unit 테스트에서 분리 Service mock 허용
+
+**Mock 금지 대상**:
+4. **다른 도메인의 내부 Service**
+   - 예: `place.service`가 `UserAddressService`를 호출
+   - mock 금지 — 실제 인스턴스 또는 실제 의존성 체인 사용 (Repository는 경량 mock 허용)
+5. **Repository는 실제 test DB 또는 경량 mock 허용** (TypeORM 규약)
+
+**Mock 철학**:
+- 단, §6.1 "행동 테스트, 구현 검증 금지" 엄수 — `toHaveBeenCalledWith` 같은 내부 호출 검증 금지
+- Mock은 "외부 경계 차단"이 목적, "내부 로직 추적"이 목적이 아님
+
 ---
 
 ## 5. 디렉토리 구조
@@ -228,16 +296,23 @@ expect(input).toHaveValue('test@test.com');
 pickeat_web/
 ├── tests/
 │   ├── hooks/                            # Hook Unit 테스트
-│   │   ├── auth/
-│   │   │   ├── useAuth.test.ts
-│   │   │   └── useEmailVerification.test.ts
-│   │   ├── agent/
-│   │   │   └── useAgentActions.test.ts
-│   │   ├── address/
-│   │   │   └── useAddressSearch.test.ts
-│   │   └── common/
-│   │       ├── useDebounce.test.ts
-│   │       └── useLocalStorage.test.ts
+│   │   ├── useEmailVerification.test.ts
+│   │   ├── useVerificationTimer.test.ts
+│   │   ├── useOAuthRedirect.test.tsx
+│   │   ├── useAgentActions.test.tsx
+│   │   ├── useStreamingRequest.test.ts
+│   │   ├── useAddress.test.ts
+│   │   ├── useInitialDataLoad.test.tsx
+│   │   ├── useRatingPrompt.test.ts
+│   │   ├── useDebounce.test.ts
+│   │   ├── useDateFilter.test.ts
+│   │   ├── useErrorHandler.test.ts
+│   │   ├── useOnboarding.test.ts
+│   │   ├── usePlaceDetails.test.ts
+│   │   ├── usePlaceSelection.test.tsx
+│   │   ├── usePreferences.test.tsx
+│   │   ├── useAddressList.test.tsx
+│   │   └── useAddressModal.test.tsx
 │   ├── utils/                            # Utils 테스트
 │   │   ├── format.test.ts
 │   │   ├── validation.test.ts
@@ -249,14 +324,10 @@ pickeat_web/
 │   ├── factories/                        # 테스트 데이터
 │   └── setup.ts                          # 전역 설정
 ├── e2e/                                  # E2E 테스트
-│   ├── auth/
-│   │   └── login-and-register.spec.ts
-│   ├── features/
-│   │   ├── menu-recommendation.spec.ts
-│   │   ├── address-search.spec.ts
-│   │   ├── restaurant-map.spec.ts
-│   │   └── profile-edit.spec.ts
-│   └── smoke.spec.ts
+│   ├── address.spec.ts
+│   ├── auth.spec.ts
+│   ├── menu-recommendation.spec.ts
+│   └── mypage.spec.ts
 ├── vitest.config.ts
 └── playwright.config.ts
 ```
@@ -276,7 +347,7 @@ npm run test:e2e
 npm run test:coverage
 
 # 특정 파일만
-npx vitest run tests/hooks/auth/useAuth.test.ts
+npx vitest run tests/hooks/useEmailVerification.test.ts
 ```
 
 ### CI에서의 실행 순서

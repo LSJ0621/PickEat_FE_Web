@@ -122,4 +122,97 @@ describe('useStreamingRequest', () => {
       });
     }).not.toThrow();
   });
+
+  describe('에러 시나리오', () => {
+    it('error 이벤트 수신 → currentStatus null + isRetrying false로 초기화', () => {
+      const { result } = renderHook(() => useStreamingRequest());
+
+      // status 설정
+      act(() => {
+        result.current.handleStreamEvent({ type: 'status', status: '처리 중' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+      expect(result.current.currentStatus).toBe('처리 중');
+
+      // retrying 상태로 변경
+      act(() => {
+        result.current.handleStreamEvent({ type: 'retrying', attempt: 1 });
+      });
+      expect(result.current.isRetrying).toBe(true);
+
+      // error 이벤트 수신
+      act(() => {
+        vi.advanceTimersByTime(800);
+        result.current.handleStreamEvent({ type: 'error', message: '서버 오류 발생', errorCode: 'INTERNAL_ERROR' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(800);
+      });
+
+      expect(result.current.currentStatus).toBeNull();
+      expect(result.current.isRetrying).toBe(false);
+    });
+
+    it('resetStreamState — 큐 처리 중 호출 시 모든 상태 초기화', () => {
+      const { result } = renderHook(() => useStreamingRequest());
+
+      // 여러 status 이벤트 큐잉
+      act(() => {
+        result.current.handleStreamEvent({ type: 'status', status: '1단계' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+      act(() => {
+        result.current.handleStreamEvent({ type: 'status', status: '2단계' });
+        result.current.handleStreamEvent({ type: 'status', status: '3단계' });
+      });
+
+      // 큐에 아이템이 대기 중인 상태에서 reset
+      act(() => {
+        result.current.resetStreamState();
+      });
+
+      expect(result.current.currentStatus).toBeNull();
+      expect(result.current.isRetrying).toBe(false);
+
+      // reset 후 시간이 지나도 큐에서 추가 처리 없음
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(result.current.currentStatus).toBeNull();
+    });
+
+    it('연속 error 이벤트 수신 시 안정적 처리', () => {
+      const { result } = renderHook(() => useStreamingRequest());
+
+      // error 이벤트를 연속으로 수신
+      act(() => {
+        result.current.handleStreamEvent({ type: 'error', message: '첫 번째 에러' });
+        result.current.handleStreamEvent({ type: 'error', message: '두 번째 에러' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(result.current.currentStatus).toBeNull();
+      expect(result.current.isRetrying).toBe(false);
+    });
+
+    it('status 없는 status 이벤트 (undefined) → null로 처리', () => {
+      const { result } = renderHook(() => useStreamingRequest());
+
+      act(() => {
+        result.current.handleStreamEvent({ type: 'status' });
+      });
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+
+      // status가 undefined이면 null로 변환됨
+      expect(result.current.currentStatus).toBeNull();
+    });
+  });
 });

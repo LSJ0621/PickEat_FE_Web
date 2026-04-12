@@ -328,6 +328,34 @@ describe('useAgentActions', () => {
     expect(mockCommunityStream).not.toHaveBeenCalled();
   });
 
+  it('handleAiRecommendation — 두 스트림 모두 실패 시 에러 처리', async () => {
+    const store = createTestStore(
+      { isAuthenticated: true },
+      { selectedMenu: '파스타', menuHistoryId: 5 }
+    );
+    // 두 스트림 모두 에러
+    mockSearchStream.mockRejectedValue(new Error('검색 스트림 오류'));
+    mockCommunityStream.mockRejectedValue(new Error('커뮤니티 스트림 오류'));
+
+    const { result } = renderHook(
+      () => useAgentActions({ latitude: LAT, longitude: LNG }),
+      { wrapper: createWrapper(store) }
+    );
+
+    await act(async () => {
+      await result.current.handleAiRecommendation();
+    });
+
+    // 두 스트림 모두 호출되었지만 실패
+    expect(mockSearchStream).toHaveBeenCalledTimes(1);
+    expect(mockCommunityStream).toHaveBeenCalledTimes(1);
+
+    // 로딩 상태 해제 확인
+    const state = store.getState().agent;
+    expect(state.isSearchAiLoading).toBe(false);
+    expect(state.isCommunityAiLoading).toBe(false);
+  });
+
   it('handleAiRecommendation — 이미 추천 결과가 있으면 캐시된 데이터 반환', async () => {
     const store = createTestStore(
       { isAuthenticated: true },

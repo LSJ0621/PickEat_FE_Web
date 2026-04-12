@@ -26,6 +26,7 @@ export const useHistoryMenuActions = (): UseHistoryMenuActionsReturn => {
 
   const handleCancel = useCallback(() => {
     setShowConfirmCard(false);
+    setSelectedMenu(null);
   }, []);
 
   return {

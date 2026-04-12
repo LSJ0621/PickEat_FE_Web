@@ -4,6 +4,8 @@
  */
 
 import { renderHook, act } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { server } from '@tests/mocks/server';
 import { useEmailVerification } from '@features/auth/hooks/useEmailVerification';
 
 describe('useEmailVerification', () => {
@@ -170,5 +172,63 @@ describe('useEmailVerification', () => {
 
     expect(result.current.isCodeSent).toBe(true);
     expect(result.current.verificationRemaining).toBeGreaterThan(0);
+  });
+
+  describe('에러 시나리오', () => {
+    it('이메일 중복확인 API 실패 시 emailError 설정', async () => {
+      const BASE_URL = 'http://localhost:3000';
+      server.use(
+        http.get(`${BASE_URL}/auth/check-email`, () => {
+          return HttpResponse.json(
+            { message: '서버 오류가 발생했습니다.' },
+            { status: 500 }
+          );
+        })
+      );
+
+      const { result } = renderHook(() => useEmailVerification());
+
+      act(() => {
+        result.current.setEmail('test@example.com');
+      });
+
+      await act(async () => {
+        await result.current.handleCheckEmail();
+      });
+
+      expect(result.current.emailAvailable).toBeNull();
+      expect(result.current.emailError).toBeDefined();
+    });
+
+    it('인증코드 발송 API 실패 시 에러 메시지 표시', async () => {
+      const BASE_URL = 'http://localhost:3000';
+      server.use(
+        http.post(`${BASE_URL}/auth/email/send-code`, () => {
+          return HttpResponse.json(
+            { message: '인증 코드 발송에 실패했습니다.' },
+            { status: 500 }
+          );
+        })
+      );
+
+      const { result } = renderHook(() => useEmailVerification());
+
+      // 먼저 이메일 중복 확인 통과
+      act(() => {
+        result.current.setEmail('newuser@example.com');
+      });
+      await act(async () => {
+        await result.current.handleCheckEmail();
+      });
+
+      // 인증코드 발송 시도 — 서버 에러
+      await act(async () => {
+        await result.current.handleSendVerificationCode();
+      });
+
+      expect(result.current.isCodeSent).toBe(false);
+      expect(result.current.verificationMessageVariant).toBe('error');
+      expect(result.current.verificationMessage).not.toBeNull();
+    });
   });
 });

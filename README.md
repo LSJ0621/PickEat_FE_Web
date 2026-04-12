@@ -172,3 +172,13 @@ npm run dev    # → http://localhost:8080
 | `npm run test:e2e` | E2E 테스트 실행 |
 | `npm run test:e2e:ui` | E2E 테스트 UI 모드 |
 
+---
+
+## 문서
+
+| 문서 | 설명 |
+|------|------|
+| [Architecture](docs/architecture.md) | 시스템 아키텍처 및 데이터 흐름 |
+| [Frontend Structure](docs/frontend-structure.md) | 디렉토리 구조 및 레이어 설명 |
+| [Testing](docs/testing/README.md) | 406건 테스트 (Vitest 384 + Playwright 22) / Lines 커버리지 83.31% (Hooks+Utils scope) / Playwright 병렬 경합 회고 |
+

@@ -16,9 +16,9 @@
     "test:run": "vitest run",
     "test:coverage": "NODE_OPTIONS='--max-old-space-size=8192' vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:e2e": "SKIP_WEBSERVER=true playwright test",
-    "test:e2e:ui": "SKIP_WEBSERVER=true playwright test --ui",
-    "test:e2e:debug": "SKIP_WEBSERVER=true playwright test --debug"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.2",
@@ -67,7 +67,7 @@
     "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.1.0",
-    "@vitest/coverage-v8": "^4.0.16",
+    "@vitest/coverage-v8": "^4.1.4",
     "autoprefixer": "^10.4.22",
     "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9.39.1",

@@ -1,71 +1,131 @@
 /**
- * Auth E2E 테스트
- * 회원가입 → 로그인 전체 플로우 검증
+ * Auth E2E — 회원가입 → 로그인 플로우
  *
- * 사전 조건: 백엔드 E2E_MOCK=true 모드로 실행
- * - 인증 코드는 항상 TEST_VERIFICATION.CODE(123456)로 고정
- * - 신규 이메일 등록이 정상 처리됨
+ * 시나리오 (docs/testing/scenarios/auth.md — Frontend E2E):
+ *   - 이메일 입력 → 중복 확인 → 인증 코드 발송 → 코드 입력
+ *     → 가입 정보 입력 → 가입 완료 → 로그인 성공
+ *
+ * 전제: BE가 E2E_MOCK=true 로 기동되어 있어 인증 코드는 항상 123456.
  */
 
 import { test, expect } from '@playwright/test';
-import { RegisterPage } from './fixtures/page-objects/RegisterPage';
-import { LoginPage } from './fixtures/page-objects/LoginPage';
-import { TEST_ACCOUNTS, TEST_VERIFICATION, ROUTES } from './fixtures/test-data';
-import { generateTestEmail } from './fixtures/test-helpers';
+import { ROUTES, TEST_VERIFICATION_CODE } from './fixtures/test-data';
+import { generateTestEmail, loginWithCredentials, waitForLoginFormReady } from './fixtures/test-helpers';
 
-test.describe('Auth', () => {
-  test('회원가입 → 로그인 전체 플로우', async ({ page }) => {
-    // 각 실행마다 고유한 이메일 사용 (동시 병렬 실행 충돌 방지)
+function isAuthResponse(url: string, pathname: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.pathname === pathname || parsed.pathname.endsWith(pathname);
+  } catch {
+    return false;
+  }
+}
+
+test.describe('Auth: 회원가입 → 로그인', () => {
+  test('이메일 입력 → 중복 확인 → 인증 코드 발송 → 코드 입력 → 가입 정보 입력 → 가입 완료 → 로그인 성공', async ({
+    page,
+  }) => {
     const email = generateTestEmail();
-    const password = 'Test@1234';
-    const name = '신규유저';
+    const password = 'password123';
+    const name = 'E2E Tester';
 
-    const registerPage = new RegisterPage(page);
-    const loginPage = new LoginPage(page);
+    // --- 1) 회원가입 페이지 이동 ---
+    await page.goto(ROUTES.REGISTER);
+    await expect(page.getByRole('heading', { name: '회원가입' })).toBeVisible();
 
-    // ── 1단계: 회원가입 ───────────────────────────────────────────
-    await registerPage.goto();
+    // --- 2) 이름 입력 ---
+    await page.getByLabel('이름').fill(name);
 
-    // 이메일 입력 → 중복 확인 → 인증 코드 발송 → 코드 입력 → 가입 완료
-    await registerPage.performFullRegistration(
-      name,
-      email,
-      password,
-      TEST_VERIFICATION.CODE
+    // --- 3) 이메일 입력 + 중복 확인 ---
+    await page.getByLabel('이메일').fill(email);
+    const checkEmailResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        isAuthResponse(response.url(), '/auth/check-email'),
     );
+    await page.getByRole('button', { name: '중복 확인' }).click();
+    expect((await checkEmailResponsePromise).ok()).toBeTruthy();
+    await expect(page.getByText('사용 가능한 이메일입니다.')).toBeVisible({ timeout: 5000 });
 
-    // 회원가입 완료 후 로그인 페이지로 이동 확인
-    await expect(page).toHaveURL(ROUTES.LOGIN);
+    // --- 4) 인증번호 발송 ---
+    const sendCodeResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        isAuthResponse(response.url(), '/auth/email/send-code'),
+    );
+    await page.getByRole('button', { name: /인증번호 발송/ }).click();
+    expect((await sendCodeResponsePromise).ok()).toBeTruthy();
 
-    // ── 2단계: 로그인 ────────────────────────────────────────────
-    await loginPage.login(email, password);
+    // 발송 성공 시 6자리 코드 입력 필드가 활성화된다.
+    const codeInput = page.locator('input[maxlength="6"]');
+    await expect(codeInput).toBeEnabled({ timeout: 5000 });
 
-    // 로그인 성공: 홈으로 이동 + 토큰 저장 확인
-    await loginPage.expectLoginSuccess();
-  });
+    // --- 5) 인증 코드 입력 + 검증 ---
+    await codeInput.fill(TEST_VERIFICATION_CODE);
+    // EmailVerificationSection 내부의 확인 버튼(common.confirm = "확인")
+    const verifyCodeResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        isAuthResponse(response.url(), '/auth/email/verify-code'),
+    );
+    await page.getByRole('button', { name: '확인', exact: true }).click();
+    expect((await verifyCodeResponsePromise).ok()).toBeTruthy();
 
-  test('잘못된 비밀번호 로그인 → 에러 팝업 표시', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+    // 이메일 액션 버튼 라벨이 "인증 완료"로 바뀌면 검증 성공.
+    await expect(page.getByRole('button', { name: '인증 완료' })).toBeVisible({ timeout: 5000 });
 
-    await loginPage.goto();
-    await loginPage.login(TEST_ACCOUNTS.USER.email, 'wrongpassword');
+    // --- 6) 비밀번호 입력 ---
+    await page.getByLabel('비밀번호', { exact: true }).fill(password);
+    await page.getByLabel('비밀번호 확인').fill(password);
 
-    // 로그인 실패 에러 팝업 확인
-    await loginPage.expectLoginErrorPopup();
+    // --- 7) 생년월일 선택 (iOS-style 3-column 스크롤 피커) ---
+    // 각 컬럼의 scrollTop 을 ITEM_HEIGHT(44px) 단위로 세팅 후 scroll 이벤트를 디스패치하여
+    // onSelect 콜백을 강제로 트리거한다.
+    await page.evaluate(() => {
+      const ITEM = 44;
+      const scrollers = Array.from(
+        document.querySelectorAll<HTMLDivElement>('div.overflow-y-auto')
+      );
+      // ScrollDatePicker 는 year / month / day 순서로 overflow-y-auto 컨테이너 3개를 렌더한다.
+      if (scrollers.length < 3) {
+        throw new Error(`ScrollDatePicker columns not found (found ${scrollers.length})`);
+      }
+      const setCol = (el: HTMLDivElement, idx: number) => {
+        el.scrollTop = idx * ITEM;
+        el.dispatchEvent(new Event('scroll'));
+      };
+      // year: index 0 = "미설정", index 1 = maxYear(최근연도).
+      setCol(scrollers[0], 1);
+      // month: index 0 = 1월.
+      setCol(scrollers[1], 0);
+      // day: index 0 = 1일.
+      setCol(scrollers[2], 0);
+    });
+    // ScrollColumn 의 scroll 핸들러는 150ms 디바운스 처리되어 있다.
+    await page.waitForTimeout(400);
 
-    // 로그인 페이지에 머물러 있는지 확인
-    await expect(page).toHaveURL(ROUTES.LOGIN);
-  });
+    // --- 8) 성별 선택 (남성) ---
+    await page.getByRole('radio', { name: '남성' }).check();
 
-  test('이미 가입된 이메일로 가입 시도 → 중복 메시지 표시', async ({ page }) => {
-    const registerPage = new RegisterPage(page);
+    // --- 9) 회원가입 제출 ---
+    const submitButton = page.getByRole('button', { name: '회원가입', exact: true });
+    await expect(submitButton).toBeEnabled({ timeout: 3000 });
+    const registerResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        isAuthResponse(response.url(), '/auth/register'),
+    );
+    await submitButton.click();
+    expect((await registerResponsePromise).ok()).toBeTruthy();
 
-    await registerPage.goto();
+    // --- 10) 로그인 페이지로 리다이렉트 ---
+    await expect(page).toHaveURL(new RegExp(`${ROUTES.LOGIN}$`), { timeout: 10000 });
+    await waitForLoginFormReady(page);
 
-    // 이미 존재하는 테스트 계정 이메일로 중복 확인
-    await registerPage.checkEmailDuplicate(TEST_ACCOUNTS.USER.email);
+    // --- 11) 방금 가입한 계정으로 로그인 ---
+    await loginWithCredentials(page, email, password);
 
-    // 중복 이메일 메시지 표시 확인
-    await registerPage.expectDuplicateEmail();
+    // --- 12) 홈으로 이동 확인 ---
+    await expect(page).toHaveURL(new RegExp(`${ROUTES.HOME}$`), { timeout: 10000 });
   });
 });

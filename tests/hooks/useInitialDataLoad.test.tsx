@@ -138,4 +138,81 @@ describe('useInitialDataLoad', () => {
       expect(loadFn).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('에러 시나리오', () => {
+    it('loadFn이 reject되어도 hook이 정상 동작 (에러 전파 안 함)', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const loadFn = vi.fn().mockRejectedValue(new Error('API 서버 오류'));
+      const { Wrapper } = createRouterWrapper('/');
+
+      // hook 렌더링 시 에러가 throw되지 않아야 함
+      expect(() => {
+        renderHook(() => useInitialDataLoad({ enabled: true, loadFn }), { wrapper: Wrapper });
+      }).not.toThrow();
+
+      await act(async () => {});
+
+      expect(loadFn).toHaveBeenCalledTimes(1);
+      consoleSpy.mockRestore();
+    });
+
+    it('loadFn이 throw해도 이후 경로 변경 시 재호출 가능', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let callCount = 0;
+      const loadFn = vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount === 1) {
+          throw new Error('첫 번째 호출 실패');
+        }
+      });
+      const { Wrapper, getNavigate } = createRouterWrapper('/page1');
+
+      renderHook(() => useInitialDataLoad({ enabled: true, loadFn }), { wrapper: Wrapper });
+      await act(async () => {});
+
+      // 첫 번째 호출 — 에러 발생
+      expect(loadFn).toHaveBeenCalledTimes(1);
+
+      // 경로 변경 → 두 번째 호출 — 정상 실행
+      await act(async () => {
+        getNavigate()?.('/page2');
+      });
+
+      expect(loadFn).toHaveBeenCalledTimes(2);
+      consoleSpy.mockRestore();
+    });
+
+    it('loadFn이 throw해도 enabled 토글 후 재호출 가능', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let callCount = 0;
+      const loadFn = vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount === 1) {
+          throw new Error('초기 로드 실패');
+        }
+      });
+      let enabled = true;
+      const { Wrapper } = createRouterWrapper('/');
+
+      const { rerender } = renderHook(
+        () => useInitialDataLoad({ enabled, loadFn }),
+        { wrapper: Wrapper },
+      );
+      await act(async () => {});
+
+      expect(loadFn).toHaveBeenCalledTimes(1);
+
+      // enabled false → true 토글로 재시도
+      enabled = false;
+      rerender();
+      await act(async () => {});
+
+      enabled = true;
+      rerender();
+      await act(async () => {});
+
+      expect(loadFn).toHaveBeenCalledTimes(2);
+      consoleSpy.mockRestore();
+    });
+  });
 });
